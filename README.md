@@ -12,7 +12,7 @@ pip3 install -r requirements.txt
 
 * Go to a suitable directory and clone the repository with
 	* ```
-  	  git clone git@github.com:TheMoonWalker1/Understudyathon.git
+  	  git clone git@github.com:TheMoonWalker1/Essay-Grader.git
   	  ```
 * Next setup a virtual environment with the virtualenv library(Install it with for)
 	* MacOs/Linux
