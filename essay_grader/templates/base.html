@@ -14,9 +14,7 @@
                 {% if user.is_authenticated %}
                     <a class="navbar-brand" href="http://localhost:8000/submit" style="padding-left: 3em;">Submit an essay!</a>
                     <a class="navbar-brand" href="{% url 'logout' %}" style="padding-left: 2em;">Logout</a>
-					{% if user %}
                     <a class="navbar-brand" style="padding-left: 9em;">You are logged in as {{ user }}</a>
-					{% endif %}
                 {% else %}
 					<a class="navbar-brand" href="{% url 'login' %}" style="padding-left: 2em;">Login</a>
 					<a class="navbar-brand" href="{% url 'create' %}" style="padding-left: 3em;">Create Account</a>
