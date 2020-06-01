@@ -14,7 +14,7 @@ import json
 # Create your views here.
 
 def login(request):
-    if request.user:
+    if request.user.is_authenticated:
         return redirect("home")
     context = {
         'url' : 'login'
@@ -43,8 +43,14 @@ def login(request):
         form = LoginForm() 
         context['form'] = form
     if request.method == 'GET':
+        oauth = OAuth2Session(CLIENT_ID,
+                    redirect_uri="http://localhost:8000/login",
+                    scope=["read"])
+        authorization_url, state = oauth.authorization_url("https://ion.tjhsst.edu/oauth/authorize/")
+        context['url'] = authorization_url
         if "code" in request.GET:
             CODE = request.GET.get("code")
+            
             token = oauth.fetch_token("https://ion.tjhsst.edu/oauth/token/",
                             code=CODE,
                             client_secret=CLIENT_SECRET)
@@ -52,10 +58,11 @@ def login(request):
             try:
                 raw_profile = oauth.get("https://ion.tjhsst.edu/api/profile")
                 profile = json.loads(raw_profile.content.decode())
+                print(profile)
                 email = profile["tj_email"]
-
-                if User.objects.filter(username=name).exists():
+                if User.objects.filter(email=email).exists():
                     user = auth.authenticate(email=email, password=profile.get("ion_username") + profile.get("user_type"))
+                    print(user)
                     if user is not None:
                         auth.login(request, user)
                         return redirect("http://localhost:8000/home")
@@ -64,8 +71,11 @@ def login(request):
                         new_user = User.objects.create_teacheruser(email=email, password=profile.get("ion_username") + profile.get("user_type"))
                     else:
                         new_user = User.objects.create_studentuser(email=email, password=profile.get("ion_username") + profile.get("user_type"))
+                    new_user.first_name = profile.get("first_name")
+                    new_user.middle_name = profile.get("middle_name")
+                    new_user.last_name = profile.get("last_name")
+                    new_user.year_in_school = profile.get("grade").get("name").upper()[:3]
                     new_user.save()
-
                     user = auth.authenticate(email=email, password=profile.get("ion_username") + profile.get("user_type"))
                     auth.login(request, user)
                     return redirect("http://localhost:8000/setup")
@@ -73,12 +83,6 @@ def login(request):
             except Exception as e:
                 args = { "client_id": CLIENT_ID, "client_secret": CLIENT_SECRET }
                 token = oauth.refresh_token("https://ion.tjhsst.edu/oauth/token/", **args)
-        else:
-            oauth = OAuth2Session(CLIENT_ID,
-                        redirect_uri="http://localhost:8000/login",
-                        scope=["read"])
-            authorization_url, state = oauth.authorization_url("https://ion.tjhsst.edu/oauth/authorize/")
-            context['url'] = authorization_url
     return render(request, "login.html", context)
 
 
@@ -87,7 +91,7 @@ def logout(request):
     return redirect("login")
     
 def create(request):    
-    if request.user:
+    if request.user.is_authenticated:
         return redirect("home")
     context = {"method" : request.method}
     if request.method == "POST":
@@ -134,9 +138,6 @@ def create(request):
     return render(request, "create.html", context)
             
 def setup(request) :
-    
-    if request.user:
-        return redirect("home")
     context = {
         "method" : request.method,
         "form" : SetupForm()
@@ -149,6 +150,7 @@ def setup(request) :
             user.middle_name = form.cleaned_data.get('middle_name')
             user.last_name = form.cleaned_data.get('last_name')
             user.year_in_school = form.cleaned_data.get('year_in_school')
+            user.save()
             return redirect("home")
     return render(request, "setup.html", context)
     
