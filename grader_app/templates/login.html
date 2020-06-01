@@ -53,12 +53,14 @@
 	<form action="{% url 'login' %}" style="padding-left:6px;" method="post">
 		{% csrf_token %}
 		{{ form }}
+		<!--
 		<div style="margin-top:5px; margin-bottom:10px;" >
 			<button type="submit" class="btn btn-primary" value="{{ next }}">Submit</button>
 		</div>
+		-->
 	</form>
 	<center>
-	<p style="font-size:15; width:90%; margin-left:3px; margin-right:3px;">Or Log In With <b>Ion OAuth2:</b></p>
+	<p style="font-size:15; width:90%; margin-left:3px; margin-right:3px;">Log In With <b>Ion</b></p>
 	<a href="{{ url }}" class="button login ion" style=" width:95%; margin-bottom:13px;" value="login"><img src="https://avatars2.githubusercontent.com/u/10491321?s=400&u=4538843ad192aa96fb4c18223fcaa5e157a0e063&v=4" alt="" width="40" height="40"/></a>		
 	</center>
 </div>

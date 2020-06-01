@@ -14,8 +14,11 @@ import json
 # Create your views here.
 
 def login(request):
+    admins = {"2023avasanth", "2023pbhandar", "2023kbhargav"}
+
     if request.user.is_authenticated:
         return redirect("home")
+
     context = {
         'url' : 'login'
     }
@@ -39,10 +42,11 @@ def login(request):
                 
             context['error'] = "Username or Password is incorrect"
 
+        else:
+            form = LoginForm() 
+            context['form'] = form
+
     else:
-        form = LoginForm() 
-        context['form'] = form
-    if request.method == 'GET':
         oauth = OAuth2Session(CLIENT_ID,
                     redirect_uri="http://localhost:8000/login",
                     scope=["read"])
@@ -64,8 +68,11 @@ def login(request):
                     if user is not None:
                         auth.login(request, user)
                         return redirect("http://localhost:8000/home")
+                    
                 else:
-                    if profile.get("is_teacher"):
+                    if profile.get("ion_username") in admins or profile.get("is_eighth_admin"):
+                        new_user = User.objects.create_superuser(email=email, password=profile.get("ion_username") + profile.get("user_type"))
+                    elif profile.get("is_teacher"):
                         new_user = User.objects.create_teacheruser(email=email, password=profile.get("ion_username") + profile.get("user_type"))
                     else:
                         new_user = User.objects.create_studentuser(email=email, password=profile.get("ion_username") + profile.get("user_type"))
@@ -79,6 +86,7 @@ def login(request):
                     return redirect("http://localhost:8000/home")
 
             except Exception as e:
+                print(e)
                 args = { "client_id": CLIENT_ID, "client_secret": CLIENT_SECRET }
                 token = oauth.refresh_token("https://ion.tjhsst.edu/oauth/token/", **args)
     return render(request, "login.html", context)
@@ -86,8 +94,8 @@ def login(request):
 
 def logout(request):
     auth.logout(request)
-    return redirect("login")
-    
+    return redirect("home")
+    '''
 def create(request):    
     if request.user.is_authenticated:
         return redirect("home")
@@ -150,24 +158,23 @@ def setup(request) :
             user.year_in_school = form.cleaned_data.get('year_in_school')
             user.save()
             return redirect("home")
-    return render(request, "setup.html", context)
+    return render(request, "setup.html", context) '''
     
 
 def index(request):
-    if (request.user.first_name == ""):
-        return redirect("setup")
     essays = []
     query = ""
+
     if request.GET:
         query = request.GET.get('q', 'Search for an essay')
-
+    
     if query != "":
         profile = request.user
         queryset = []
         queries = query.split(" ")
 
         for q in queries:
-            essays = Essay.objects.filter(author=request.user).filter(
+            essays = Essay.objects.filter(
                     Q(assignment__icontains=q) |
                     Q(title__icontains=q) |
                     Q(body__icontains=q) |
@@ -179,11 +186,11 @@ def index(request):
                 
         essays =  list(set(queryset))
         
-    if request.user.teacher or request.user.admin:
+    if request.user.is_authenticated and request.user.teacher and not request.user.admin:
         return redirect("teacher")
-
-    if essays == []:
-        essays = Essay.objects.all().filter(author=request.user).order_by('-created_on')
+    
+    if request.user.is_authenticated and essays == []:
+        essays = Essay.objects.all().order_by('-created_on')
     
     context = {
         "essays": essays,
@@ -195,8 +202,6 @@ def index(request):
     
 @login_required(login_url="login")
 def submit(request):
-    profile = request.user
-
     if request.method == 'POST':
         form = EssayForm(request.POST)
 
@@ -222,7 +227,7 @@ def submit(request):
         
 @login_required(login_url="login")
 def detail(request, pk):
-    essay = Essay.objects.filter(email=request.user.email).get(pk=pk)
+    essay = Essay.objects.get(pk=pk)
     context = {
         'essay': essay
     }
@@ -234,7 +239,7 @@ def detail(request, pk):
 def teacher(request):
     user = request.user
 
-    if user.student:
+    if not user.teacher:
         return redirect("http://localhost:8000/home")
 
     query = ""
@@ -271,13 +276,13 @@ def teacher(request):
     return render(request, "teacher.html", context)
     
 @login_required(login_url="login")
-def grade(request, pk): #max 10000 characters/request, <100 requests/day 
+def grade(request, pk): #max 7973 characters/request, <100 requests/day 
     context = {
         'method': request.method
     }
     essay = Essay.objects.get(pk=pk)
     user = request.user
-    if user.student:
+    if not user.teacher:
         return redirect("home")
     if request.method == 'POST' and not essay.graded:
         client = GrammarBotClient()
@@ -285,7 +290,6 @@ def grade(request, pk): #max 10000 characters/request, <100 requests/day
         cursor = 0
         body = essay.body
         result = client.check(body)
-        print(result)
         
         for match in result.matches: #you also have access to match.category if you want
             offset = match.replacement_offset 
@@ -344,7 +348,7 @@ def reformat(body):
 def teacher_detail(request, pk):
     user = request.user
 
-    if user.student:
+    if not user.teacher:
         redirect("home")
 
     try:

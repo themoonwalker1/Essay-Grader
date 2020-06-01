@@ -44,6 +44,7 @@ class UserManager(BaseUserManager):
         )
         user.teacher = True
         user.admin = True
+        user.student = True
         user.save(using=self._db)
         return user
 
@@ -55,7 +56,7 @@ class User(AbstractBaseUser):
         unique=True,
     )
     first_name = models.CharField(max_length=50)
-    middle_name = models.CharField(max_length=50)
+    middle_name = models.CharField(max_length=50, null=True)
     last_name = models.CharField(max_length=50)
     
     FRESHMAN = 'FR'

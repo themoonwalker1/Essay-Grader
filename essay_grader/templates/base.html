@@ -14,16 +14,18 @@
                 {% if user.is_authenticated %}
 					{% if user.student %}
                     <a class="navbar-brand" href="http://localhost:8000/submit" style="padding-left: 3em;">Submit an essay!</a>
-                    {% else %}
+                    {% endif %}
+
+                    {% if user.teacher %}
 					<a class="navbar-brand" href="http://localhost:8000/teacher/home" style="padding-left: 3em;">View your student's Essays!</a>
 					{% endif %}
 					<a class="navbar-brand" href="{% url 'logout' %}" style="padding-left: 2em;">Logout</a>
-					{% if user %}
-                    <a class="navbar-brand" style="padding-left: 9em;">You are logged in as {{ user.first_name }} {{ user.last_name }}</a>
-					{% endif %}
+                    <a class="navbar-brand" style="padding-left: 6em;">You are logged in as {{ user.first_name }} {{ user.last_name }}</a>
                 {% else %}
 					<a class="navbar-brand" href="{% url 'login' %}" style="padding-left: 2em;">Login</a>
-					<a class="navbar-brand" href="{% url 'create' %}" style="padding-left: 3em;">Create Account</a>
+					<!--
+                        <a class="navbar-brand" href="" style="padding-left: 3em;">Create Account</a>
+                    -->
 				{% endif %}
             </ul>
         </nav>
