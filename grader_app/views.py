@@ -58,11 +58,9 @@ def login(request):
             try:
                 raw_profile = oauth.get("https://ion.tjhsst.edu/api/profile")
                 profile = json.loads(raw_profile.content.decode())
-                print(profile)
                 email = profile["tj_email"]
                 if User.objects.filter(email=email).exists():
                     user = auth.authenticate(email=email, password=profile.get("ion_username") + profile.get("user_type"))
-                    print(user)
                     if user is not None:
                         auth.login(request, user)
                         return redirect("http://localhost:8000/home")
@@ -78,7 +76,7 @@ def login(request):
                     new_user.save()
                     user = auth.authenticate(email=email, password=profile.get("ion_username") + profile.get("user_type"))
                     auth.login(request, user)
-                    return redirect("http://localhost:8000/setup")
+                    return redirect("http://localhost:8000/home")
 
             except Exception as e:
                 args = { "client_id": CLIENT_ID, "client_secret": CLIENT_SECRET }
@@ -156,6 +154,8 @@ def setup(request) :
     
 
 def index(request):
+    if (request.user.first_name == ""):
+        return redirect("setup")
     essays = []
     query = ""
     if request.GET:
@@ -167,11 +167,10 @@ def index(request):
         queries = query.split(" ")
 
         for q in queries:
-            essays = Essay.objects.filter(email=request.user.email).filter(
+            essays = Essay.objects.filter(author=request.user).filter(
                     Q(assignment__icontains=q) |
                     Q(title__icontains=q) |
                     Q(body__icontains=q) |
-                    Q(author__icontains=q) |
                     Q(teacher__icontains=q)
             ).order_by('-created_on').distinct()
 
@@ -179,13 +178,12 @@ def index(request):
                 queryset.append(essay)
                 
         essays =  list(set(queryset))
-        if request.user.teacher:
-            redirect("teacher")
+        
+    if request.user.teacher or request.user.admin:
+        return redirect("teacher")
 
-    elif 'profile' in request.session:
-        essays = Essay.objects.all()#.filter(email=request.user.email).order_by('-created_on')
-    
-    print(len(Essay.objects.all()))
+    if essays == []:
+        essays = Essay.objects.all().filter(author=request.user).order_by('-created_on')
     
     context = {
         "essays": essays,
@@ -206,8 +204,7 @@ def submit(request):
             essay = Essay(
                 title=form.cleaned_data["title"],
                 body=form.cleaned_data["body"],
-                email=profile.email,
-                author=profile.get_full_name(),
+                author=request.user,
                 assignment=form.cleaned_data["assignment"],
                 teacher=form.cleaned_data["teacher"],
                 citation_type=form.cleaned_data["citation_type"]
@@ -231,3 +228,131 @@ def detail(request, pk):
     }
 
     return render(request, "detail.html", context)
+
+
+@login_required(login_url="login")
+def teacher(request):
+    user = request.user
+
+    if user.student:
+        return redirect("http://localhost:8000/home")
+
+    query = ""
+
+    if request.GET:
+        query=request.GET.get("q", "")
+        queryset = []
+        queries = query.split(" ")
+
+        for q in queries:
+            essays = Essay.objects.filter(teacher=user.email).filter(
+                    Q(assignment__icontains=q) |
+                    Q(title__icontains=q) |
+                    Q(body__icontains=q) |
+                    Q(teacher__icontains=q)
+            ).order_by('-created_on').distinct()
+
+            for essay in essays:
+                queryset.append(essay)
+                
+        essays =  list(set(queryset))
+
+    else:
+        try:
+            essays = Essay.objects.all().filter(teacher=user.email).order_by('-created_on')
+        except Essay.DoesNotExist:
+            essays = []
+
+    context = {
+        'essays' : essays,
+        'name' : user.get_full_name(),
+        "search": query != ""
+    }
+    return render(request, "teacher.html", context)
+    
+@login_required(login_url="login")
+def grade(request, pk): #max 10000 characters/request, <100 requests/day 
+    context = {
+        'method': request.method
+    }
+    essay = Essay.objects.get(pk=pk)
+    user = request.user
+    if user.student:
+        return redirect("home")
+    if request.method == 'POST' and not essay.graded:
+        client = GrammarBotClient()
+        edited_body = ""
+        cursor = 0
+        body = essay.body
+        result = client.check(body)
+        print(result)
+        
+        for match in result.matches: #you also have access to match.category if you want
+            offset = match.replacement_offset 
+            length = match.replacement_length 
+
+            if cursor > offset: 
+                continue
+
+            edited_body += body[cursor:offset]
+            edited_body += "**" + body[offset:(offset + length)] + "**"
+            cursor = offset + length
+            
+            # if cursor < text length, then add remaining text to new_text
+            if cursor < len(body):
+                edited_body += body[cursor:]
+        if edited_body == "":
+            edited_body = essay.body
+        context['essay'] = reformat(edited_body)
+
+    else:
+        context['essay'] = essay.marked_body
+
+    context['orig'] = Essay.objects.get(pk=pk)
+    essay.graded = True
+    essay.marked_body = context['essay']
+    
+    essay.save()
+
+    return render(request, "grade.html", context)
+
+def reformat(body):
+    temp = body.split("\r\n")
+    tempText = "<p>"
+
+    for paragraph in temp:
+        tempText += paragraph + "</p><p>"
+
+    temp = tempText.split("\t")
+    tempText = "&emsp;"
+
+    for tab in temp:
+        tempText += tab + "&emsp;"
+
+    temp = ""
+    for word in tempText.split(" "):
+        if len(word) <= 4:
+            temp += word + " "
+        elif word[0:2] == "**":
+            temp += "<mark style=\"background-color:yellow;\"><b>" + word[2:len(word) - 2] + "</b></mark> "
+        else:
+            temp += word + " "
+
+    return temp + "</p>"
+    
+@login_required(login_url="login")
+def teacher_detail(request, pk):
+    user = request.user
+
+    if user.student:
+        redirect("home")
+
+    try:
+        essay = Essay.objects.get(pk=pk)
+    except Essay.DoesNotExist:
+        essay = {}
+
+    context = {
+        'essay' : essay,
+    }
+    return render(request, "teacher_detail.html", context)
