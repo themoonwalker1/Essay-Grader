@@ -4,12 +4,6 @@ A platform to speed up essay grading.
 
 ## Setup
 
-
-All necessary libraries can be installed using the following command: 
-```
-pip3 install -r requirements.txt
-```
-
 * Go to a suitable directory and clone the repository with
 	* ```
   	  git clone git@github.com:TheMoonWalker1/Essay-Grader.git
