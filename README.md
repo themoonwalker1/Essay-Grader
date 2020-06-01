@@ -50,15 +50,15 @@ A platform to speed up essay grading.
 ## Goals
 * Bold == Working On
 * Website Features
-	- [ ] **Settings**
+	- [ ] ***Settings***
 		- [ ] Add Teacher
 		- [ ] Password Change
 		- [ ] Add Login/Logout to the Sidebar(Maybe idk)
 * Essay Checking 
 	- [x] Grammar
 	- [x] Formatting
-	- [ ] **Citation Formatting**
-	- [ ] **Citation Cross-Referencing**
+	- [ ] ***Citation Formatting***
+	- [ ] ***Citation Cross-Referencing***
 	- [x] Header Formatting
 	- [ ] Plagarism Checker
 * Interface:
@@ -69,7 +69,7 @@ A platform to speed up essay grading.
 		- [x] Submitting Essay
 * Automation
 	- [x] Adding Celery Works for Automation
-	- [ ] Finishing Optimization of Celery Algorithm
+	- [ ] ***Finishing Optimization of Celery Algorithm***
 * Frameworks:
 	* Django
 	* Bootstrap
