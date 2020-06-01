@@ -21,7 +21,7 @@
 					{% endif %}
                         <a class="navbar-brand navbar-link" href="{% url 'logout' %}">Logout</a>
                         <a class="navbar-brand" style="padding-left: 3em;vertical-align:middle;font-size: 1.2vw;">You are logged in as {{ user.first_name }} {{ user.last_name }}</a>
-                        <a style="vertical-align:middle; position:relative; top:-3px;" href="{% url 'settings' %}"><img src="https://freeiconshop.com/wp-content/uploads/edd/settings-solid.png" alt="" height="20vw" width="20vw"></img></a>
+                        <a style="vertical-align:middle; position:relative; top:-3px;" href="{% url 'settings_info' %}"><img class="gear" src="https://freeiconshop.com/wp-content/uploads/edd/settings-solid.png" alt="" height="20vw" width="20vw"></img></a>
                         <div class="navbar-brand authors">
 <pre class="authors">                        Aditya Vasantharao (2023)
 Created by:     Chinmay Bhandaru (2023)
@@ -77,6 +77,45 @@ Created by:     Chinmay Bhandaru (2023)
             .wrapper{
                 margin-top: 18px;
             }
+			.gear {
+				-webkit-animation-name: spin;
+				-webkit-animation-duration: 4000ms;
+				-webkit-animation-iteration-count: infinite;
+				-webkit-animation-timing-function: linear;
+				-moz-animation-name: spin;
+				-moz-animation-duration: 4000ms;
+				-moz-animation-iteration-count: infinite;
+				-moz-animation-timing-function: linear;
+				-ms-animation-name: spin;
+				-ms-animation-duration: 4000ms;
+				-ms-animation-iteration-count: infinite;
+				-ms-animation-timing-function: linear;
+				
+				animation-name: spin;
+				animation-duration: 4000ms;
+				animation-iteration-count: infinite;
+				animation-timing-function: linear;
+			}
+			@-ms-keyframes spin {
+				from { -ms-transform: rotate(0deg); }
+				to { -ms-transform: rotate(360deg); }
+			}
+			@-moz-keyframes spin {
+				from { -moz-transform: rotate(0deg); }
+				to { -moz-transform: rotate(360deg); }
+			}
+			@-webkit-keyframes spin {
+				from { -webkit-transform: rotate(0deg); }
+				to { -webkit-transform: rotate(360deg); }
+			}
+			@keyframes spin {
+				from {
+					transform:rotate(0deg);
+				}
+				to {
+					transform:rotate(360deg);
+				}
+			}
 			
         </style>
         

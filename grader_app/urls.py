@@ -15,5 +15,5 @@ urlpatterns = [
     path("teacher/home", views.teacher, name="teacher"),
     path("teacher/<int:pk>/", views.teacher_detail, name="teacher_detail"),
     path("teacher/<int:pk>/grade", views.grade, name="grade"),
-    path("settings/", views.settings, name="settings"),
+    path("settings/info", views.settings_changeInfo, name="settings_info"),
 ]

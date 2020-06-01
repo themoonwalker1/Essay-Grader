@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from .models import Essay
-from .forms import EssayForm, LoginForm, RegisterForm, SetupForm
+from .forms import EssayForm, LoginForm, RegisterForm, SetupForm, InfoForm
 from django.contrib.auth.decorators import login_required
 from requests_oauthlib import OAuth2Session
 from .models import User
@@ -46,6 +46,7 @@ def login(request):
             form = LoginForm() 
             context['form'] = form
 
+
     else:
         oauth = OAuth2Session(CLIENT_ID,
                     redirect_uri="http://localhost:8000/login",
@@ -63,10 +64,14 @@ def login(request):
                 raw_profile = oauth.get("https://ion.tjhsst.edu/api/profile")
                 profile = json.loads(raw_profile.content.decode())
                 email = profile["tj_email"]
+                print("got Code")
                 if User.objects.filter(email=email).exists():
                     user = auth.authenticate(email=email, password=profile.get("ion_username") + profile.get("user_type"))
                     if user is not None:
                         auth.login(request, user)
+                        user = request.user                        
+                        user.logged_with_ion = True
+                        user.save()
                         return redirect("http://localhost:8000/home")
                     
                 else:
@@ -76,6 +81,7 @@ def login(request):
                         new_user = User.objects.create_teacheruser(email=email, password=profile.get("ion_username") + profile.get("user_type"))
                     else:
                         new_user = User.objects.create_studentuser(email=email, password=profile.get("ion_username") + profile.get("user_type"))
+                    new_user.logged_with_ion = True
                     new_user.first_name = profile.get("first_name")
                     new_user.middle_name = profile.get("middle_name")
                     new_user.last_name = profile.get("last_name")
@@ -362,5 +368,33 @@ def teacher_detail(request, pk):
     return render(request, "teacher_detail.html", context)
     
 @login_required(login_url="login")
-def settings(request):
-    pass
+def settings_changeInfo(request):
+    profile = request.user
+    
+    if request.method == 'POST':
+        form = InfoForm(request.POST)
+
+        if form.is_valid():
+            essay = Essay(
+                title=form.cleaned_data["title"],
+                body=form.cleaned_data["body"],
+                author=request.user,
+                assignment=form.cleaned_data["assignment"],
+                teacher=form.cleaned_data["teacher"],
+                citation_type=form.cleaned_data["citation_type"]
+            )
+            essay.save()
+
+            return redirect("home")
+
+    else:
+        form = InfoForm(initial={'email':profile.email, 'first_name':profile.first_name, 'middle_name':profile.middle_name, 'last_name':profile.last_name})
+        
+        if profile.logged_with_ion:
+            form.disable()
+        print(profile.logged_with_ion)
+        context = {
+            'form': form,
+        }
+        
+        return render(request, "settings_info.html", context)

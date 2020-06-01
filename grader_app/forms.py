@@ -65,7 +65,22 @@ def set_field_html_name(cls, new_name):
         return old_render(new_name, value, attrs)
 
     cls.widget.render = _widget_render_wrapper
+
+class ChangeForm(forms.Form):
+    password1 = forms.CharField(widget=forms.PasswordInput, max_length=150, required=True)
+    password2 = forms.CharField(widget=forms.PasswordInput, max_length=150, required=True)
+
+class InfoForm(forms.Form):
+    email = forms.EmailField(max_length=250, widget=forms.TextInput(attrs={'readonly':'readonly', "class": "form-control"}))
+    first_name = forms.CharField(max_length=50, widget=forms.TextInput(attrs={"class": "form-control"}))
+    middle_name = forms.CharField(max_length=50, widget=forms.TextInput(attrs={"class": "form-control"}))
+    last_name = forms.CharField(max_length=50, widget=forms.TextInput(attrs={"class": "form-control"}))
     
+    def disable(self):
+        self.fields['first_name'].disabled = True
+        self.fields['middle_name'].disabled = True
+        self.fields['last_name'].disabled = True
+
 class TeacherForm(forms.Form): 
     period1 = set_field_html_name(forms.CharField(max_length=150, required=True), "1st Period Teacher")
     period2 = set_field_html_name(forms.CharField(max_length=150, required=True), "2nd Period Teacher")

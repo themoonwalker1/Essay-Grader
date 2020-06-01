@@ -3,6 +3,7 @@ from django.conf import settings
 from django.contrib.auth.models import (
     BaseUserManager, AbstractBaseUser
 )
+import json
 # Create your models here.
 
 dropdown = (("None","None"),("APA","APA"),("MLA","MLA"))
@@ -58,6 +59,14 @@ class User(AbstractBaseUser):
     first_name = models.CharField(max_length=50)
     middle_name = models.CharField(max_length=50, null=True)
     last_name = models.CharField(max_length=50)
+    logged_with_ion = models.BooleanField(default=False)
+    
+    teachers = models.TextField()
+    
+    def set_teachers(self, teachers):
+        self.teachers = json.dumps(teachers)
+    def get_teachers(self):
+        return json.loads(self.teachers)
     
     FRESHMAN = 'FR'
     SOPHOMORE = 'SO'

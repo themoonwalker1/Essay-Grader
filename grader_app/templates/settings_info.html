@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+
+    <div class="col-md-8 offset-md-3" style="padding-top: 2em;">
+	<h3><b>Change Info:</b></h3>
+	<pre>     </pre>
+	<form action="submit" method="post">
+
+                {{ form }}
+                
+                <div style="margin-top:5px;" >
+                    <button type="form" class="btn btn-primary" value="{{ next }}">Submit</button>
+                </div>
+	</form>
+    </div>
+
+{% endblock %}
