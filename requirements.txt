@@ -5,3 +5,4 @@ django-oauth-toolkit
 ion_oauth
 django-guardian
 djangorestframework
+celery

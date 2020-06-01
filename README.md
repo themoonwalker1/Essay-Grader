@@ -49,28 +49,36 @@ A platform to speed up essay grading.
 
 ## Goals
 * Essay Checking 
-	- [ ] Grammar
+	- [x] Grammar
+	- [x] Formatting
 	- [ ] Citation Formatting
 	- [ ] Citation Cross-Referencing
 	- [ ] Header Formatting
 	- [ ] Plagarism Checker
 * Interface:
 	* Teacher 
-		- [ ] Seeing Students Essay's and being able to grade it
+		- [x] Seeing Students Essay's and being able to grade it
 		- [ ] Comment System(Interact with Students)
 	* Student
-		- [ ] Submitting Essay and Seeing Errors
-		- [ ] Seeing Students Essay's and being able to grade it
-		- [ ] Comment System(Interact with Students)
+		- [x] Submitting Essay
+* Automation
+	- [x] Adding Celery Works for Automation
 * Frameworks:
 	* Django
 	* Bootstrap
 	* HTML/CSS/JavaScript
 * OAuth2:
-	- [ ] Setting up Ion OAuth
-	- [ ] OAuth2 Library to verify if user is a student or a teacher
-	* Using Ion to Login
-
+	- [x] Setting up Ion OAuth
+	- [x] OAuth2 Library to verify if user is a student or a teacher
+	- [x] Adding RBAC(Role Based Access Control)
 
 ## Program Structure
 * Front-End and Back-End Structure
+* Teacher
+	* Create Superuser
+	* Front End
+	* Back End
+* Student
+	* Front End
+	* Back End
+	* Login using Ion OAuth

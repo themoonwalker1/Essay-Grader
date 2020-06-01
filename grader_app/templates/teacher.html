@@ -18,7 +18,7 @@
         
             {% if essays|length == 0 %}
                 {% if search == False %}
-                    <h3>No essays yet, why don't you submit one?</h3> 
+                    <h3>None of your students submitted an Essay</h3> 
                 {% else %}           
                     <h3>No results based on your search<h3> 
                 {% endif %} 
@@ -29,7 +29,7 @@
                 <h5> Assignment: {{essay.assignment}}</h3>
                 <h5> By: {{essay.author}}</h4>
                 <h6> Created on {{ essay.created_on }}&emsp;&emsp;&emsp;{% if essay.citation_type != "None" %} Type: <b>{{essay.citation_type}}</b>  {% endif %}</h6>
-                <p>{{ essay.body | slice:":400"}}...</p>
+                <p>{{ essay.body | slice:":400"}}{% if essay.boy|length > 400 %}...{% endif %}</p>
                 <hr>
             {% endfor %}
 

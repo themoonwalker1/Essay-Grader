@@ -7,29 +7,30 @@
         <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
-        
-        <nav class="navbar navbar-light bg-light" style="padding-top: 1em;">
+		
+		<nav id="navbar" class="navbar navbar-light bg-light appear" style="padding-top: 1em;" onscroll="scroll">
             <ul>
                 <a href="http://localhost:8000/home" style="text-decoration: none;" style="padding-left: 1en;"><h1>Essay Grader</h></a>
                 {% if user.is_authenticated %}
 					{% if user.student %}
-                    <a class="navbar-brand" href="http://localhost:8000/submit" style="padding-left: 3em;">Submit an essay!</a>
+                        <a class="navbar-brand" href="http://localhost:8000/submit" style="padding-left: 3em;vertical-align:middle;">Submit an essay!</a>
                     {% endif %}
 
                     {% if user.teacher %}
-					<a class="navbar-brand" href="http://localhost:8000/teacher/home" style="padding-left: 3em;">View your student's Essays!</a>
+                        <a class="navbar-brand" href="http://localhost:8000/teacher/home" style="padding-left: 3em;vertical-align:middle;">View your student's Essays!</a>
 					{% endif %}
-					<a class="navbar-brand" href="{% url 'logout' %}" style="padding-left: 2em;">Logout</a>
-                    <a class="navbar-brand" style="padding-left: 6em;">You are logged in as {{ user.first_name }} {{ user.last_name }}</a>
+                        <a class="navbar-brand" href="{% url 'logout' %}" style="padding-left: 2em;vertical-align:middle;">Logout</a>
+                        <a class="navbar-brand" style="padding-left: 8.6em;vertical-align:middle;">You are logged in as {{ user.first_name }} {{ user.last_name }}</a>
+                        <a style=" padding-left: 1.3em; vertical-align:middle; position:relative; top:-3px;" href="{% url 'settings' %}"><img src="https://freeiconshop.com/wp-content/uploads/edd/settings-solid.png" alt="" height="20px" width="20px"></img></a>
                 {% else %}
 					<a class="navbar-brand" href="{% url 'login' %}" style="padding-left: 2em;">Login</a>
 					<!--
                         <a class="navbar-brand" href="" style="padding-left: 3em;">Create Account</a>
                     -->
-				{% endif %}
+                {% endif %}
             </ul>
         </nav>
-
+		
         <style type="text/css">
             .search-bar{
                 max-width: 500px;
@@ -39,7 +40,8 @@
             }
             .wrapper{
                 margin-top: 18px;
-            }			
+            }
+			
         </style>
         
         {% block head %}{% endblock head %}
@@ -48,4 +50,6 @@
     <body>
         {% block content %}{% endblock content %}
     </body>
+	<script>
+	</script>
 </html>
