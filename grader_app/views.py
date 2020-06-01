@@ -155,7 +155,6 @@ def setup(request) :
     return render(request, "setup.html", context)
     
 
-@login_required(login_url="login")
 def index(request):
     essays = []
     query = ""
