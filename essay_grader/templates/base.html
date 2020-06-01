@@ -8,7 +8,7 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 		
-		<nav id="navbar" class="navbar navbar-light bg-light appear" style="padding-top: 1em;" onscroll="scroll">
+		<nav id="navbar" class="navbar navbar-light bg-light appear navbar-bar" style="padding-top: 1em;" onscroll="scroll">
             <ul>
                 <a href="http://localhost:8000/home" class="navbar-title"><h1>Essay Grader</h></a>
                 {% if user.is_authenticated %}
@@ -37,6 +37,10 @@ Created by:     Chinmay Bhandaru (2023)
         </nav>
 		
         <style type="text/css">
+            .navbar-bar {
+                padding-bottom: 0em !important;
+                margin-bottom: 0em !important;
+            }
             .authors {
                 margin-right: 0em;
                 overflow: hidden;
