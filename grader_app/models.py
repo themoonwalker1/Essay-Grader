@@ -6,19 +6,6 @@ from django.contrib.auth.models import (
 # Create your models here.
 
 dropdown = (("None","None"),("APA","APA"),("MLA","MLA"))
-
-class Essay(models.Model):
-    email = models.EmailField(max_length=150)
-    author = models.CharField(max_length=150)
-    assignment = models.CharField(max_length=150, default='Random Assignment')
-    teacher = models.CharField(max_length=150, default='None')
-    title = models.CharField(max_length=500)
-    body = models.TextField()
-    created_on = models.DateTimeField(auto_now_add=True)
-    citation_type = models.CharField(max_length=150, choices=dropdown, default="None")
-    marked_body = models.TextField(default=body) 
-    graded=False
-
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None):
         if not email:
@@ -89,7 +76,7 @@ class User(AbstractBaseUser):
         choices=YEAR_IN_SCHOOL_CHOICES,
         default=FRESHMAN,
     )
-    student = models.BooleanField(default=True)
+    student = models.BooleanField(default=False)
     teacher = models.BooleanField(default=False)
     admin = models.BooleanField(default=False) 
 
@@ -136,3 +123,16 @@ class User(AbstractBaseUser):
         return self.admin
         
     objects = UserManager()
+    
+    
+
+class Essay(models.Model):
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    assignment = models.CharField(max_length=150, default='Random Assignment')
+    teacher = models.CharField(max_length=150, default='None')
+    title = models.CharField(max_length=500)
+    body = models.TextField()
+    created_on = models.DateTimeField(auto_now_add=True)
+    citation_type = models.CharField(max_length=150, choices=dropdown, default="None")
+    marked_body = models.TextField(default=body) 
+    graded=False

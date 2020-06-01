@@ -10,7 +10,7 @@ class EssayForm(forms.Form):
         max_length=150, 
         widget=forms.TextInput(attrs={
             "class": "form-control",
-            "placeholder": "Teacher's Ion Username"
+            "placeholder": "Teacher's Ion Email"
         })
     )
     assignment = forms.CharField(

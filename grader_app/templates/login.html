@@ -29,7 +29,7 @@
 	  background-color: #222422;
 	  border: 3px solid #212529;
 	}
-	body {
+	.content {
 	  font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
 	}
 	.box {
@@ -40,14 +40,14 @@
 		margin-top: -200px;
 		margin-left: -137.5px;
 		width: 275px;
-		min_height: 460px;
+		min-height: 460px;
 	}
 </style>
 
 {% endblock %}
 
 {% block content %}
-<div class="col-md-8 offset-md-2 box navbar-light bg-light" style="padding-top: 1.5em;">
+<div class="col-md-8 offset-md-2 box navbar-light bg-light content" style="padding-top: 1.5em;">
     <h2><center>Login</center></h2>
 	<h6 style="color:red; padding-left:4px;">{{ error }}</h6>
 	<form action="{% url 'login' %}" style="padding-left:6px;" method="post">
