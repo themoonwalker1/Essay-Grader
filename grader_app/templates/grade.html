@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <div class="col-md-8 offset-md-2" style="padding-top: 2em;">
+        {% if method == 'POST' %}
+            <h5> Assignment: {{orig.assignment}}</h5>
+            <h5> By: {{orig.author.first_name}} {{orig.author.last_name}}</h5>
+            <h6> Created on {{ orig.created_on }}&emsp;&emsp;&emsp;{% if orig.citation_type != "None" %} Type: <b>{{orig.citation_type}}</b>  {% endif %}</h6>
+            <p>{{ essay | safe }}</p>
+            <hr>
+        {% endif %}
+    </div>
+
+{% endblock %}

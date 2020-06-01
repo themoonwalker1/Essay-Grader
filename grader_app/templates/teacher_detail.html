@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    {% if user.is_authenticated %}
+        <div class="col-md-8 offset-md-2" style="padding-top: 2em;">
+            <h1>Essays</h1>
+            <hr>
+            
+            <h2>{{ essay.title }}<form action="{% url 'grade' essay.pk %}" method="post" style="float:right; width:8%; display:inline-block;">{% csrf_token %}<button type="submit" class="btn btn-primary" style="top:50%;">Grade</button></form></h2>
+            <h5> Assignment: {{essay.assignment}}</h5>
+            <h5> By: {{essay.author}} </h5>
+            <h6> Created on {{ essay.created_on }}</h6>
+            <p>{{ essay.body | linebreaks}}</p>
+            <hr>
+        </div>
+    {% else %}
+        <h4 style="padding-bottom: 1em;">You are not logged in. Please log in to submit or view your essays.</h4>
+    {% endif %}
+
+{% endblock %}

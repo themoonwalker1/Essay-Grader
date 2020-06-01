@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <div class="wrapper">
+        <div class="search-bar mt-sm-2 mr-2 offset-md-2 col-md-8">
+            <form method="get">
+                <input type="text" class="form-control" name="q" id="id_q" placeholder="Search for Essay">
+            </form>
+        </div>
+    </div>
+
+    <div class="col-md-8 offset-md-2" style="padding-top: 2em;">
+        <h1>Essays</h1>
+        <hr>
+
+        {% if user.is_authenticated %}
+        
+            {% if essays|length == 0 %}
+                {% if search == False %}
+                    <h3>None of your students submitted an Essay</h3> 
+                {% else %}           
+                    <h3>No results based on your search<h3> 
+                {% endif %} 
+            {% endif %}
+    
+            {% for essay in essays %}
+                <h2><a href="{% url 'teacher_detail' essay.pk%}">{{ essay.title }}</a></h2>
+                <h5> Assignment: {{essay.assignment}}</h3>
+                <h5> By: {{essay.author}}</h4>
+                <h6> Created on {{ essay.created_on }}&emsp;&emsp;&emsp;{% if essay.citation_type != "None" %} Type: <b>{{essay.citation_type}}</b>  {% endif %}</h6>
+                <p>{{ essay.body | slice:":400"}}{% if essay.boy|length > 400 %}...{% endif %}</p>
+                <hr>
+            {% endfor %}
+
+        {% else %}
+            <h4 style="padding-bottom: 1em;">You are not logged in. Please log in to submit or view your essays.</h4>
+        {% endif %}
+    </div>
+{% endblock %}

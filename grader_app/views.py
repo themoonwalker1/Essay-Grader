@@ -356,3 +356,7 @@ def teacher_detail(request, pk):
         'essay' : essay,
     }
     return render(request, "teacher_detail.html", context)
+    
+@login_required(login_url="login")
+def settings(request):
+    pass
