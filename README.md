@@ -35,6 +35,9 @@ A platform to speed up essay grading.
 		* ```
 		  .\venv\Scripts\activate
 		  ```
+*Install RabbitMQ and Erlang
+	*https://www.rabbitmq.com/install-windows.html#installer
+	
 * Next, install all necessary libraries with the following command:
 	* ```
 	  pip3 install -r requirements.txt
