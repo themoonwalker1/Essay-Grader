@@ -22,8 +22,6 @@
                         <a class="navbar-brand navbar-link" href="{% url 'logout' %}">Logout</a>
                         <a class="navbar-brand" style="padding-left: 3em;vertical-align:middle;font-size: 1.2vw;">You are logged in as {{ user.first_name }} {{ user.last_name }}</a>
                         <a style="vertical-align:middle; position:relative; top:-3px; padding-left: 2vw;" href="{% url 'settings_info' %}"><img class="gear" src="https://freeiconshop.com/wp-content/uploads/edd/settings-solid.png" alt="" height="20vw" width="20vw"></img></a>
-                        <a class="navbar-brand" style="padding-left: 15em;vertical-align:middle;font-size: 1.2vw;">You are logged in as {{ user.first_name }} {{ user.last_name }}</a>
-                        <a style="vertical-align:middle; position:relative; top:-3px;" href="{% url 'settings_info' %}"><img class="gear" src="https://freeiconshop.com/wp-content/uploads/edd/settings-solid.png" alt="" height="20vw" width="20vw"></img></a>
                     {% else %}
 					<a class="navbar-brand" href="{% url 'login' %}" style="padding-left: 2em;">Login</a>
 					<!--
@@ -34,6 +32,10 @@
         </nav>
 		
         <style type="text/css">
+            *:before,
+            *:after {
+            box-sizing: inherit;
+            }
             .navbar-bar {
                 padding-bottom: 0em !important;
                 margin-bottom: 0em !important;
@@ -127,12 +129,27 @@
 			  --font-color: #ffffff;
 			}
 			footer {
-			   margin-top:1em;
+			   margin-top: 1em;
+               padding-top: 1em;
+               position: relative;
 			   left:0px;
 			   bottom:0px;
+               right: 0px;
 			   height:60px;
 			   width:100%;
 		   }
+           body {
+               position: relative;
+               min-height: 100%;
+               margin: 0;
+           }
+           html {
+               height: 100%;
+               box-sizing: border-box;
+           }
+           .content {
+            margin: 0 auto;
+           }
         </style>
         <label class="content">
         {% block head %}{% endblock head %}
@@ -140,11 +157,11 @@
     </head>
 
     <body>
-        {% block content %}{% endblock content %}
-		<footer class="navbar-light bg-light appear navbar-bar" style="padding-top: 1em;" onscroll="scroll">
-			<a class="navbar-brand" style="padding-left: 25%;vertical-align:middle;font-size: 1.2vw;"><h6>Created By: Aditya Vasantharao (2023), Chinmay Bhandaru (2023), Karthik Bhargav (2023)</h6></a>
+        <div class="content">
+            {% block content %}{% endblock content %}
+        </div>
+		<footer class="navbar-light bg-light appear navbar-bar">
+			<a class="navbar-brand" style="padding-left: 25%;vertical-align:middle;font-size: 1.2vw;"><h6>Created by: Aditya Vasantharao (2023), Chinmay Bhandaru (2023), Karthik Bhargav (2023)</h6></a>
 		</footer>
     </body>
-	<script>
-	</script>
 </html>
