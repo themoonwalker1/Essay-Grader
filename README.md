@@ -4,10 +4,6 @@ A platform to speed up essay grading.
 
 ## Setup
 
-* Go to a suitable directory and clone the repository with
-	* ```
-  	  git clone git@github.com:TheMoonWalker1/Essay-Grader.git
-  	  ```
  * Install RabbitMQ and Erlang
 	* MacOS/Linux
 		* Follow the instructions at https://www.rabbitmq.com/download.html
@@ -24,8 +20,13 @@ A platform to speed up essay grading.
 			```
 			rabbitmq-server
 			```
-			* **Don't exit out of this terminal or stop this process when running the Django server or downloading the requirements. Instead, open up a separate terminal window and execute those tasks from there.**
+			* **Don't exit out of this terminal or stop this process when running any future commands. Instead, open up a separate terminal window and execute those tasks from there.** Stopping this process will kill the server, so you will have to start it again before running the Django app.
+			* Note: since this command starts the server, you should see a picture of a rabbit in an ASCII-art format (this is RabbitMQ's logo), followed by some text, and finally a line which says "Starting broker"; no loading bars or anything special will pop up.
 
+* Go to a suitable directory and clone the repository with
+	* ```
+  	  git clone git@github.com:TheMoonWalker1/Essay-Grader.git
+  	  ```
 * Move into the folder where the repository was cloned
 	* ```
 	  cd Essay-Grader
