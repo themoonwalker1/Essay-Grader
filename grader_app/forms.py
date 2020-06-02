@@ -42,7 +42,7 @@ class EssayForm(forms.Form):
         if user is not None:
             temp = user.get_teachers();
             teachers = list(temp.keys())
-            thingy = [("------------------------------------","------------------------------------")]
+            thingy = []
             for teacher in teachers:
                 if temp[teacher] != "":
                     thingy.append((temp[teacher], temp[teacher]))

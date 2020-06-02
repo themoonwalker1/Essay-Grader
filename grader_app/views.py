@@ -7,6 +7,7 @@ from .models import User
 from django.contrib import auth
 from grammarbot import GrammarBotClient
 from django.db.models import Q
+from django.db import models
 from operator import attrgetter
 from django import forms
 import json
@@ -238,6 +239,7 @@ def load_assignments(request):
     teacher = request.GET.get('teacher')
     if "------------------------------------" != teacher:
         assigns = User.objects.get(email=teacher).assignments.all()
+
     else:
         assigns = "<option value="">------------------------------------</option>"
     return render(request, 'submit_options.html', {'assignments' : assigns})
@@ -436,13 +438,25 @@ def settings_changeTeachers(request):
     
     if request.method == 'POST':
         form = TeacherForm(request.POST)
-
         if form.is_valid():
             teachers = {}
+            error = False
             for name in names:
-                teachers[name] = form.cleaned_data.get(name);
-            profile.set_teachers(teachers)
-            profile.save()            
+                teachers[name] = form.cleaned_data.get(name)
+                if teachers[name] != "":
+                    if not User.objects.filter(email=teachers[name]).exists():
+                        error = True
+                        context['error'] = "The email %s is either incorrect or doesn't belong to a user. Your " \
+                                           "information has not been saved." % teachers[name]
+                        break
+                    if list(teachers.values()).count(teachers[name]) > 1:
+                        error = True
+                        context['error'] = "You have repeated the email ' %s ' twice. Please remove one instance and " \
+                                           "try again." % teachers[name]
+            if not error:
+                profile.set_teachers(teachers)
+                profile.save()
+                context['saved'] = True
         else:
             context['error'] = "Invalid Email(s)"
             
@@ -457,7 +471,7 @@ def settings_changeTeachers(request):
     
     form = TeacherForm(initial)
     
-    context ['form'] = form
+    context['form'] = form
     
     return render(request, "settings_teacher.html", context)
     
