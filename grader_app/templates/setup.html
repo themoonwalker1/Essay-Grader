@@ -52,7 +52,7 @@
 	<h6 style="color:red; text-align:center;">{% if method == "POST" %}Your account is invalid.{% endif %}</h6>
 	<form action="{% url 'setup' %}" style="padding-left:6px;" method="post">
 		{% csrf_token %}
-		{{ form }}
+		{{ form.as_p }}
 		<div style="margin-top:5px; margin-bottom:10px;" >
 			<button type="submit" class="btn btn-primary" value="{{ next }}">Submit</button>
 		</div>

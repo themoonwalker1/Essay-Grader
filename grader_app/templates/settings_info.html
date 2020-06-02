@@ -30,6 +30,64 @@
 			color: black;
 			border-left: 2px solid #ff5349;
 		}
+		.switch {
+		  position: relative;
+		  display: inline-block;
+		  width: 60px;
+		  height: 34px;
+		}
+
+		.switch input { 
+		  opacity: 0;
+		  width: 0;
+		  height: 0;
+		}
+
+		.slider {
+		  position: absolute;
+		  cursor: pointer;
+		  top: 0;
+		  left: 0;
+		  right: 0;
+		  bottom: 0;
+		  background-color: #ccc;
+		  -webkit-transition: .4s;
+		  transition: .4s;
+		}
+
+		.slider:before {
+		  position: absolute;
+		  content: "";
+		  height: 26px;
+		  width: 26px;
+		  left: 4px;
+		  bottom: 4px;
+		  background-color: white;
+		  -webkit-transition: .4s;
+		  transition: .4s;
+		}
+
+		input:checked + .slider {
+		  background-color: black;
+		}
+
+		input:focus + .slider {
+		  box-shadow: 0 0 1px #2196F3;
+		}
+
+		input:checked + .slider:before {
+		  -webkit-transform: translateX(26px);
+		  -ms-transform: translateX(26px);
+		  transform: translateX(26px);
+		}
+
+		.slider.round {
+		  border-radius: 34px;
+		}
+
+		.slider.round:before {
+		  border-radius: 50%;
+		}
 	</style>
 {% endblock %}
 
@@ -44,7 +102,7 @@
 			{% if user.student %}
 			<a href="{% url 'settings_teachers' %}" style="text-decoration:none">
 			<div class="option">
-				<span><h5>Change Teachers</h5></span>
+				<span><h5 id="H">Change Teachers</h5></span>
 			</div>
 			</a>
 			{% endif %}
@@ -56,17 +114,46 @@
 		</div>
 		<div class="col-md-7 offset-md-3 container" style="padding-top: 2em; width:70%; text-align: left;">
 			<h3><b>Change Info:</b></h3>
-			<pre>     </pre>
 			<h6 style="color:red;">{{error}}</h6>
-			<form action="submit" method="post">
-
-				{{ form }}
+			<form action="{% url 'settings_info' %}" method="post">
+				{% csrf_token %}
+				{{ form.as_p }}
 				
 				<div style="margin-top:5px;" >
 					<button type="form" class="btn btn-primary" value="{{ next }}">Submit</button>
 				</div>
-			</form>
+			</form><br>
+			<h3><b>Dark Mode:</b></h3>
+			<label id="switch" class="switch">
+            <input type="checkbox" onchange="toggleTheme()" id="slider">
+            <span class="slider round"></span>
+			</label>	
+			<script>
+				function setTheme(themeName) {
+					localStorage.setItem('theme', themeName);
+					document.documentElement.className = themeName;
+				}
+
+				// function to toggle between light and dark theme
+				function toggleTheme() {
+					if (localStorage.getItem('theme') === 'theme-dark') {
+						setTheme('theme-light');
+					} else {
+						setTheme('theme-dark');
+					}
+				}
+
+				// Immediately invoked function to set the theme on initial load
+				(function () {
+					if (localStorage.getItem('theme') === 'theme-dark') {
+						setTheme('theme-dark');
+						document.getElementById('slider').checked = false;
+					} else {
+						setTheme('theme-light');
+					  document.getElementById('slider').checked = true;
+					}
+				})();
+			</script>
 		</div>
 	</div>
-
 {% endblock %}

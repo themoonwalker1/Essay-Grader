@@ -1,25 +1,26 @@
 from django import forms
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 
-from .models import User, Essay
+from .models import User, Essay, Assignment
 
 dropdown = (("None","None"),("APA","APA"),("MLA","MLA"))
 
-class EssayForm(forms.Form):
-    teacher = forms.CharField(
-        max_length=150, 
-        widget=forms.TextInput(attrs={
-            "class": "form-control",
-            "placeholder": "Teacher's Ion Email"
-        })
-    )
-    assignment = forms.CharField(
-        max_length=150, 
-        widget=forms.TextInput(attrs={
+class AssignmentForm(forms.Form):
+    assignment_name = forms.CharField(max_length=150, widget=forms.TextInput(attrs={
             "class": "form-control",
             "placeholder": "Ex: Romeo and Juliet"
         })
     )
+    assignment_description = forms.CharField(widget=forms.Textarea(
+        attrs={
+            "class": "form-control",
+            "placeholder": "Ex: Write a 5 paragraph essay on why Romeo and Juliet is the best story ever"
+        })
+    )
+
+class EssayForm(forms.Form):
+    teachers = forms.ChoiceField()
+    assignment = forms.ChoiceField()
     title = forms.CharField(
         max_length=500, 
         widget=forms.TextInput(attrs={
@@ -33,7 +34,28 @@ class EssayForm(forms.Form):
             "placeholder": "Write your essay here!"
         })
     )
-    citation_type = forms.ChoiceField(choices=dropdown, required=True)
+    
+    citation_type = forms.ChoiceField(choices=dropdown, required=True, widget=forms.RadioSelect)
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super(EssayForm, self).__init__(*args, **kwargs)
+        if user is not None:
+            temp = user.get_teachers();
+            teachers = list(temp.keys())
+            thingy = [("------------------------------------","------------------------------------")]
+            for teacher in teachers:
+                if temp[teacher] != "":
+                    thingy.append((temp[teacher], temp[teacher]))
+            
+            empty = False
+            if len(thingy) == 0:
+                empty = True
+                thingy.append(("Please Add Your Teachers in Settings","Please Add Your Teachers in Settings"))
+                for field in list(self.fields.keys()):
+                    self.fields.get(field).disabled = True
+            
+            self.fields['teachers'] = forms.ChoiceField(choices=thingy, required=True, disabled=empty)
+            self.fields['assignment'] = forms.ChoiceField(choices=[("------------------------------------","------------------------------------")], required=True, disabled=empty)
 
 class LoginForm(forms.Form):
     email = forms.CharField(max_length=150, required=True, widget=forms.TextInput(attrs={"class": "form-control"}))
@@ -78,20 +100,13 @@ class InfoForm(forms.Form):
         self.fields['last_name'].disabled = True
 
 class TeacherForm(forms.Form): 
-    period_1_teacher = forms.EmailField(max_length=150, widget=forms.TextInput(attrs={"class": "form-control"}), required=False)
-    period_2_teacher = forms.EmailField(max_length=150, widget=forms.TextInput(attrs={"class": "form-control"}), required=False)
-    period_3_teacher = forms.EmailField(max_length=150, widget=forms.TextInput(attrs={"class": "form-control"}), required=False)
-    period_4_teacher = forms.EmailField(max_length=150, widget=forms.TextInput(attrs={"class": "form-control"}), required=False)
-    period_5_teacher = forms.EmailField(max_length=150, widget=forms.TextInput(attrs={"class": "form-control"}), required=False)
-    period_6_teacher = forms.EmailField(max_length=150, widget=forms.TextInput(attrs={"class": "form-control"}), required=False)
-    period_7_teacher = forms.EmailField(max_length=150, widget=forms.TextInput(attrs={"class": "form-control"}), required=False)
-    
-    def clean_teacher(self, period):
-        name = period + " Period Teacher"
-        teacher = self.cleaned_data.get(name)
-        if teacher:
-            raise forms.ValidationError
-        return teacher
+    period_1_teacher = forms.EmailField(max_length=150, widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Teacher Email"}), required=False)
+    period_2_teacher = forms.EmailField(max_length=150, widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Teacher Email"}), required=False)
+    period_3_teacher = forms.EmailField(max_length=150, widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Teacher Email"}), required=False)
+    period_4_teacher = forms.EmailField(max_length=150, widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Teacher Email"}), required=False)
+    period_5_teacher = forms.EmailField(max_length=150, widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Teacher Email"}), required=False)
+    period_6_teacher = forms.EmailField(max_length=150, widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Teacher Email"}), required=False)
+    period_7_teacher = forms.EmailField(max_length=150, widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Teacher Email"}), required=False)
     
 class RegisterForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)

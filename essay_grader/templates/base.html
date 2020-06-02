@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" class="theme-light">
     <head>
         <title>TJHSST Essay Grader</title>
 
@@ -17,7 +17,7 @@
                     {% endif %}
 
                     {% if user.teacher %}
-                        <a class="navbar-brand navbar-link" href="http://localhost:8000/teacher/home">Grade</a>
+                        <a class="navbar-brand navbar-link" href="http://localhost:8000/teacher/assignment">Add Assignment</a>
 					{% endif %}
                         <a class="navbar-brand navbar-link" href="{% url 'logout' %}">Logout</a>
                         <a class="navbar-brand" style="padding-left: 3em;vertical-align:middle;font-size: 1.2vw;">You are logged in as {{ user.first_name }} {{ user.last_name }}</a>
@@ -115,6 +115,18 @@ Created by:     Chinmay Bhandaru (2023)
 				to {
 					transform:rotate(360deg);
 				}
+			}
+			.theme-light {
+			  --color-primary: #0060df;
+			  --color-secondary: #fbfbfe;
+			  --color-accent: #fd6f53;
+			  --font-color: #000000;
+			}
+			.theme-dark {
+			  --color-primary: #17ed90;
+			  --color-secondary: #2a2c2d;
+			  --color-accent: #12cdea;
+			  --font-color: #ffffff;
 			}
 			
         </style>

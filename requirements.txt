@@ -6,3 +6,5 @@ ion_oauth
 django-guardian
 djangorestframework
 celery
+django-windows-tools
+django-celery
