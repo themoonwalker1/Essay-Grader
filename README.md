@@ -27,7 +27,7 @@ A platform to speed up essay grading.
 		  py -m venv venv
 		  ```
 * Next, you have to activate the virtual environment with
-	* MacOs/Linux
+	* MacOS/Linux
 		* ```
 		  source venv/bin/activate
 		  ```
@@ -35,8 +35,23 @@ A platform to speed up essay grading.
 		* ```
 		  .\venv\Scripts\activate
 		  ```
-*Install RabbitMQ and Erlang
-	*https://www.rabbitmq.com/install-windows.html#installer
+* Install RabbitMQ and Erlang
+	* MacOS/Linux
+		* Follow the instructions at https://www.rabbitmq.com/download.html
+	* Windows
+		* FAQ
+			*https://www.rabbitmq.com/windows-quirks.html
+		* For windows, it's easiest if you download RabbitMQ via chocolatey
+			*https://chocolatey.org/docs/installation
+		* After you've installed chocolatey and made sure to add it to the PATH, make sure you're in a terminal which has administrative access and run 
+			```
+			choco install rabbitmq
+			```
+		* In a separate terminal window, go to the install location (such as C:\Program Files\RabbitMQ Server\rabbitmq_server-3.8.4) and add the sbin folder to the PATH. After this, run 
+			```
+			rabbitmq-server
+			```
+			* **Don't exit out of this terminal or stop this process when running the Django server or downloading the requirements. Instead, open up a separate terminal and execute those tasks from there.**
 	
 * Next, install all necessary libraries with the following command:
 	* ```
@@ -47,8 +62,8 @@ A platform to speed up essay grading.
 	  python manage.py runserver
 	  ```
 	* And now go to http://127.0.0.1:8000/ to get access!
-* Login using the Ion OAuth
-* Note requires Python 3.6+
+* Login via Ion
+* Note: requires Python 3.6+
 
 ## Goals
 * Bold == Working On
