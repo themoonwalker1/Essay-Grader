@@ -371,6 +371,9 @@ def teacher_detail(request, pk):
 def settings_changeInfo(request):
     profile = request.user
     
+    context = {
+        'error': "Cannot Change Info Due to OAuth Login"
+    }
     if request.method == 'POST':
         form = InfoForm(request.POST)
 
@@ -381,23 +384,23 @@ def settings_changeInfo(request):
             profile.last_name = form.cleaned_data.get('last_name')
             profile.save()
 
-            return redirect("home")
 
-    else:
-        form = InfoForm(initial={'email':profile.email, 'first_name':profile.first_name, 'middle_name':profile.middle_name, 'last_name':profile.last_name})
-        
-        if profile.logged_with_ion:
-            form.disable()
-        context = {
-            'form': form,
-            'error': "Cannot Change Info Due to OAuth Login"
-        }
-        
-        return render(request, "settings_info.html", context)
+    
+    form = InfoForm(initial={'email':profile.email, 'first_name':profile.first_name, 'middle_name':profile.middle_name, 'last_name':profile.last_name})
+    
+    if profile.logged_with_ion:
+        form.disable()
+    context['form'] = form
+    
+    return render(request, "settings_info.html", context)
 
 @login_required(login_url="login")
 def settings_changePassword(request):
     profile = request.user
+    
+    context = {
+        'error':"Cannot Change Password Due to OAuth Login"
+    }
     
     if request.method == 'POST':
         form = InfoForm(request.POST)
@@ -409,23 +412,20 @@ def settings_changePassword(request):
                 context['error'] = "Passwords do not match"
             else:
                 profile.set_password()
-                return redirect("home")
 
     
     form = ChangeForm()
     
     if profile.logged_with_ion:
         form.disable()
-    context = {
-        'form': form,
-        'error':"Cannot Change Password Due to OAuth Login"
-    }
+    context['form'] = form
     
     return render(request, "settings_password.html", context)
     
 @login_required(login_url="login")
 def settings_changeTeachers(request):
     profile = request.user
+    context = {}
     
     names = [
         "period_1_teacher",
@@ -446,7 +446,8 @@ def settings_changeTeachers(request):
                 teachers[name] = form.cleaned_data.get(name);
             profile.set_teachers(teachers)
             profile.save()            
-            return redirect("home")
+    else:
+        context['error'] = "Invalid Email(s)"
             
     
     
@@ -459,8 +460,6 @@ def settings_changeTeachers(request):
     
     form = TeacherForm(initial)
     
-    context = {
-        'form': form,
-    }
+    context ['form'] = form
     
     return render(request, "settings_teacher.html", context)

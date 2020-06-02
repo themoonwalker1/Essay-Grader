@@ -78,20 +78,13 @@ class InfoForm(forms.Form):
         self.fields['last_name'].disabled = True
 
 class TeacherForm(forms.Form): 
-    period_1_teacher = forms.EmailField(max_length=150, widget=forms.TextInput(attrs={"class": "form-control"}), required=False)
-    period_2_teacher = forms.EmailField(max_length=150, widget=forms.TextInput(attrs={"class": "form-control"}), required=False)
-    period_3_teacher = forms.EmailField(max_length=150, widget=forms.TextInput(attrs={"class": "form-control"}), required=False)
-    period_4_teacher = forms.EmailField(max_length=150, widget=forms.TextInput(attrs={"class": "form-control"}), required=False)
-    period_5_teacher = forms.EmailField(max_length=150, widget=forms.TextInput(attrs={"class": "form-control"}), required=False)
-    period_6_teacher = forms.EmailField(max_length=150, widget=forms.TextInput(attrs={"class": "form-control"}), required=False)
-    period_7_teacher = forms.EmailField(max_length=150, widget=forms.TextInput(attrs={"class": "form-control"}), required=False)
-    
-    def clean_teacher(self, period):
-        name = period + " Period Teacher"
-        teacher = self.cleaned_data.get(name)
-        if teacher:
-            raise forms.ValidationError
-        return teacher
+    period_1_teacher = forms.EmailField(max_length=150, widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Teacher Email"}), required=False)
+    period_2_teacher = forms.EmailField(max_length=150, widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Teacher Email"}), required=False)
+    period_3_teacher = forms.EmailField(max_length=150, widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Teacher Email"}), required=False)
+    period_4_teacher = forms.EmailField(max_length=150, widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Teacher Email"}), required=False)
+    period_5_teacher = forms.EmailField(max_length=150, widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Teacher Email"}), required=False)
+    period_6_teacher = forms.EmailField(max_length=150, widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Teacher Email"}), required=False)
+    period_7_teacher = forms.EmailField(max_length=150, widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Teacher Email"}), required=False)
     
 class RegisterForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)

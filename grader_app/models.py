@@ -74,6 +74,7 @@ class User(AbstractBaseUser):
     def set_teachers(self, teacher):
         print(self.teachers)
         self.teachers = json.dumps(teacher)
+        self.save()
     def get_teachers(self):
         print(self.teachers)
         return json.loads(self.teachers)
