@@ -7,7 +7,7 @@
             <h1>Essays</h1>
             <hr>
             
-            <h2>{{ essay.title }}<form action="{% url 'grade' essay.pk %}" method="post" style="float:right; width:8%; display:inline-block;">{% csrf_token %}<button type="submit" class="btn btn-primary" style="top:50%;">Grade</button></form></h2>
+            <h2>{{ essay.title }}</h2>
             <h5> Assignment: {{essay.assignment}}</h5>
             <h5> By: {{essay.author}} </h5>
             <h6> Created on {{ essay.created_on }}</h6>

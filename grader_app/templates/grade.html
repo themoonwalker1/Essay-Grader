@@ -1,15 +1,29 @@
 {% extends "base.html" %}
 {% block content %}
 
-    <div class="col-md-8 offset-md-2" style="padding-top: 2em;">
-        {% if method == 'POST' %}
-            <h5> Assignment: {{orig.assignment}}</h5>
-            <h5> By: {{orig.author.first_name}} {{orig.author.last_name}}</h5>
-            <h5> For: {{orig.teacher.first_name}} {{orig.teacher.last_name}}</h5>
-            <h6> Created on {{ orig.created_on }}&emsp;&emsp;&emsp;{% if orig.citation_type != "None" %} Type: <b>{{orig.citation_type}}</b>  {% endif %}</h6>
-            <p>{{ essay | safe }}</p>
+    {% if essays|length == 0 %}
+
+        <h2>No graded assignments. Search for an assignment here to grade all of the essays in that assignment:</h2>
+
+        <div class="wrapper">
+            <div class="search-bar mt-sm-2 mr-2 offset-md-2 col-md-8">
+                <form method="get">
+                    <input type="text" class="form-control" name="q" id="id_q" placeholder="Search for Essay">
+                </form>
+            </div>
+        </div>
+
+    {% else %}
+
+        {% for essay in essays %}
+            <h2><a href="{% url 'teacher_detail' essay.pk%}">{{ essay.title }}</a></h2>
+            <h5> Assignment: {{essay.assignment}}</h3>
+            <h5> By: {{essay.author}}</h4>
+            <h6> Created on {{ essay.created_on }}&emsp;&emsp;&emsp;{% if essay.citation_type != "None" %} Type: <b>{{essay.citation_type}}</b>  {% endif %}</h6>
+            <p>{{ essay.marked_body }}</p>
             <hr>
-        {% endif %}
-    </div>
+        {% endfor %}
+
+    {% endif %}
 
 {% endblock %}

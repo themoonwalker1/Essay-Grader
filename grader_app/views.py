@@ -10,6 +10,7 @@ from django.db.models import Q
 from operator import attrgetter
 from django import forms
 import json
+from .tasks import grade_essay
 
 # Create your views here.
 
@@ -282,47 +283,31 @@ def teacher(request):
     return render(request, "teacher.html", context)
     
 @login_required(login_url="login")
-def grade(request, pk): #max 7973 characters/request, <100 requests/day 
+def grade(request): #max 7973 characters/request, <100 requests/day 
+
     context = {
-        'method': request.method
+        'essays': []
     }
-    essay = Essay.objects.get(pk=pk)
-    user = request.user
-    if not user.teacher:
+
+    if not request.user.teacher:
         return redirect("home")
-    if request.method == 'POST' and not essay.graded:
-        client = GrammarBotClient()
-        edited_body = ""
-        cursor = 0
-        body = essay.body
-        result = client.check(body)
-        
-        for match in result.matches: #you also have access to match.category if you want
-            offset = match.replacement_offset 
-            length = match.replacement_length 
 
-            if cursor > offset: 
-                continue
+    if request.GET:
+        query=request.GET.get("q", "")
+        queryset = []
 
-            edited_body += body[cursor:offset]
-            edited_body += "**" + body[offset:(offset + length)] + "**"
-            cursor = offset + length
-            
-            # if cursor < text length, then add remaining text to new_text
-            if cursor < len(body):
-                edited_body += body[cursor:]
-        if edited_body == "":
-            edited_body = essay.body
-        context['essay'] = reformat(edited_body)
+        essays = Essay.objects.filter(teacher=request.user.email).filter(
+                Q(assignment__icontains=query)
+        ).order_by('-created_on').distinct()
+        for essay in essays:
+            #send celery worker to grade the essay
+            grade_essay.delay(essay.id)
 
-    else:
-        context['essay'] = essay.marked_body
+        context = {
+            'essays': essays
+        }
 
-    context['orig'] = Essay.objects.get(pk=pk)
-    essay.graded = True
-    essay.marked_body = context['essay']
-    
-    essay.save()
+        return render(request, "grade.html", context)
 
     return render(request, "grade.html", context)
 
