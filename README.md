@@ -39,10 +39,10 @@ A platform to speed up essay grading.
 	* MacOS/Linux
 		* Follow the instructions at https://www.rabbitmq.com/download.html
 	* Windows
-		* FAQ
-			*https://www.rabbitmq.com/windows-quirks.html
-		* For windows, it's easiest if you download RabbitMQ via chocolatey
-			*https://chocolatey.org/docs/installation
+		* Issues during setup? Try going here:
+			* https://www.rabbitmq.com/windows-quirks.html
+		* For windows, it's easiest if you download RabbitMQ via Chocolatey. You can download Chocolatey here:
+			* https://chocolatey.org/docs/installation
 		* After you've installed chocolatey and made sure to add it to the PATH, make sure you're in a terminal which has administrative access and run 
 			```
 			choco install rabbitmq
