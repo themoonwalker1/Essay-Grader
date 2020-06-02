@@ -60,6 +60,7 @@ class User(AbstractBaseUser):
     middle_name = models.CharField(max_length=50, null=True)
     last_name = models.CharField(max_length=50)
     logged_with_ion = models.BooleanField(default=False)
+    dark_mode = models.BooleanField(default=False)
     
     teachers = models.TextField(default=json.dumps({
         "period_1_teacher" : "",
@@ -156,4 +157,4 @@ class Essay(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
     citation_type = models.CharField(max_length=150, choices=dropdown, default="None")
     marked_body = models.TextField(default=body) 
-    graded=False
+    graded=models.BooleanField(default=False)

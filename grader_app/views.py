@@ -382,7 +382,9 @@ def settings_changeInfo(request):
             profile.first_name = form.cleaned_data.get('first_name')
             profile.middle_name = form.cleaned_data.get('middle_name')
             profile.last_name = form.cleaned_data.get('last_name')
-            profile.save()
+        profile.save()
+    print(profile.dark_mode)
+            
 
 
     
@@ -446,8 +448,8 @@ def settings_changeTeachers(request):
                 teachers[name] = form.cleaned_data.get(name);
             profile.set_teachers(teachers)
             profile.save()            
-    else:
-        context['error'] = "Invalid Email(s)"
+        else:
+            context['error'] = "Invalid Email(s)"
             
     
     
