@@ -34,7 +34,7 @@ A platform to speed up essay grading.
 * Next setup a virtual environment with the virtualenv library(Install it with for)
 	* MacOs/Linux
 		* ```
-		  python3 -m pip install --user virtual env
+		  python3 -m pip install --user virtualenv
 		  ```
 	* Windows
 		* ```
@@ -64,6 +64,7 @@ A platform to speed up essay grading.
 	  ```
 * Now run:
 	* ```
+	  python manage.py migrate
 	  python manage.py runserver
 	  ```
 	* And now go to http://127.0.0.1:8000/ to get access!
