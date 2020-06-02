@@ -390,6 +390,7 @@ def settings_changeInfo(request):
             form.disable()
         context = {
             'form': form,
+            'error': "Cannot Change Info Due to OAuth Login"
         }
         
         return render(request, "settings_info.html", context)
@@ -402,8 +403,8 @@ def settings_changePassword(request):
         form = InfoForm(request.POST)
 
         if form.is_valid():
-            password1 = form.cleaned_data.get('password1')
-            password2 = form.cleaned_data.get('password2')
+            password1 = form.cleaned_data.get('password_1')
+            password2 = form.cleaned_data.get('password_2')
             if password1 != password2:
                 context['error'] = "Passwords do not match"
             else:
@@ -417,6 +418,7 @@ def settings_changePassword(request):
         form.disable()
     context = {
         'form': form,
+        'error':"Cannot Change Password Due to OAuth Login"
     }
     
     return render(request, "settings_password.html", context)
@@ -453,7 +455,7 @@ def settings_changeTeachers(request):
     teacher = profile.get_teachers()
     
     for name in names:
-        initial['name'] = teacher['name']
+        initial[name] = teacher.get(name)
     
     form = TeacherForm(initial)
     

@@ -41,11 +41,13 @@
 				<span><h5>Your Info</h5></span>
 			</div>
 			</a>
+			{% if user.student %}
 			<a href="{% url 'settings_teachers' %}" style="text-decoration:none">
 			<div class="option">
 				<span><h5>Change Teachers</h5></span>
 			</div>
 			</a>
+			{% endif %}
 			<a href="{% url 'settings_password' %}" style="text-decoration:none">
 			<div class="option">
 				<span><h5>Change Password</h5></span>
@@ -55,6 +57,7 @@
 		<div class="col-md-7 offset-md-3 container" style="padding-top: 2em; width:70%; text-align: left;">
 			<h3><b>Change Info:</b></h3>
 			<pre>     </pre>
+			<h6 style="color:red;">{{error}}</h6>
 			<form action="submit" method="post">
 
 				{{ form }}
