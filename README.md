@@ -64,6 +64,7 @@ A platform to speed up essay grading.
 	  ```
 * Now run:
 	* ```
+	  python manage.py migrate
 	  python manage.py runserver
 	  ```
 	* And now go to http://127.0.0.1:8000/ to get access!
