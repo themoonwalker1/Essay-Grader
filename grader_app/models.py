@@ -1,22 +1,25 @@
-from django.db import models
-from django.conf import settings
+import json
+
 from django.contrib.auth.models import (
     BaseUserManager, AbstractBaseUser
 )
-import json
+from django.db import models
+
+
 # Create your models here.
 
 
 class Assignment(models.Model):
-    assignment_name=models.CharField(max_length=150, blank=False)
-    assignment_description=models.TextField()
-    
+    assignment_name = models.CharField(max_length=150, blank=False)
+    assignment_description = models.TextField()
+
     def __str__(self):
         return "%s - %s" % (self.assignment_name, self.assignment_description)
-    
 
 
-dropdown = (("None","None"),("APA","APA"),("MLA","MLA"))
+dropdown = (("None", "None"), ("APA", "APA"), ("MLA", "MLA"))
+
+
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None):
         if not email:
@@ -38,7 +41,7 @@ class UserManager(BaseUserManager):
         user.student = True
         user.save(using=self._db)
         return user
-        
+
     def create_teacheruser(self, email, password):
         user = self.create_user(
             email,
@@ -71,34 +74,34 @@ class User(AbstractBaseUser):
     last_name = models.CharField(max_length=50)
     logged_with_ion = models.BooleanField(default=False)
     dark_mode = models.BooleanField(default=False)
-    
+
     teachers = models.TextField(default=json.dumps({
-        "period_1_teacher" : "",
-        "period_2_teacher" : "",
-        "period_3_teacher" : "",
-        "period_4_teacher" : "",
-        "period_5_teacher" : "",
-        "period_6_teacher" : "",
-        "period_7_teacher" : "",
+        "period_1_teacher": "",
+        "period_2_teacher": "",
+        "period_3_teacher": "",
+        "period_4_teacher": "",
+        "period_5_teacher": "",
+        "period_6_teacher": "",
+        "period_7_teacher": "",
     }))
-    
+
     def set_teachers(self, teacher):
         print(self.teachers)
         self.teachers = json.dumps(teacher)
         self.save()
+
     def get_teachers(self):
         print(self.teachers)
         return json.loads(self.teachers)
-        
-        
+
     assignments = models.ManyToManyField(Assignment)
-    
+
     FRESHMAN = 'FR'
     SOPHOMORE = 'SO'
     JUNIOR = 'JR'
     SENIOR = 'SR'
     GRADUATE = 'GR'
-    
+
     YEAR_IN_SCHOOL_CHOICES = [
         (FRESHMAN, 'Freshman'),
         (SOPHOMORE, 'Sophomore'),
@@ -113,11 +116,11 @@ class User(AbstractBaseUser):
     )
     student = models.BooleanField(default=False)
     teacher = models.BooleanField(default=False)
-    admin = models.BooleanField(default=False) 
+    admin = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
-    
+
     def username(self):
         return self.first_name + " " + self.last_name
 
@@ -132,9 +135,9 @@ class User(AbstractBaseUser):
 
     def get_short_name(self):
         return self.first_name
-        
+
     def get_grade(self):
-        return year_in_school
+        return self.year_in_school
 
     def __str__(self):
         return self.email
@@ -156,18 +159,17 @@ class User(AbstractBaseUser):
     @property
     def is_admin(self):
         return self.admin
-        
+
     objects = UserManager()
-    
-    
+
 
 class Essay(models.Model):
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
-    assignment = models.CharField(max_length=150, default='Random Assignment')
-    teacher = models.CharField(max_length=150, default='None')
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="author")
+    assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name="teacher", null=True)
+    teacher = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     title = models.CharField(max_length=500)
     body = models.TextField()
     created_on = models.DateTimeField(auto_now_add=True)
     citation_type = models.CharField(max_length=150, choices=dropdown, default="None")
-    marked_body = models.TextField(default=body) 
-    graded=models.BooleanField(default=False)
+    marked_body = models.TextField(default=body)
+    graded = models.BooleanField(default=False)

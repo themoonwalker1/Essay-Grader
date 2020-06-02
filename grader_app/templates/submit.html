@@ -20,21 +20,23 @@
     {% endif %}
 <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
   <script>
-    $("#id_teachers").change(function () {
-      var url = $("#essayForm").attr("data-assignments-url");  // get the url of the `load_cities` view
-      var assignmentId = $(this).val();  // get the selected country ID from the HTML input
+    function change() {
+      var url = $("#essayForm").attr("data-assignments-url");
+      var assignmentId = $("#id_teachers").val();
 	  console.log(url);
 	  console.log($("#id_teachers").val());
-      $.ajax({                       // initialize an AJAX request
-        url: url,                    // set the url of the request (= localhost:8000/hr/ajax/load-cities/)
+      $.ajax({
+        url: url,
         data: {
-          'teacher': assignmentId       // add the country id to the GET parameters
+          'teacher': assignmentId
         },
-        success: function (data) {   // `data` is the return of the `load_cities` view function
-          $("#id_assignment").html(data);  // replace the contents of the city input with the data that came from the server
-        }
+        success: function (data) {
+          $("#id_assignment").html(data);
+       }
       });
 	  console.log($("#id_teachers").val());
-    });
+    }
+    $(window).on("load",change);
+    $("#id_teachers").change(change);
   </script>
 {% endblock %}

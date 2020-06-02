@@ -13,6 +13,7 @@ from django import forms
 import json
 from .tasks import grade_essay
 
+
 # Create your views here.
 
 def login(request):
@@ -22,7 +23,7 @@ def login(request):
         return redirect("home")
 
     context = {
-        'url' : 'login'
+        'url': 'login'
     }
 
     CODE = None
@@ -32,56 +33,63 @@ def login(request):
         form = LoginForm(request.POST)
 
         if form.is_valid():
-            email=form.cleaned_data["email"]
+            email = form.cleaned_data["email"]
             if User.objects.filter(email=email).exists():
                 user = auth.authenticate(email=email, password=form.cleaned_data["password"])
                 if user is not None:
                     auth.login(request, user)
                     return redirect("http://localhost:8000/home")
             else:
-                form = LoginForm() 
+                form = LoginForm()
                 context['form'] = form
-                
+
             context['error'] = "Username or Password is incorrect"
 
         else:
-            form = LoginForm() 
+            form = LoginForm()
             context['form'] = form
 
 
     else:
         oauth = OAuth2Session(CLIENT_ID,
-                    redirect_uri="http://localhost:8000/login",
-                    scope=["read"])
+                              redirect_uri="http://localhost:8000/login",
+                              scope=["read"])
         authorization_url, state = oauth.authorization_url("https://ion.tjhsst.edu/oauth/authorize/")
         context['url'] = authorization_url
         if "code" in request.GET:
             CODE = request.GET.get("code")
-            
+
             token = oauth.fetch_token("https://ion.tjhsst.edu/oauth/token/",
-                            code=CODE,
-                            client_secret=CLIENT_SECRET)
-            
+                                      code=CODE,
+                                      client_secret=CLIENT_SECRET)
+
             try:
                 raw_profile = oauth.get("https://ion.tjhsst.edu/api/profile")
                 profile = json.loads(raw_profile.content.decode())
                 email = profile["tj_email"]
                 if User.objects.filter(email=email).exists():
-                    user = auth.authenticate(email=email, password=profile.get("ion_username") + profile.get("user_type"))
+                    user = auth.authenticate(email=email,
+                                             password=profile.get("ion_username") + profile.get("user_type"))
                     if user is not None:
                         auth.login(request, user)
-                        user = request.user                        
+                        user = request.user
                         user.logged_with_ion = True
                         user.save()
                         return redirect("http://localhost:8000/home")
-                    
+
                 else:
                     if profile.get("ion_username") in admins or profile.get("is_eighth_admin"):
-                        new_user = User.objects.create_superuser(email=email, password=profile.get("ion_username") + profile.get("user_type"))
+                        new_user = User.objects.create_superuser(email=email,
+                                                                 password=profile.get("ion_username") + profile.get(
+                                                                     "user_type"))
                     elif profile.get("is_teacher"):
-                        new_user = User.objects.create_teacheruser(email=email, password=profile.get("ion_username") + profile.get("user_type"))
+                        new_user = User.objects.create_teacheruser(email=email,
+                                                                   password=profile.get("ion_username") + profile.get(
+                                                                       "user_type"))
                     else:
-                        new_user = User.objects.create_studentuser(email=email, password=profile.get("ion_username") + profile.get("user_type"))
+                        new_user = User.objects.create_studentuser(email=email,
+                                                                   password=profile.get("ion_username") + profile.get(
+                                                                       "user_type"))
                     new_user.logged_with_ion = True
                     new_user.first_name = profile.get("first_name")
                     new_user.middle_name = profile.get("middle_name")
@@ -91,12 +99,13 @@ def login(request):
                     a.save()
                     new_user.assignments.add(a)
                     new_user.save()
-                    user = auth.authenticate(email=email, password=profile.get("ion_username") + profile.get("user_type"))
+                    user = auth.authenticate(email=email,
+                                             password=profile.get("ion_username") + profile.get("user_type"))
                     auth.login(request, user)
                     return redirect("http://localhost:8000/home")
 
             except Exception as e:
-                args = { "client_id": CLIENT_ID, "client_secret": CLIENT_SECRET }
+                args = {"client_id": CLIENT_ID, "client_secret": CLIENT_SECRET}
                 token = oauth.refresh_token("https://ion.tjhsst.edu/oauth/token/", **args)
     return render(request, "login.html", context)
 
@@ -171,7 +180,7 @@ def setup(request) :
             user.save()
             return redirect("home")
     return render(request, "setup.html", context) '''
-    
+
 
 def index(request):
     essays = []
@@ -179,7 +188,7 @@ def index(request):
 
     if request.GET:
         query = request.GET.get('q', 'Search for an essay')
-    
+
     if query != "":
         profile = request.user
         queryset = []
@@ -187,53 +196,69 @@ def index(request):
 
         for q in queries:
             essays = Essay.objects.filter(
-                    Q(assignment__icontains=q) |
-                    Q(title__icontains=q) |
-                    Q(body__icontains=q) |
-                    Q(teacher__icontains=q)
+                Q(assignment__icontains=q) |
+                Q(title__icontains=q) |
+                Q(body__icontains=q) |
+                Q(teacher__icontains=q)
             ).order_by('-created_on').distinct()
 
             for essay in essays:
                 queryset.append(essay)
-                
-        essays =  list(set(queryset))
-        
+
+        essays = list(set(queryset))
+
     if request.user.is_authenticated and request.user.teacher and not request.user.admin:
         return redirect("teacher")
-    
+
     if request.user.is_authenticated and essays == []:
         essays = Essay.objects.all().order_by('-created_on')
-    
+
     context = {
         "essays": essays,
         "query": str(query),
         "search": query != ""
     }
-    
+
     return render(request, "index.html", context)
-    
+
+
 @login_required(login_url="login")
 def submit(request):
-    context={}
-    form = EssayForm(request.POST or None, **{'user':request.user})
+    context = {}
+    form = EssayForm(request.POST or None, **{'user' : request.user})
     if request.method == 'POST':
+        print(request.POST)
+        temp = request.POST._mutable
+        request.POST._mutable = True
+        assignment_id = int(request.POST.get('assignment')) - 1
+        teacher_id = User.objects.get(email=request.POST.get('teachers'))
+        assignments = list(teacher_id.assignments.all())
+        assigned = assignments[assignment_id]
+        request.POST['assignment'] = str(assigned.pk)
+        request.POST._mutable = temp
+        print("\n\n\n\n\n\n",request.POST,"\n\n\n")
         if form.is_valid():
             essay = Essay(
                 title=form.cleaned_data["title"],
                 body=form.cleaned_data["body"],
                 author=request.user,
-                assignment=form.cleaned_data["assignment"],
-                teacher=form.cleaned_data["teachers"],
+                assignment=assigned,
+                teacher=User.objects.get(email=form.cleaned_data["teachers"]),
                 citation_type=form.cleaned_data["citation_type"]
             )
             essay.save()
             return redirect("home")
-
+        print(form.cleaned_data["title"],
+              form.cleaned_data["body"],
+              request.user,
+              #form.cleaned_data["assignment"],
+              form.cleaned_data["teachers"],
+              form.cleaned_data["citation_type"])
     context = {
         'form': form,
     }
     return render(request, "submit.html", context)
-    
+
 
 def load_assignments(request):
     teacher = request.GET.get('teacher')
@@ -242,9 +267,9 @@ def load_assignments(request):
 
     else:
         assigns = "<option value="">------------------------------------</option>"
-    return render(request, 'submit_options.html', {'assignments' : assigns})
+    return render(request, 'submit_options.html', {'assignments': assigns})
 
-    
+
 @login_required(login_url="login")
 def detail(request, pk):
     essay = Essay.objects.get(pk=pk)
@@ -265,22 +290,22 @@ def teacher(request):
     query = ""
 
     if request.GET:
-        query=request.GET.get("q", "")
+        query = request.GET.get("q", "")
         queryset = []
         queries = query.split(" ")
 
         for q in queries:
             essays = Essay.objects.filter(teacher=user.email).filter(
-                    Q(assignment__icontains=q) |
-                    Q(title__icontains=q) |
-                    Q(body__icontains=q) |
-                    Q(teacher__icontains=q)
+                Q(assignment__icontains=q) |
+                Q(title__icontains=q) |
+                Q(body__icontains=q) |
+                Q(teacher__icontains=q)
             ).order_by('-created_on').distinct()
 
             for essay in essays:
                 queryset.append(essay)
-                
-        essays =  list(set(queryset))
+
+        essays = list(set(queryset))
 
     else:
         try:
@@ -289,14 +314,15 @@ def teacher(request):
             essays = []
 
     context = {
-        'essays' : essays,
-        'name' : user.get_full_name(),
+        'essays': essays,
+        'name': user.get_full_name(),
         "search": query != ""
     }
     return render(request, "teacher.html", context)
-    
+
+
 @login_required(login_url="login")
-def grade(request): #max 7973 characters/request, <100 requests/day 
+def grade(request):  # max 7973 characters/request, <100 requests/day
 
     context = {
         'essays': []
@@ -306,14 +332,14 @@ def grade(request): #max 7973 characters/request, <100 requests/day
         return redirect("home")
 
     if request.GET:
-        query=request.GET.get("q", "")
+        query = request.GET.get("q", "")
         queryset = []
 
         essays = Essay.objects.filter(teacher=request.user.email).filter(
-                Q(assignment__icontains=query)
+            Q(assignment__icontains=query)
         ).order_by('-created_on').distinct()
         for essay in essays:
-            #send celery worker to grade the essay
+            # send celery worker to grade the essay
             grade_essay.delay(essay.id)
 
         context = {
@@ -323,6 +349,7 @@ def grade(request): #max 7973 characters/request, <100 requests/day
         return render(request, "grade.html", context)
 
     return render(request, "grade.html", context)
+
 
 def reformat(body):
     temp = body.split("\r\n")
@@ -347,7 +374,8 @@ def reformat(body):
             temp += word + " "
 
     return temp + "</p>"
-    
+
+
 @login_required(login_url="login")
 def teacher_detail(request, pk):
     user = request.user
@@ -361,14 +389,15 @@ def teacher_detail(request, pk):
         essay = {}
 
     context = {
-        'essay' : essay,
+        'essay': essay,
     }
     return render(request, "teacher_detail.html", context)
-    
+
+
 @login_required(login_url="login")
 def settings_changeInfo(request):
     profile = request.user
-    
+
     context = {
         'error': "Cannot Change Info Due to OAuth Login"
     }
@@ -381,26 +410,26 @@ def settings_changeInfo(request):
             profile.middle_name = form.cleaned_data.get('middle_name')
             profile.last_name = form.cleaned_data.get('last_name')
         profile.save()
-            
 
+    form = InfoForm(
+        initial={'email': profile.email, 'first_name': profile.first_name, 'middle_name': profile.middle_name,
+                 'last_name': profile.last_name})
 
-    
-    form = InfoForm(initial={'email':profile.email, 'first_name':profile.first_name, 'middle_name':profile.middle_name, 'last_name':profile.last_name})
-    
     if profile.logged_with_ion:
         form.disable()
     context['form'] = form
-    
+
     return render(request, "settings_info.html", context)
+
 
 @login_required(login_url="login")
 def settings_changePassword(request):
     profile = request.user
-    
+
     context = {
-        'error':"Cannot Change Password Due to OAuth Login"
+        'error': "Cannot Change Password Due to OAuth Login"
     }
-    
+
     if request.method == 'POST':
         form = InfoForm(request.POST)
 
@@ -412,20 +441,20 @@ def settings_changePassword(request):
             else:
                 profile.set_password()
 
-    
     form = ChangeForm()
-    
+
     if profile.logged_with_ion:
         form.disable()
     context['form'] = form
-    
+
     return render(request, "settings_password.html", context)
-    
+
+
 @login_required(login_url="login")
 def settings_changeTeachers(request):
     profile = request.user
     context = {}
-    
+
     names = [
         "period_1_teacher",
         "period_2_teacher",
@@ -435,7 +464,7 @@ def settings_changeTeachers(request):
         "period_6_teacher",
         "period_7_teacher",
     ]
-    
+
     if request.method == 'POST':
         form = TeacherForm(request.POST)
         if form.is_valid():
@@ -459,43 +488,39 @@ def settings_changeTeachers(request):
                 context['saved'] = True
         else:
             context['error'] = "Invalid Email(s)"
-            
-    
-    
+
     initial = {}
-    
+
     teacher = profile.get_teachers()
-    
+
     for name in names:
         initial[name] = teacher.get(name)
-    
+
     form = TeacherForm(initial)
-    
+
     context['form'] = form
-    
+
     return render(request, "settings_teacher.html", context)
-    
+
 
 @login_required(login_url="login")
 def assignment(request):
     if request.user.teacher:
-        context = {"form" : AssignmentForm()}
+        context = {"form": AssignmentForm()}
         if request.method == "POST":
             user = request.user
             form = AssignmentForm(request.POST)
-            
+
             if form.is_valid():
                 a = Assignment(
-                    assignment_description = form.cleaned_data.get("assignment_description"),
-                    assignment_name = form.cleaned_data.get("assignment_name"),
+                    assignment_description=form.cleaned_data.get("assignment_description"),
+                    assignment_name=form.cleaned_data.get("assignment_name"),
                 )
                 a.save()
                 user.assignments.add(a)
                 user.save()
                 return redirect("home")
-                
+
         return render(request, "assignment.html", context)
     else:
         return redirect("home")
-            
-    
