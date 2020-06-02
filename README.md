@@ -34,7 +34,7 @@ A platform to speed up essay grading.
 * Next setup a virtual environment with the virtualenv library(Install it with for)
 	* MacOs/Linux
 		* ```
-		  python3 -m pip install --user virtual env
+		  python3 -m pip install --user virtualenv
 		  ```
 	* Windows
 		* ```
