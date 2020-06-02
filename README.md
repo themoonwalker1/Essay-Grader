@@ -92,7 +92,7 @@ A platform to speed up essay grading.
 		- [x] Submitting Essay
 * Automation
 	- [x] Adding Celery Works for Automation
-	- [ ] ***Finishing Optimization of Celery Algorithm***
+	- [x] ***Finishing Optimization of Celery Algorithm***
 * Frameworks:
 	* Django
 	* Bootstrap
