@@ -6,13 +6,6 @@ from .models import User, Essay
 dropdown = (("None","None"),("APA","APA"),("MLA","MLA"))
 
 class EssayForm(forms.Form):
-    teacher = forms.CharField(
-        max_length=150, 
-        widget=forms.TextInput(attrs={
-            "class": "form-control",
-            "placeholder": "Teacher's Ion Email"
-        })
-    )
     assignment = forms.CharField(
         max_length=150, 
         widget=forms.TextInput(attrs={
@@ -20,6 +13,7 @@ class EssayForm(forms.Form):
             "placeholder": "Ex: Romeo and Juliet"
         })
     )
+    teachers = forms.ChoiceField()
     title = forms.CharField(
         max_length=500, 
         widget=forms.TextInput(attrs={
@@ -33,7 +27,27 @@ class EssayForm(forms.Form):
             "placeholder": "Write your essay here!"
         })
     )
-    citation_type = forms.ChoiceField(choices=dropdown, required=True)
+    
+    citation_type = forms.ChoiceField(choices=dropdown, required=True, widget=forms.RadioSelect)
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super(EssayForm, self).__init__(*args, **kwargs)
+        if user is not None:
+            temp = user.get_teachers();
+            teachers = list(temp.keys())
+            thingy = []
+            for teacher in teachers:
+                if temp[teacher] != "":
+                    thingy.append((temp[teacher], temp[teacher]))
+            
+            empty = False
+            if len(thingy) == 0:
+                empty = True
+                thingy.append(("Please Add Your Teachers in Settings","Please Add Your Teachers in Settings"))
+                for field in list(self.fields.keys()):
+                    self.fields.get(field).disabled = True
+            
+            self.fields['teachers'] = forms.ChoiceField(choices=thingy, required=True, disabled=empty, widget=forms.RadioSelect)
 
 class LoginForm(forms.Form):
     email = forms.CharField(max_length=150, required=True, widget=forms.TextInput(attrs={"class": "form-control"}))

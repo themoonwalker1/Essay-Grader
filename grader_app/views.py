@@ -225,7 +225,7 @@ def submit(request):
             return redirect("home")
 
     else:
-        form = EssayForm() 
+        form = EssayForm(**{'user':request.user}) 
         context = {
             'form': form,
         }
