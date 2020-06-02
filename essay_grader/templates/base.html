@@ -22,11 +22,8 @@
                         <a class="navbar-brand navbar-link" href="{% url 'logout' %}">Logout</a>
                         <a class="navbar-brand" style="padding-left: 3em;vertical-align:middle;font-size: 1.2vw;">You are logged in as {{ user.first_name }} {{ user.last_name }}</a>
                         <a style="vertical-align:middle; position:relative; top:-3px; padding-left: 2vw;" href="{% url 'settings_info' %}"><img class="gear" src="https://freeiconshop.com/wp-content/uploads/edd/settings-solid.png" alt="" height="20vw" width="20vw"></img></a>
-                        <div class="navbar-brand authors">
-<pre class="authors">                        Aditya Vasantharao (2023)
-Created by:     Chinmay Bhandaru (2023)
-                        Karthik Bhargav (2023)</pre>
-                        </div>
+                        <a class="navbar-brand" style="padding-left: 15em;vertical-align:middle;font-size: 1.2vw;">You are logged in as {{ user.first_name }} {{ user.last_name }}</a>
+                        <a style="vertical-align:middle; position:relative; top:-3px;" href="{% url 'settings_info' %}"><img class="gear" src="https://freeiconshop.com/wp-content/uploads/edd/settings-solid.png" alt="" height="20vw" width="20vw"></img></a>
                     {% else %}
 					<a class="navbar-brand" href="{% url 'login' %}" style="padding-left: 2em;">Login</a>
 					<!--
@@ -40,6 +37,7 @@ Created by:     Chinmay Bhandaru (2023)
             .navbar-bar {
                 padding-bottom: 0em !important;
                 margin-bottom: 0em !important;
+				overflow: hidden;
             }
             .authors {
                 margin-right: 0em;
@@ -128,14 +126,24 @@ Created by:     Chinmay Bhandaru (2023)
 			  --color-accent: #12cdea;
 			  --font-color: #ffffff;
 			}
-			
+			footer {
+			   margin-top:1em;
+			   left:0px;
+			   bottom:0px;
+			   height:60px;
+			   width:100%;
+		   }
         </style>
-        
+        <label class="content">
         {% block head %}{% endblock head %}
+		</label>
     </head>
 
     <body>
         {% block content %}{% endblock content %}
+		<footer class="navbar-light bg-light appear navbar-bar" style="padding-top: 1em;" onscroll="scroll">
+			<a class="navbar-brand" style="padding-left: 25%;vertical-align:middle;font-size: 1.2vw;"><h6>Created By: Aditya Vasantharao (2023), Chinmay Bhandaru (2023), Karthik Bhargav (2023)</h6></a>
+		</footer>
     </body>
 	<script>
 	</script>
