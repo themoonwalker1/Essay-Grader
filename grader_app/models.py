@@ -61,11 +61,21 @@ class User(AbstractBaseUser):
     last_name = models.CharField(max_length=50)
     logged_with_ion = models.BooleanField(default=False)
     
-    teachers = models.TextField()
+    teachers = models.TextField(default=json.dumps({
+        "period_1_teacher" : "",
+        "period_2_teacher" : "",
+        "period_3_teacher" : "",
+        "period_4_teacher" : "",
+        "period_5_teacher" : "",
+        "period_6_teacher" : "",
+        "period_7_teacher" : "",
+    }))
     
-    def set_teachers(self, teachers):
-        self.teachers = json.dumps(teachers)
+    def set_teachers(self, teacher):
+        print(self.teachers)
+        self.teachers = json.dumps(teacher)
     def get_teachers(self):
+        print(self.teachers)
         return json.loads(self.teachers)
     
     FRESHMAN = 'FR'

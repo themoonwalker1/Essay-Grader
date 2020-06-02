@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from .models import Essay
-from .forms import EssayForm, LoginForm, RegisterForm, SetupForm, InfoForm
+from .forms import EssayForm, LoginForm, RegisterForm, SetupForm, InfoForm, ChangeForm, TeacherForm
 from django.contrib.auth.decorators import login_required
 from requests_oauthlib import OAuth2Session
 from .models import User
@@ -375,15 +375,11 @@ def settings_changeInfo(request):
         form = InfoForm(request.POST)
 
         if form.is_valid():
-            essay = Essay(
-                title=form.cleaned_data["title"],
-                body=form.cleaned_data["body"],
-                author=request.user,
-                assignment=form.cleaned_data["assignment"],
-                teacher=form.cleaned_data["teacher"],
-                citation_type=form.cleaned_data["citation_type"]
-            )
-            essay.save()
+            profile.email = form.cleaned_data.get('email')
+            profile.first_name = form.cleaned_data.get('first_name')
+            profile.middle_name = form.cleaned_data.get('middle_name')
+            profile.last_name = form.cleaned_data.get('last_name')
+            profile.save()
 
             return redirect("home")
 
@@ -392,9 +388,77 @@ def settings_changeInfo(request):
         
         if profile.logged_with_ion:
             form.disable()
-        print(profile.logged_with_ion)
         context = {
             'form': form,
         }
         
         return render(request, "settings_info.html", context)
+
+@login_required(login_url="login")
+def settings_changePassword(request):
+    profile = request.user
+    
+    if request.method == 'POST':
+        form = InfoForm(request.POST)
+
+        if form.is_valid():
+            password1 = form.cleaned_data.get('password1')
+            password2 = form.cleaned_data.get('password2')
+            if password1 != password2:
+                context['error'] = "Passwords do not match"
+            else:
+                profile.set_password()
+                return redirect("home")
+
+    
+    form = ChangeForm()
+    
+    if profile.logged_with_ion:
+        form.disable()
+    context = {
+        'form': form,
+    }
+    
+    return render(request, "settings_password.html", context)
+    
+@login_required(login_url="login")
+def settings_changeTeachers(request):
+    profile = request.user
+    
+    names = [
+        "period_1_teacher",
+        "period_2_teacher",
+        "period_3_teacher",
+        "period_4_teacher",
+        "period_5_teacher",
+        "period_6_teacher",
+        "period_7_teacher",
+    ]
+    
+    if request.method == 'POST':
+        form = TeacherForm(request.POST)
+
+        if form.is_valid():
+            teachers = {}
+            for name in names:
+                teachers[name] = form.cleaned_data.get(name);
+            profile.set_teachers(teachers)
+            profile.save()            
+            return redirect("home")
+            
+    
+    
+    initial = {}
+    
+    teacher = profile.get_teachers()
+    
+    for name in names:
+        initial['name'] = teacher['name']
+    
+    form = TeacherForm(initial)
+    
+    context = {
+        'form': form,
+    }
+    
+    return render(request, "settings_teacher.html", context)

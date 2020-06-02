@@ -36,8 +36,8 @@ class EssayForm(forms.Form):
     citation_type = forms.ChoiceField(choices=dropdown, required=True)
 
 class LoginForm(forms.Form):
-    email = forms.CharField(max_length=150, required=True)
-    password = forms.CharField(widget=forms.PasswordInput, max_length=150, required=True)
+    email = forms.CharField(max_length=150, required=True, widget=forms.TextInput(attrs={"class": "form-control"}))
+    password = forms.CharField(widget=forms.PasswordInput(attrs={"class": "form-control"}), max_length=150, required=True)
     
 class SetupForm(forms.Form):
     first_name = forms.CharField(max_length=150, required=True)
@@ -58,17 +58,13 @@ class SetupForm(forms.Form):
     year_in_school = forms.ChoiceField(
         choices=YEAR_IN_SCHOOL_CHOICES,
     )
-    
-def set_field_html_name(cls, new_name):
-    old_render = cls.widget.render
-    def _widget_render_wrapper(name, value, attrs=None):
-        return old_render(new_name, value, attrs)
-
-    cls.widget.render = _widget_render_wrapper
 
 class ChangeForm(forms.Form):
-    password1 = forms.CharField(widget=forms.PasswordInput, max_length=150, required=True)
-    password2 = forms.CharField(widget=forms.PasswordInput, max_length=150, required=True)
+    password_1 = forms.CharField(widget=forms.PasswordInput(attrs={"class": "form-control"}), max_length=150, required=True)
+    password_2 = forms.CharField(widget=forms.PasswordInput(attrs={"class": "form-control"}), max_length=150, required=True)
+    def disable(self):
+        self.fields['password1'].disabled = True
+        self.fields['password2'].disabled = True
 
 class InfoForm(forms.Form):
     email = forms.EmailField(max_length=250, widget=forms.TextInput(attrs={'readonly':'readonly', "class": "form-control"}))
@@ -82,13 +78,13 @@ class InfoForm(forms.Form):
         self.fields['last_name'].disabled = True
 
 class TeacherForm(forms.Form): 
-    period1 = set_field_html_name(forms.CharField(max_length=150, required=True), "1st Period Teacher")
-    period2 = set_field_html_name(forms.CharField(max_length=150, required=True), "2nd Period Teacher")
-    period3 = set_field_html_name(forms.CharField(max_length=150, required=True), "3rd Period Teacher")
-    period4 = set_field_html_name(forms.CharField(max_length=150, required=True), "4th Period Teacher")
-    period5 = set_field_html_name(forms.CharField(max_length=150, required=True), "5th Period Teacher")
-    period6 = set_field_html_name(forms.CharField(max_length=150, required=True), "6th Period Teacher")
-    period7 = set_field_html_name(forms.CharField(max_length=150, required=True), "7th Period Teacher")
+    period_1_teacher = forms.EmailField(max_length=150, required=True, widget=forms.TextInput(attrs={"class": "form-control"}))
+    period_2_teacher = forms.EmailField(max_length=150, required=True, widget=forms.TextInput(attrs={"class": "form-control"}))
+    period_3_teacher = forms.EmailField(max_length=150, required=True, widget=forms.TextInput(attrs={"class": "form-control"}))
+    period_4_teacher = forms.EmailField(max_length=150, required=True, widget=forms.TextInput(attrs={"class": "form-control"}))
+    period_5_teacher = forms.EmailField(max_length=150, required=True, widget=forms.TextInput(attrs={"class": "form-control"}))
+    period_6_teacher = forms.EmailField(max_length=150, required=True, widget=forms.TextInput(attrs={"class": "form-control"}))
+    period_7_teacher = forms.EmailField(max_length=150, required=True, widget=forms.TextInput(attrs={"class": "form-control"}))
     
     def clean_teacher(self, period):
         name = period + " Period Teacher"
