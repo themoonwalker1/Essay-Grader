@@ -51,7 +51,7 @@ A platform to speed up essay grading.
 			```
 			rabbitmq-server
 			```
-			* **Don't exit out of this terminal or stop this process when running the Django server or downloading the requirements. Instead, open up a separate terminal and execute those tasks from there.**
+			* **Don't exit out of this terminal or stop this process when running the Django server or downloading the requirements. Instead, open up a separate terminal window and execute those tasks from there.**
 	
 * Next, install all necessary libraries with the following command:
 	* ```
