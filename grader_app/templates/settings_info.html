@@ -118,10 +118,13 @@
 			<form action="{% url 'settings_info' %}" method="post">
 				{% csrf_token %}
 				{{ form.as_p }}
-				
-				<div style="margin-top:5px;" >
-					<button type="form" class="btn btn-primary" value="{{ next }}">Submit</button>
-				</div>
+
+				{% if not user.logged_with_ion %}
+					<div style="margin-top:5px;" >
+						<button type="form" class="btn btn-primary" value="{{ next }}">Submit</button>
+					</div>
+				{% endif %}
+
 			</form><br>
 			<h3><b>Dark Mode:</b></h3>
 			<label id="switch" class="switch">
@@ -147,10 +150,10 @@
 				(function () {
 					if (localStorage.getItem('theme') === 'theme-dark') {
 						setTheme('theme-dark');
-						document.getElementById('slider').checked = false;
+						document.getElementById('slider').checked = true;
 					} else {
 						setTheme('theme-light');
-					  document.getElementById('slider').checked = true;
+					  document.getElementById('slider').checked = false;
 					}
 				})();
 			</script>

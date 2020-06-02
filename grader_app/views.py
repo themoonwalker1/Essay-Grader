@@ -324,10 +324,6 @@ def teacher(request):
 @login_required(login_url="login")
 def grade(request):  # max 7973 characters/request, <100 requests/day
 
-    context = {
-        'essays': []
-    }
-
     if not request.user.teacher:
         return redirect("home")
 
@@ -347,6 +343,17 @@ def grade(request):  # max 7973 characters/request, <100 requests/day
         }
 
         return render(request, "grade.html", context)
+
+    essays = []
+
+    for essay in Essay.objects.filter(teacher=request.user.email):
+        if essay.marked_body != "":
+            print(essay.marked_body)
+            essays.append(essay)
+
+    context = {
+        'essays': essays
+    }
 
     return render(request, "grade.html", context)
 
@@ -399,7 +406,7 @@ def settings_changeInfo(request):
     profile = request.user
 
     context = {
-        'error': "Cannot Change Info Due to OAuth Login"
+        'error': "Cannot change info due to Ion login"
     }
     if request.method == 'POST':
         form = InfoForm(request.POST)
@@ -427,7 +434,7 @@ def settings_changePassword(request):
     profile = request.user
 
     context = {
-        'error': "Cannot Change Password Due to OAuth Login"
+        'error':"Cannot change password due to Ion login"
     }
 
     if request.method == 'POST':

@@ -10,7 +10,7 @@
 
 		<nav id="navbar" class="navbar navbar-light bg-light appear navbar-bar" style="padding-top: 0.5em;" onscroll="scroll">
 
-                <a href="http://localhost:8000/home" class="navbar-title"><h1>Essay Grader</h1></a>
+                <a href="http://localhost:8000/home" class="navbar-title"><h1 style="font-size: 2.7vw !important;">Essay Grader</h1></a>
                 {% if user.is_authenticated %}
 					{% if user.student %}
                         <a class="navbar-brand navbar-link" href="http://localhost:8000/submit">Submit</a>
@@ -18,12 +18,13 @@
 
                     {% if user.teacher %}
                         <a class="navbar-brand navbar-link" href="http://localhost:8000/teacher/assignment">Add Assignment</a>
+                        <a class="navbar-brand navbar-link" href="http://localhost:8000/teacher/home">Grade</a>
 					{% endif %}
                         <a class="navbar-brand navbar-link" href="{% url 'logout' %}">Logout</a>
                         <a class="navbar-brand" style="padding-left: 3em;vertical-align:middle;font-size: 1.2vw;">You are logged in as {{ user.first_name }} {{ user.last_name }}</a>
                         <a style="vertical-align:middle; position:relative; top:-3px; padding-left: 2vw;" href="{% url 'settings_info' %}"><img
                                 class="gear" src="https://freeiconshop.com/wp-content/uploads/edd/settings-solid.png"
-                                alt="" height="20vw" width="20vw"/></a>
+                                alt="" height="18vw" width="18vw"/></a>
                 {% else %}
                     <a class="navbar-brand" href="{% url 'login' %}" style="padding-left: 2em;">Login</a>
 					<!--
@@ -39,8 +40,6 @@
             box-sizing: inherit;
             }
             .navbar-bar {
-                padding-bottom: 0em !important;
-                margin-bottom: 0em !important;
 				overflow: hidden;
             }
             .authors {
@@ -55,8 +54,7 @@
             }
             .navbar-title {
                 text-decoration: none;
-                padding-left: 1en;
-                font-size: 2.0vw !important;
+                padding-left: 1em;
             }
             .navbar-title:hover {
                 text-decoration: none;
@@ -148,6 +146,7 @@
            }
            html {
                height: 100%;
+               font-size: 100%;
                box-sizing: border-box;
            }
            .content {
