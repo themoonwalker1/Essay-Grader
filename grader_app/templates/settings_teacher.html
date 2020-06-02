@@ -58,7 +58,7 @@
 			<form action="{% url 'settings_teachers' %}" method="post">
 				{% csrf_token %}
 
-				{{ form }}
+				{{ form.as_p }}
 				
 				<div style="margin-top:5px;" >
 					<button type="form" class="btn btn-primary" value="{{ next }}">Submit</button>

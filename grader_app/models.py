@@ -6,6 +6,16 @@ from django.contrib.auth.models import (
 import json
 # Create your models here.
 
+
+class Assignment(models.Model):
+    assignment_name=models.CharField(max_length=150, blank=False)
+    assignment_description=models.TextField()
+    
+    def __str__(self):
+        return "%s - %s" % (self.assignment_name, self.assignment_description)
+    
+
+
 dropdown = (("None","None"),("APA","APA"),("MLA","MLA"))
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None):
@@ -79,6 +89,9 @@ class User(AbstractBaseUser):
     def get_teachers(self):
         print(self.teachers)
         return json.loads(self.teachers)
+        
+        
+    assignments = models.ManyToManyField(Assignment)
     
     FRESHMAN = 'FR'
     SOPHOMORE = 'SO'

@@ -1,19 +1,26 @@
 from django import forms
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 
-from .models import User, Essay
+from .models import User, Essay, Assignment
 
 dropdown = (("None","None"),("APA","APA"),("MLA","MLA"))
 
-class EssayForm(forms.Form):
-    assignment = forms.CharField(
-        max_length=150, 
-        widget=forms.TextInput(attrs={
+class AssignmentForm(forms.Form):
+    assignment_name = forms.CharField(max_length=150, widget=forms.TextInput(attrs={
             "class": "form-control",
             "placeholder": "Ex: Romeo and Juliet"
         })
     )
+    assignment_description = forms.CharField(widget=forms.Textarea(
+        attrs={
+            "class": "form-control",
+            "placeholder": "Ex: Write a 5 paragraph essay on why Romeo and Juliet is the best story ever"
+        })
+    )
+
+class EssayForm(forms.Form):
     teachers = forms.ChoiceField()
+    assignment = forms.ChoiceField()
     title = forms.CharField(
         max_length=500, 
         widget=forms.TextInput(attrs={
@@ -35,7 +42,7 @@ class EssayForm(forms.Form):
         if user is not None:
             temp = user.get_teachers();
             teachers = list(temp.keys())
-            thingy = []
+            thingy = [("------------------------------------","------------------------------------")]
             for teacher in teachers:
                 if temp[teacher] != "":
                     thingy.append((temp[teacher], temp[teacher]))
@@ -47,7 +54,8 @@ class EssayForm(forms.Form):
                 for field in list(self.fields.keys()):
                     self.fields.get(field).disabled = True
             
-            self.fields['teachers'] = forms.ChoiceField(choices=thingy, required=True, disabled=empty, widget=forms.RadioSelect)
+            self.fields['teachers'] = forms.ChoiceField(choices=thingy, required=True, disabled=empty)
+            self.fields['assignment'] = forms.ChoiceField(choices=[("------------------------------------","------------------------------------")], required=True, disabled=empty)
 
 class LoginForm(forms.Form):
     email = forms.CharField(max_length=150, required=True, widget=forms.TextInput(attrs={"class": "form-control"}))

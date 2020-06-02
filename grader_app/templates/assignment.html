@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    {% if user.is_authenticated %}
+        <div class="col-md-8 offset-md-2" style="padding-top: 1em;">
+            <h3>Add an Assignment:</h3>
+
+            <form action="{% url 'assignment' %}" method="post">
+                {% csrf_token %} <pre> </pre>
+
+                {{ form.as_p }}
+                
+                <div style="margin-top:5px;" >
+                    <button type="submit" class="btn btn-primary" value="{{ next }}">Add</button>
+                </div>
+            </form>
+        </div>
+    {% else %}
+        <h3>You must be logged in to view this page.</h3>
+    {% endif %}
+
+{% endblock %}

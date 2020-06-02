@@ -17,7 +17,7 @@
                     {% endif %}
 
                     {% if user.teacher %}
-                        <a class="navbar-brand navbar-link" href="http://localhost:8000/teacher/home">Grade</a>
+                        <a class="navbar-brand navbar-link" href="http://localhost:8000/teacher/assignment">Add Assignment</a>
 					{% endif %}
                         <a class="navbar-brand navbar-link" href="{% url 'logout' %}">Logout</a>
                         <a class="navbar-brand" style="padding-left: 3em;vertical-align:middle;font-size: 1.2vw;">You are logged in as {{ user.first_name }} {{ user.last_name }}</a>

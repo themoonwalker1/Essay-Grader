@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
-from .models import Essay
-from .forms import EssayForm, LoginForm, RegisterForm, SetupForm, InfoForm, ChangeForm, TeacherForm
+from .models import Essay, Assignment
+from .forms import EssayForm, LoginForm, RegisterForm, SetupForm, InfoForm, ChangeForm, TeacherForm, AssignmentForm
 from django.contrib.auth.decorators import login_required
 from requests_oauthlib import OAuth2Session
 from .models import User
@@ -64,7 +64,6 @@ def login(request):
                 raw_profile = oauth.get("https://ion.tjhsst.edu/api/profile")
                 profile = json.loads(raw_profile.content.decode())
                 email = profile["tj_email"]
-                print("got Code")
                 if User.objects.filter(email=email).exists():
                     user = auth.authenticate(email=email, password=profile.get("ion_username") + profile.get("user_type"))
                     if user is not None:
@@ -86,13 +85,15 @@ def login(request):
                     new_user.middle_name = profile.get("middle_name")
                     new_user.last_name = profile.get("last_name")
                     new_user.year_in_school = profile.get("grade").get("name").upper()[:3]
+                    a = Assignment(assignment_description="-------------", assignment_name="-------------")
+                    a.save()
+                    new_user.assignments.add(a)
                     new_user.save()
                     user = auth.authenticate(email=email, password=profile.get("ion_username") + profile.get("user_type"))
                     auth.login(request, user)
                     return redirect("http://localhost:8000/home")
 
             except Exception as e:
-                print(e)
                 args = { "client_id": CLIENT_ID, "client_secret": CLIENT_SECRET }
                 token = oauth.refresh_token("https://ion.tjhsst.edu/oauth/token/", **args)
     return render(request, "login.html", context)
@@ -132,6 +133,9 @@ def create(request):
                 
             if not error:
                 new_user = User.objects.create_studentuser(email=email, password=password)
+                a = Assignment(assignment_description="-------------", assignment_name="-------------")
+                a.save()
+                new_user.assignments.add(a)
                 new_user.save()
 
                 user = auth.authenticate(email=email, password=password)
@@ -208,29 +212,36 @@ def index(request):
     
 @login_required(login_url="login")
 def submit(request):
+    context={}
+    form = EssayForm(request.POST or None, **{'user':request.user})
     if request.method == 'POST':
-        form = EssayForm(request.POST)
-
         if form.is_valid():
             essay = Essay(
                 title=form.cleaned_data["title"],
                 body=form.cleaned_data["body"],
                 author=request.user,
                 assignment=form.cleaned_data["assignment"],
-                teacher=form.cleaned_data["teacher"],
+                teacher=form.cleaned_data["teachers"],
                 citation_type=form.cleaned_data["citation_type"]
             )
             essay.save()
-
             return redirect("home")
 
+    context = {
+        'form': form,
+    }
+    return render(request, "submit.html", context)
+    
+
+def load_assignments(request):
+    teacher = request.GET.get('teacher')
+    if "------------------------------------" != teacher:
+        assigns = User.objects.get(email=teacher).assignments.all()
     else:
-        form = EssayForm(**{'user':request.user}) 
-        context = {
-            'form': form,
-        }
-        return render(request, "submit.html", context)
-        
+        assigns = "<option value="">------------------------------------</option>"
+    return render(request, 'submit_options.html', {'assignments' : assigns})
+
+    
 @login_required(login_url="login")
 def detail(request, pk):
     essay = Essay.objects.get(pk=pk)
@@ -383,7 +394,6 @@ def settings_changeInfo(request):
             profile.middle_name = form.cleaned_data.get('middle_name')
             profile.last_name = form.cleaned_data.get('last_name')
         profile.save()
-    print(profile.dark_mode)
             
 
 
@@ -465,3 +475,28 @@ def settings_changeTeachers(request):
     context ['form'] = form
     
     return render(request, "settings_teacher.html", context)
+    
+
+@login_required(login_url="login")
+def assignment(request):
+    if request.user.teacher:
+        context = {"form" : AssignmentForm()}
+        if request.method == "POST":
+            user = request.user
+            form = AssignmentForm(request.POST)
+            
+            if form.is_valid():
+                a = Assignment(
+                    assignment_description = form.cleaned_data.get("assignment_description"),
+                    assignment_name = form.cleaned_data.get("assignment_name"),
+                )
+                a.save()
+                user.assignments.add(a)
+                user.save()
+                return redirect("home")
+                
+        return render(request, "assignment.html", context)
+    else:
+        return redirect("home")
+            
+    

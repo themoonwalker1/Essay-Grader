@@ -54,7 +54,7 @@
 	<h6 style="color:red; text-align:center;">{% if method == "POST" %}{{Error2}}{% endif %}</h6>
 	<form action="{% url 'create' %}" style="padding-left:6px;" method="post">
 		{% csrf_token %}
-		{{ form }}
+		{{ form.as_p }}
 		<div style="margin-top:5px; margin-bottom:10px;" >
 			<button type="submit" class="btn btn-primary" value="{{ next }}">Submit</button>
 		</div>
