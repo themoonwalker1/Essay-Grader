@@ -33,14 +33,14 @@
 	  font-family: "Roboto", "Segoe UI", sans-serif;
 	}
 	.box {
-		border: 2px solid #e5e4d9;
+		border: 2px solid #162335;
 		position: absolute;
 		top: 50%;
 		left: 50%;
 		margin-top: -200px;
 		margin-left: -137.5px;
 		width: 275px;
-		min-height: 460px;
+		/*min-height: 460px;*/
 	}
 </style>
 
@@ -49,18 +49,18 @@
 {% block content %}
 <div class="col-md-8 offset-md-2 box navbar-light bg-light content" style="padding-top: 1.5em;">
     <h2><center>Login</center></h2>
-	<h6 style="color:red; padding-left:4px;">{{ error }}</h6>
+	<h6 style="color:red; padding-left:4px;">{{ error }}</h6><!--
 	<form action="{% url 'login' %}" style="padding-left:6px;" method="post">
 		{% csrf_token %}
 		{{ form.as_p }}
-		<!--
+		
 		<div style="margin-top:5px; margin-bottom:10px;" >
 			<button type="submit" class="btn btn-primary" value="{{ next }}">Submit</button>
 		</div>
-		-->
-	</form>
+		
+	</form>-->
 	<center>
-	<p style="font-size:15; width:90%; margin-left:3px; margin-right:3px;">Log In With <b>Ion</b></p>
+	<p style="font-size:15; width:90%; margin-left:3px; margin-right:3px;">Log in with <b>Ion</b></p>
 	<a href="{{ url }}" class="button login ion" style=" width:95%; margin-bottom:13px;" value="login"><img src="https://avatars2.githubusercontent.com/u/10491321?s=400&u=4538843ad192aa96fb4c18223fcaa5e157a0e063&v=4" alt="" width="40" height="40"/></a>		
 	</center>
 </div>

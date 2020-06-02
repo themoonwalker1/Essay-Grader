@@ -169,5 +169,5 @@ class Essay(models.Model):
     body = models.TextField()
     created_on = models.DateTimeField(auto_now_add=True)
     citation_type = models.CharField(max_length=150, choices=dropdown, default="None")
-    marked_body = models.TextField(default=body) 
+    marked_body = models.TextField(default="") 
     graded=models.BooleanField(default=False)
