@@ -8,6 +8,29 @@ A platform to speed up essay grading.
 	* ```
   	  git clone git@github.com:TheMoonWalker1/Essay-Grader.git
   	  ```
+ * Install RabbitMQ and Erlang
+	* MacOS/Linux
+		* Follow the instructions at https://www.rabbitmq.com/download.html
+	* Windows
+		* Issues during setup? Try going here:
+			* https://www.rabbitmq.com/windows-quirks.html
+		* For windows, it's easiest if you download RabbitMQ via Chocolatey. You can download Chocolatey here:
+			* https://chocolatey.org/docs/installation
+		* After you've installed chocolatey and made sure to add it to the PATH, make sure you're in a terminal which has administrative access and run 
+			```
+			choco install rabbitmq
+			```
+		* In a separate terminal window, go to the install location (such as C:\Program Files\RabbitMQ Server\rabbitmq_server-3.8.4) and add the sbin folder to the PATH. After this, run 
+			```
+			rabbitmq-server
+			```
+			* **Don't exit out of this terminal or stop this process when running the Django server or downloading the requirements. Instead, open up a separate terminal window and execute those tasks from there.**
+
+* Move into the folder where the repository was cloned
+	* ```
+	  cd Essay-Grader
+	  ```
+
 * Next setup a virtual environment with the virtualenv library(Install it with for)
 	* MacOs/Linux
 		* ```
@@ -35,24 +58,6 @@ A platform to speed up essay grading.
 		* ```
 		  .\venv\Scripts\activate
 		  ```
-* Install RabbitMQ and Erlang
-	* MacOS/Linux
-		* Follow the instructions at https://www.rabbitmq.com/download.html
-	* Windows
-		* Issues during setup? Try going here:
-			* https://www.rabbitmq.com/windows-quirks.html
-		* For windows, it's easiest if you download RabbitMQ via Chocolatey. You can download Chocolatey here:
-			* https://chocolatey.org/docs/installation
-		* After you've installed chocolatey and made sure to add it to the PATH, make sure you're in a terminal which has administrative access and run 
-			```
-			choco install rabbitmq
-			```
-		* In a separate terminal window, go to the install location (such as C:\Program Files\RabbitMQ Server\rabbitmq_server-3.8.4) and add the sbin folder to the PATH. After this, run 
-			```
-			rabbitmq-server
-			```
-			* **Don't exit out of this terminal or stop this process when running the Django server or downloading the requirements. Instead, open up a separate terminal window and execute those tasks from there.**
-	
 * Next, install all necessary libraries with the following command:
 	* ```
 	  pip3 install -r requirements.txt
