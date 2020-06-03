@@ -1,28 +1,26 @@
 from django.shortcuts import render, redirect
-from .models import Essay, Assignment
-from .forms import EssayForm, LoginForm, RegisterForm, SetupForm, InfoForm, ChangeForm, TeacherForm, AssignmentForm
+from .models import Essay, Assignment, Comment
+from .forms import EssayForm, LoginForm, InfoForm, ChangeForm, TeacherForm, AssignmentForm, CommentForm
 from django.contrib.auth.decorators import login_required
 from requests_oauthlib import OAuth2Session
 from .models import User
 from django.contrib import auth
-from grammarbot import GrammarBotClient
 from django.db.models import Q
-from django.db import models
-from operator import attrgetter
-from django import forms
 import json
 from .tasks import grade_all
 from celery.result import ResultBase
 from time import sleep
-
+import smtplib
+import email.message
 
 # Create your views here.
 
 def login(request):
     admins = {"2023avasanth", "2023pbhandar", "2023kbhargav"}
 
-    if request.user.is_authenticated:
+    if request.user is not None and request.user.is_authenticated:
         return redirect("home")
+
 
     context = {
         'url': 'login'
@@ -70,6 +68,7 @@ def login(request):
                 profile = json.loads(raw_profile.content.decode())
                 email = profile["tj_email"]
                 if User.objects.filter(email=email).exists():
+                    print("hello")
                     user = auth.authenticate(email=email,
                                              password=profile.get("ion_username") + profile.get("user_type"))
                     if user is not None:
@@ -221,7 +220,7 @@ def submit(request):
     if request.method == 'POST':
         print("\n\n\n\n\n\n",request.POST,"\n\n\n")
         if form.is_valid():
-
+            assignment = form.cleaned_data["assignment"]
             essay = Essay(
                 title=form.cleaned_data["title"],
                 body=form.cleaned_data["body"],
@@ -231,6 +230,8 @@ def submit(request):
                 citation_type=form.cleaned_data["citation_type"]
             )
             essay.save()
+            message = """Your student %s has just submitted an Essay for the assignment %s. \n\nYou also currently have %s submissions for that assignment.\n\n-------------------------------------------------\n\n%s\n\n%s""" % (request.user, assignment.assignment_name, Essay.objects.filter(assignment=assignment).count(), essay.title, essay.body[:400] + "...")
+            send_email(message=message, subject="New Submission for assignment %s." % (assignment.assignment_name), emails=[form.cleaned_data["teachers"]])
             return redirect("home")
     context = {
         'form': form,
@@ -251,8 +252,26 @@ def load_assignments(request):
 @login_required(login_url="login")
 def detail(request, pk):
     essay = Essay.objects.get(pk=pk)
+
+    if request.method == "POST":
+
+        form = CommentForm(request.POST or None)
+        print(request.POST)
+        if form.is_valid():
+            c = Comment(
+                author=request.user,
+                body=form.cleaned_data.get("Comment"),
+                essay=essay
+            )
+            c.save()
+
+
+    form = CommentForm(None)
+    comments = Comment.objects.filter(essay=essay)
     context = {
-        'essay': essay
+        'essay': essay,
+        'comments': comments,
+        'form': form
     }
 
     return render(request, "detail.html", context)
@@ -413,7 +432,7 @@ def settings_changePassword(request):
     profile = request.user
 
     context = {
-        'error':"Cannot change password due to Ion login"
+        'error' : "Cannot change password due to Ion login"
     }
 
     if request.method == 'POST':
@@ -451,8 +470,16 @@ def settings_changeTeachers(request):
         "period_7_teacher",
     ]
 
+    initial = {}
+
+    teacher = profile.get_teachers()
+
+    for name in names:
+        initial[name] = teacher.get(name)
+
     if request.method == 'POST':
         form = TeacherForm(request.POST)
+
         if form.is_valid():
             teachers = {}
             error = False
@@ -471,20 +498,28 @@ def settings_changeTeachers(request):
             if not error:
                 profile.set_teachers(teachers)
                 profile.save()
+                message = """The student - %s - has added you in their teachers list.\n\nIf this is a mistake please contact them at "%s".""" % (request.user.get_full_name(), request.user.email)
+                emails = list()
+                for teacher in teachers.values():
+                    if teacher != "" and not teacher in initial.values():
+                        emails.append(teacher)
+
+                send_email(message, "New Student Alert", emails)
+
                 context['saved'] = True
         else:
             context['error'] = "Invalid Email(s)"
 
-    initial = {}
+
+
+    form = TeacherForm(initial)
+
+    context['form'] = form
 
     teacher = profile.get_teachers()
 
     for name in names:
         initial[name] = teacher.get(name)
-
-    form = TeacherForm(initial)
-
-    context['form'] = form
 
     return render(request, "settings_teacher.html", context)
 
@@ -505,6 +540,17 @@ def assignment(request):
                 a.save()
                 user.assignments.add(a)
                 user.save()
+
+                students = list()
+                for student in User.objects.all().filter(student=True):
+                    for teacher in student.get_teachers().values():
+                        if teacher != "":
+                            t = User.objects.get(email=teacher)
+                            if t.email == user.email:
+                                students.append(student.email)
+
+                message = """Your teacher %s has just posted a new assignment - %s.\n\nAssignment description: %s""" % (user.get_full_name(), a.assignment_name, a.assignment_description)
+                send_email(message, "New Assignment Alert", students)
                 return redirect("home")
 
         return render(request, "assignment.html", context)
@@ -517,8 +563,41 @@ def teacher_essays(request, pk1, pk2):
         return redirect("home")
 
     essay = Essay.objects.all().get(pk=pk2)
+    if request.method == "POST":
+
+        form = CommentForm(request.POST or None)
+        print(request.POST)
+        if form.is_valid():
+            c = Comment(
+                author=request.user,
+                body=form.cleaned_data.get("Comment"),
+                essay=essay
+            )
+            c.save()
+
+
+    form = CommentForm(None)
+    comments = Comment.objects.filter(essay=essay)
 
     context = {
         "essay": essay,
+        "form": form,
+        "comments":comments
     }
     return render(request, "teacher_detail_essay.html", context)
+
+
+def send_email(message, subject, emails):
+    m = email.message.Message()
+    session = smtplib.SMTP('smtp.gmail.com', 587)  # use gmail with port
+    session.starttls()  # enable security
+    session.login('essay.grader.app@gmail.com', 'grader_app@7876')  # login with mail_id and password
+    print(message)
+    for receiver_address in emails:
+        m['From'] = "essay.grader.app@gmail.com"
+        m['To'] = str(receiver_address)
+        m['Subject'] = subject
+        m.set_payload(message)
+        session.sendmail('essay.grader.app@gmail.com', receiver_address, m.as_string())
+        print("Should've sent email")
+    session.quit()
