@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
+from ckeditor.widgets import CKEditorWidget
 
 from .models import User, Essay, Assignment
 
@@ -37,13 +38,12 @@ class EssayForm(forms.Form):
             "placeholder": "Title"
         })
     )
-    body = forms.CharField(widget=forms.Textarea(
+    body = forms.CharField(widget=forms.TextInput(
         attrs={
             "class": "form-control",
             "placeholder": "Write your essay here!"
         })
     )
-
     citation_type = forms.ChoiceField(choices=dropdown, required=True, widget=forms.RadioSelect)
 
     def __init__(self, *args, **kwargs):

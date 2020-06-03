@@ -21,7 +21,7 @@
                 <div class="comment">
                 <h6 style="display: inline-block;">{{comment.author.get_full_name}}</h6>
                 <h6 style="display:inlnie-block; float: right;">{{comment.created_on}}</h6>
-                <p>{{comment.body}}</p>
+                <p>{{comment.body | safe}}</p>
                 </div>
             {% endfor %}
 

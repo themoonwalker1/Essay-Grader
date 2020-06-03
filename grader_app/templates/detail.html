@@ -13,7 +13,7 @@
             <h5> By: {{essay.author.get_full_name}} </h5>
             <h5> For: {{essay.teacher.get_full_name}} </h5>
             <h6> Created on {{ essay.created_on }}</h6>
-            <p>{{ essay.body | linebreaks}}</p>
+            <p>{{ essay.body | safe}}</p>
             <hr>
 
             {% for comment in comments %}

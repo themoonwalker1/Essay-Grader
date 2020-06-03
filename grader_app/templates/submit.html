@@ -7,7 +7,7 @@
             <h3>Add an essay:</h3>
             <form action="submit" method="post" id="essayForm" data-assignments-url="{% url 'ajax_load_assignments' %}" novalidate>
                 {% csrf_token %} <pre> </pre>
-
+                {{ form.media }}
                 {{ form.as_p }}
                 
                 <div style="margin-top:5px;" >

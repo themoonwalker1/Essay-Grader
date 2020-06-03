@@ -34,7 +34,6 @@
                 <h5> By: {{essay.author}}</h5>
                 <h5> For: {{essay.teacher}}</h5>
                 <h6> Created on {{ essay.created_on }}&emsp;&emsp;&emsp;{% if essay.citation_type != "None" %} Type: <b>{{essay.citation_type}}</b>  {% endif %}</h6>
-                <p>{{ essay.body | slice:":400"}}...</p>
                 <hr>
             {% endfor %}
         {% endif %}

@@ -32,5 +32,5 @@ def grade_essay(id) -> tuple:
         if cursor > len(body):
             edited_body += body[cursor:]
     if edited_body == "":
-        edited_body = essay.edited_body
+        edited_body = essay.marked_body
     return (id, edited_body)
