@@ -23,6 +23,7 @@ import smtplib
 import email.message
 from .tasks import grade_essay
 
+
 # Create your views here.
 
 def login(request):
@@ -37,7 +38,7 @@ def login(request):
 
     CODE = None
     CLIENT_ID = "FeZBHle5SNytiEwAh333mPmoEmfFDQSF1Jigy2bW"
-    CLIENT_SECRET = "saNPOvrrCGhNK1TywLjTsKo3M5uFzfQEgUtTpvvZsNIQPB75eeWYqhBxYMZJb0lKG5LZRZx1ZVN7ZUEiUUUqPeE8GMH0ZwdhbG4yNKKYmcCDu0UXV2gopeUB3B4cAIzw "
+    CLIENT_SECRET = "saNPOvrrCGhNK1TywLjTsKo3M5uFzfQEgUtTpvvZsNIQPB75eeWYqhBxYMZJb0lKG5LZRZx1ZVN7ZUEiUUUqPeE8GMH0ZwdhbG4yNKKYmcCDu0UXV2gopeUB3B4cAIzw"
     if request.method == 'POST':
         form = LoginForm(request.POST)
 
@@ -77,7 +78,6 @@ def login(request):
                 profile = json.loads(raw_profile.content.decode())
                 email = profile["tj_email"]
                 if User.objects.filter(email=email).exists():
-                    print("hello")
                     user = auth.authenticate(email=email,
                                              password=profile.get("ion_username") + profile.get("user_type"))
                     if user is not None:
@@ -230,7 +230,6 @@ def index(request):
 def submit(request):
     form = EssayForm(request.POST or None, **{'user': request.user})
     if request.method == 'POST':
-        print("\n\n\n\n\n\n", request.POST, "\n\n\n")
         if form.is_valid():
             assignment = form.cleaned_data["assignment"]
             essay = Essay(
@@ -259,7 +258,6 @@ def load_assignments(request):
     teacher = request.GET.get('teacher')
     if "-SELECT-" != teacher:
         assigns = User.objects.get(email=teacher).assignments.all()
-        print(assigns)
     else:
         assigns = Assignment.objects.none()
     return render(request, 'submit_options.html', {'assignments': assigns})
@@ -272,7 +270,6 @@ def detail(request, pk):
     if request.method == "POST":
 
         form = CommentForm(request.POST or None)
-        print(request.POST)
         if form.is_valid():
             c = Comment(
                 author=request.user,
@@ -329,6 +326,7 @@ def teacher(request):
 
     return render(request, "teacher.html", context)
 
+
 # def get_celery_worker_status():
 #         ERROR_KEY = "ERROR"
 #         print("aaaaaa")
@@ -359,7 +357,7 @@ def teacher(request):
 #             return d
 #         print("wqqwq")
 #         return d
-        
+
 @login_required(login_url="login")
 def grade(request, pk):  # max 7973 characters/request, <100 requests/day
     if not request.user.teacher:
@@ -371,16 +369,16 @@ def grade(request, pk):  # max 7973 characters/request, <100 requests/day
     for essay in essays:
         if not essay.graded:
             ids.append(essay.id)
-    
+
     results = grade_all(ids)
 
-    #results = [v for v in ret.collect() if not isinstance(v, (ResultBase, tuple))]
+    # results = [v for v in ret.collect() if not isinstance(v, (ResultBase, tuple))]
 
     for result in results:
-        print(results)
+        # print("Original", result[1])
         essay = Essay.objects.get(id=result[0])
         essay.graded = True
-        essay.marked_body = result[1]
+        essay.marked_body = reformat(result[1])
         essay.save()
 
     essays = Essay.objects.all().filter(assignment=Assignment.objects.get(pk=pk))
@@ -390,6 +388,28 @@ def grade(request, pk):  # max 7973 characters/request, <100 requests/day
     }
 
     return render(request, "grade.html", context)
+
+
+def reformat(body):
+    punctuations = '''!()-[]{};:'"\,<>./?@#$%^&*_~'''
+
+    temp = body.split("\r\n")
+    tempText = "<p>"
+
+    for paragraph in temp:
+        tempText += paragraph + "</p><p>"
+
+    # print("Added para statements", tempText)
+
+    temp = tempText.split("\t")
+    tempText = "&emsp;"
+
+    for tab in temp:
+        tempText += tab + "&emsp;"
+
+    # print("Added tab statements", tempText)
+
+    return tempText + "</p>"
 
 
 @login_required(login_url="login")
@@ -418,9 +438,7 @@ def teacher_detail(request, pk):
 def settings_changeInfo(request):
     profile = request.user
 
-    context = {
-        'error': "Cannot change info due to Ion login"
-    }
+    context = {}
     if request.method == 'POST':
         form = InfoForm(request.POST)
 
@@ -437,6 +455,7 @@ def settings_changeInfo(request):
 
     if profile.logged_with_ion:
         form.disable()
+        context['error'] = "Cannot change info due to Ion login"
     context['form'] = form
 
     return render(request, "settings_info.html", context)
@@ -446,9 +465,7 @@ def settings_changeInfo(request):
 def settings_changePassword(request):
     profile = request.user
 
-    context = {
-        'error': "Cannot change password due to Ion login"
-    }
+    context = {}
 
     if request.method == 'POST':
         form = InfoForm(request.POST)
@@ -465,6 +482,7 @@ def settings_changePassword(request):
 
     if profile.logged_with_ion:
         form.disable()
+        context['error'] = 'Cannot change info due to Ion login'
     context['form'] = form
 
     return render(request, "settings_password.html", context)
@@ -582,7 +600,6 @@ def teacher_essays(request, pk1, pk2):
     if request.method == "POST":
 
         form = CommentForm(request.POST or None)
-        print(request.POST)
         if form.is_valid():
             c = Comment(
                 author=request.user,
@@ -607,12 +624,10 @@ def send_email(message, subject, emails):
     session = smtplib.SMTP('smtp.gmail.com', 587)  # use gmail with port
     session.starttls()  # enable security
     session.login('essay.grader.app@gmail.com', 'grader_app@7876')  # login with mail_id and password
-    print(message)
     for receiver_address in emails:
         m['From'] = "essay.grader.app@gmail.com"
         m['To'] = str(receiver_address)
         m['Subject'] = subject
         m.set_payload(message)
         session.sendmail('essay.grader.app@gmail.com', receiver_address, m.as_string())
-        print("Should've sent email")
     session.quit()
