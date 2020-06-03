@@ -23,7 +23,7 @@
             <hr>
         {% else %}
         {% for essay in essays %}
-            <h2><a href="{% url 'teacher_detail_essay' assignment.pk essay.pk%}" style="display:inline-block;">{{ essay.title }}</a>{% if essay.graded == False %}<a style="color:red; display:inline-block; float: right;">Not Graded</a>{% else %}<a style="color:green; display:inline-block; float: right;">Graded</a>{% endif %}</h2>
+            <h2><a href="{% url 'teacher_detail_essay' assignment.pk essay.pk%}" style="display:inline-block;">{{ essay.title }}</a>{% if not essay.graded %}<a style="color:red; display:inline-block; float: right;">Not Graded</a>{% else %}<a style="color:green; display:inline-block; float: right;">Graded</a>{% endif %}</h2>
             <h4> By: {{essay.author.get_full_name}}</h4>
             <h6> Created on {{ essay.created_on }}&emsp;&emsp;&emsp;{% if essay.citation_type != "None" %} Type: <b>{{essay.citation_type}}</b>  {% endif %}</h6>
             <p>{{ essay.body | slice:":400"}}</p>

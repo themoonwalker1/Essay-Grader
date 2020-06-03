@@ -11,7 +11,9 @@ from django.db import models
 from operator import attrgetter
 from django import forms
 import json
-from .tasks import grade_essay
+from .tasks import grade_all
+from celery.result import ResultBase
+from time import sleep
 
 
 # Create your views here.
@@ -293,21 +295,61 @@ def teacher(request):
 
     return render(request, "teacher.html", context)
 
-
+# def get_celery_worker_status():
+#         ERROR_KEY = "ERROR"
+#         print("aaaaaa")
+#         try:
+#             from celery.app.control import Inspect
+#             insp = Inspect()
+#             print(insp is not None)
+#             d = None
+#             try:
+#                 d = insp.stats()
+#             except Exception as e:
+#                 print(e)
+#             print("qwqewqe")
+#             if not d:
+#                 print("sssssss")
+#                 d = { ERROR_KEY: 'No running Celery workers were found.' }
+#         except IOError as e:
+#             from errno import errorcode
+#             msg = "Error connecting to the backend: " + str(e)
+#             if len(e.args) > 0 and errorcode.get(e.args[0]) == 'ECONNREFUSED':
+#                 msg += ' Check that the RabbitMQ server is running.'
+#             d = { ERROR_KEY: msg }
+#             print("sdfs")
+#             return d
+#         except ImportError as e:
+#             d = { ERROR_KEY: str(e)}
+#             print("wqweqrwer")
+#             return d
+#         print("wqqwq")
+#         return d
+        
 @login_required(login_url="login")
 def grade(request, pk):  # max 7973 characters/request, <100 requests/day
-
     if not request.user.teacher:
         return redirect("home")
 
     essays = Essay.objects.all().filter(assignment=Assignment.objects.get(pk=pk))
-    print(essays)
+    ids = []
+
     for essay in essays:
-        # send celery worker to grade the essay
-        print(essay.graded)
         if not essay.graded:
-            print("inside")
-            essay.marked_body = grade_essay.delay(essay.pk)
+            ids.append(essay.id)
+    
+    results = grade_all(ids)
+
+    #results = [v for v in ret.collect() if not isinstance(v, (ResultBase, tuple))]
+
+    for result in results:
+        print(results)
+        essay = Essay.objects.get(id=result[0])
+        essay.graded = True
+        essay.marked_body = result[1]
+        essay.save()
+
+    essays = Essay.objects.all().filter(assignment=Assignment.objects.get(pk=pk))
 
     context = {
         'essays': essays
@@ -319,6 +361,7 @@ def grade(request, pk):  # max 7973 characters/request, <100 requests/day
 @login_required(login_url="login")
 def teacher_detail(request, pk):
     context = {}
+    essays = []
     user = request.user
 
     if not user.teacher:
