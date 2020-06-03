@@ -166,5 +166,14 @@
 		<footer class="navbar-light bg-light appear navbar-bar">
 			<a class="navbar-brand" style="display:inline-block; vertical-align:middle; font-size: 1.2vw;"><h6>Created by: Aditya Vasantharao (2023), Chinmay Bhandaru (2023), Karthik Bhargav (2023)</h6></a>
 		</footer>
+        <script>
+            function interval(){
+                setTimeout(disableButton, 1);
+            }
+            function disableButton(){
+                document.getElementById("btn").disabled = true;
+                console.log(document.getElementById("btn").disabled)
+            }
+        </script>
     </body>
 </html>

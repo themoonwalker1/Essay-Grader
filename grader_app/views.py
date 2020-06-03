@@ -196,10 +196,8 @@ def index(request):
 
         for q in queries:
             essays = Essay.objects.filter(
-                Q(assignment__icontains=q) |
                 Q(title__icontains=q) |
-                Q(body__icontains=q) |
-                Q(teacher__icontains=q)
+                Q(body__icontains=q)
             ).order_by('-created_on').distinct()
 
             for essay in essays:
@@ -227,33 +225,18 @@ def submit(request):
     context = {}
     form = EssayForm(request.POST or None, **{'user' : request.user})
     if request.method == 'POST':
-        print(request.POST)
-        temp = request.POST._mutable
-        request.POST._mutable = True
-        assignment_id = int(request.POST.get('assignment')) - 1
-        teacher_id = User.objects.get(email=request.POST.get('teachers'))
-        assignments = list(teacher_id.assignments.all())
-        assigned = assignments[assignment_id]
-        request.POST['assignment'] = str(assigned.pk)
-        request.POST._mutable = temp
         print("\n\n\n\n\n\n",request.POST,"\n\n\n")
         if form.is_valid():
             essay = Essay(
                 title=form.cleaned_data["title"],
                 body=form.cleaned_data["body"],
                 author=request.user,
-                assignment=assigned,
+                assignment=form.cleaned_data["assignment"],
                 teacher=User.objects.get(email=form.cleaned_data["teachers"]),
                 citation_type=form.cleaned_data["citation_type"]
             )
             essay.save()
             return redirect("home")
-        print(form.cleaned_data["title"],
-              form.cleaned_data["body"],
-              request.user,
-              #form.cleaned_data["assignment"],
-              form.cleaned_data["teachers"],
-              form.cleaned_data["citation_type"])
     context = {
         'form': form,
     }
@@ -296,10 +279,8 @@ def teacher(request):
 
         for q in queries:
             essays = Essay.objects.filter(teacher=user.email).filter(
-                Q(assignment__icontains=q) |
                 Q(title__icontains=q) |
-                Q(body__icontains=q) |
-                Q(teacher__icontains=q)
+                Q(body__icontains=q)
             ).order_by('-created_on').distinct()
 
             for essay in essays:

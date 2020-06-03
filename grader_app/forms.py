@@ -21,8 +21,8 @@ class AssignmentForm(forms.Form):
 
 
 class EssayForm(forms.Form):
-    teachers = forms.ChoiceField()
-    assignment = forms.ModelChoiceField(queryset=Assignment.objects.all())
+    teachers = forms.ChoiceField(required=True)
+    assignment = forms.ModelChoiceField(queryset=Assignment.objects.all(), required=True)
     title = forms.CharField(
         max_length=500,
         widget=forms.TextInput(attrs={
@@ -61,15 +61,6 @@ class EssayForm(forms.Form):
                     self.fields.get(field).disabled = True
             print("thingy:-", thingy)
             self.fields['teachers'] = forms.ChoiceField(choices=thingy, required=True, disabled=empty)
-
-            # stuff=[]
-            # if not empty:
-            #     list_of_assignments = list(Assignment.objects.all())
-            #     list_of_numbers = range(len(list_of_assignments))
-            #     stuff = list(zip(list_of_assignments, list_of_numbers))
-            # print("stuff:- ", stuff)
-            #
-            # self.fields['assignment'] = forms.ChoiceField(choices=stuff , required=True, disabled=empty)
 
 
 class LoginForm(forms.Form):
