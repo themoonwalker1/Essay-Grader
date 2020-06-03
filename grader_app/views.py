@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
-from .models import Essay, Assignment
-from .forms import EssayForm, LoginForm, InfoForm, ChangeForm, TeacherForm, AssignmentForm
+from .models import Essay, Assignment, Comment
+from .forms import EssayForm, LoginForm, InfoForm, ChangeForm, TeacherForm, AssignmentForm, CommentForm
 from django.contrib.auth.decorators import login_required
 from requests_oauthlib import OAuth2Session
 from .models import User
@@ -250,8 +250,26 @@ def load_assignments(request):
 @login_required(login_url="login")
 def detail(request, pk):
     essay = Essay.objects.get(pk=pk)
+
+    if request.method == "POST":
+
+        form = CommentForm(request.POST or None)
+        print(request.POST)
+        if form.is_valid():
+            c = Comment(
+                author=request.user,
+                body=form.cleaned_data.get("Comment"),
+                essay=essay
+            )
+            c.save()
+
+
+    form = CommentForm(None)
+    comments = Comment.objects.filter(essay=essay)
     context = {
-        'essay': essay
+        'essay': essay,
+        'comments': comments,
+        'form': form
     }
 
     return render(request, "detail.html", context)
@@ -481,7 +499,7 @@ def assignment(request):
                 user.save()
 
                 students = list()
-                for student in User.objects.all().fliter(student=True):
+                for student in User.objects.all().filter(student=True):
                     for teacher in student.get_teachers().values():
                         if teacher != "":
                             t = User.objects.get(email=teacher)
@@ -502,9 +520,26 @@ def teacher_essays(request, pk1, pk2):
         return redirect("home")
 
     essay = Essay.objects.all().get(pk=pk2)
+    if request.method == "POST":
+
+        form = CommentForm(request.POST or None)
+        print(request.POST)
+        if form.is_valid():
+            c = Comment(
+                author=request.user,
+                body=form.cleaned_data.get("Comment"),
+                essay=essay
+            )
+            c.save()
+
+
+    form = CommentForm(None)
+    comments = Comment.objects.filter(essay=essay)
 
     context = {
         "essay": essay,
+        "form": form,
+        "comments":comments
     }
     return render(request, "teacher_detail_essay.html", context)
 

@@ -3,8 +3,15 @@ from django.contrib.auth.forms import ReadOnlyPasswordHashField
 
 from .models import User, Essay, Assignment
 
-dropdown = (("None", "None"), ("APA", "APA"), ("MLA", "MLA"))
+class CommentForm(forms.Form):
+    Comment = forms.CharField(widget=forms.TextInput(
+        attrs={
+            "class": "form-control",
+            "placeholder": "Leave a comment!"
+        })
+    )
 
+dropdown = (("None", "None"), ("APA", "APA"), ("MLA", "MLA"))
 
 class AssignmentForm(forms.Form):
     assignment_name = forms.CharField(max_length=150, widget=forms.TextInput(attrs={
