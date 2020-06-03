@@ -35,7 +35,7 @@
 
             <form action="{% url 'grade'%}" method="post" style="width:8%; display:inline-block;">
                 {% csrf_token %}
-                <button type="submit" class="btn btn-primary" style="top:50%;">Grade</button>
+                <button type="submit" class="btn btn-primary" id="btn" style="top:50%;">Grade</button>
             </form>
 
         {% else %}

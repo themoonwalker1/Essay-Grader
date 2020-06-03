@@ -55,13 +55,13 @@
 		{{ form.as_p }}
 		
 		<div style="margin-top:5px; margin-bottom:10px;" >
-			<button type="submit" class="btn btn-primary" onclick="interval()" value="{{ next }}">Submit</button>
+			<button type="submit" class="btn btn-primary" onclick="interval()" id="btn" value="{{ next }}">Submit</button>
 		</div>
 		
 	</form>-->
 	<center>
 	<p style="font-size:15; width:90%; margin-left:3px; margin-right:3px;">Log in with <b>Ion</b></p>
-	<a href="{{ url }}" class="button login ion" onclick="interval()" style=" width:95%; margin-bottom:13px;" value="login"><img src="https://avatars2.githubusercontent.com/u/10491321?s=400&u=4538843ad192aa96fb4c18223fcaa5e157a0e063&v=4" alt="" width="40" height="40"/></a>
+	<a href="{{ url }}" class="button login ion" onclick="interval()" id="btn" style=" width:95%; margin-bottom:13px;" value="login"><img src="https://avatars2.githubusercontent.com/u/10491321?s=400&u=4538843ad192aa96fb4c18223fcaa5e157a0e063&v=4" alt="" width="40" height="40"/></a>
 	</center>
 </div>
 {% endblock %}
