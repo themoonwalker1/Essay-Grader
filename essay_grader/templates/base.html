@@ -20,11 +20,11 @@
                         <a class="navbar-brand navbar-link" href="http://localhost:8000/teacher/assignment">Add Assignment</a>
                         <a class="navbar-brand navbar-link" href="http://localhost:8000/teacher/home">Grade</a>
 					{% endif %}
-                        <a class="navbar-brand navbar-link" href="{% url 'logout' %}">Logout</a>
-                        <a class="navbar-brand" style="padding-left: 3em;vertical-align:middle;font-size: 1.2vw;">You are logged in as {{ user.first_name }} {{ user.last_name }}</a>
-                        <a style="vertical-align:middle; position:relative; top:-3px; padding-left: 2vw;" href="{% url 'settings_info' %}"><img
-                                class="gear" src="https://freeiconshop.com/wp-content/uploads/edd/settings-solid.png"
-                                alt="" height="18vw" width="18vw"/></a>
+                    <a class="navbar-brand navbar-link" href="{% url 'logout' %}">Logout</a>
+                    <a class="navbar-brand" style="padding-left: 3em;vertical-align:middle;font-size: 1.2vw;">You are logged in as {{ user.first_name }} {{ user.last_name }}</a>
+                    <a style="vertical-align:middle; position:relative; top:-3px; padding-left: 2vw;" href="{% url 'settings_info' %}"><img
+                            class="gear" src="https://freeiconshop.com/wp-content/uploads/edd/settings-solid.png"
+                            alt="" height="18vw" width="18vw"/></a>
                 {% else %}
                     <a class="navbar-brand" href="{% url 'login' %}" style="padding-left: 2em;">Login</a>
 					<!--
@@ -51,10 +51,12 @@
                 padding-left: 1vw;
                 vertical-align: middle;
                 font-size: .7vw;
+                color: var(--font-color) !important;
             }
             .navbar-title {
                 text-decoration: none;
                 padding-left: 1em;
+                color: var(--color-primary) !important;
             }
             .navbar-title:hover {
                 text-decoration: none;
@@ -62,11 +64,23 @@
             .navbar-link {
                 vertical-align:middle;
                 font-size: 1.2vw;
-                color: #6c757d !important;
+                color: var(--font-color) !important;
             }
             .navbar-link:hover {
                 color: #343a40 !important;
             }
+			.theme-light {
+			  --color-primary: #0060df;
+			  --color-secondary: #fbfbfe;
+			  --color-accent: #fd6f53;
+			  --font-color: #000000;
+			}
+			.theme-dark {
+			  --color-primary: #17ed90;
+			  --color-secondary: #2a2c2d;
+			  --color-accent: #12cdea;
+			  --font-color: #ffffff;
+			}
             .search-bar{
                 max-width: 500px;
                 width: 100%;
@@ -114,18 +128,6 @@
 				to {
 					transform:rotate(360deg);
 				}
-			}
-			.theme-light {
-			  --color-primary: #0060df;
-			  --color-secondary: #fbfbfe;
-			  --color-accent: #fd6f53;
-			  --font-color: #000000;
-			}
-			.theme-dark {
-			  --color-primary: #17ed90;
-			  --color-secondary: #2a2c2d;
-			  --color-accent: #12cdea;
-			  --font-color: #ffffff;
 			}
 			footer {
 			   margin-top: 1em;

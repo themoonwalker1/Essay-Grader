@@ -95,9 +95,6 @@ def login(request):
                     new_user.middle_name = profile.get("middle_name")
                     new_user.last_name = profile.get("last_name")
                     new_user.year_in_school = profile.get("grade").get("name").upper()[:3]
-                    a = Assignment(assignment_description="-------------", assignment_name="-------------")
-                    a.save()
-                    new_user.assignments.add(a)
                     new_user.save()
                     user = auth.authenticate(email=email,
                                              password=profile.get("ion_username") + profile.get("user_type"))
@@ -144,10 +141,6 @@ def create(request):
                 
             if not error:
                 new_user = User.objects.create_studentuser(email=email, password=password)
-                a = Assignment(assignment_description="-------------", assignment_name="-------------")
-                a.save()
-                new_user.assignments.add(a)
-                new_user.save()
 
                 user = auth.authenticate(email=email, password=password)
                 auth.login(request, user)
@@ -181,7 +174,7 @@ def setup(request) :
             return redirect("home")
     return render(request, "setup.html", context) '''
 
-
+@login_required(login_url="login")
 def index(request):
     essays = []
     query = ""
@@ -195,7 +188,7 @@ def index(request):
         queries = query.split(" ")
 
         for q in queries:
-            essays = Essay.objects.filter(
+            essays = Essay.objects.filter(author=profile).filter(
                 Q(title__icontains=q) |
                 Q(body__icontains=q)
             ).order_by('-created_on').distinct()
@@ -205,10 +198,10 @@ def index(request):
 
         essays = list(set(queryset))
 
-    if request.user.is_authenticated and request.user.teacher and not request.user.admin:
+    if request.user.teacher and not request.user.admin:
         return redirect("teacher")
 
-    if request.user.is_authenticated and essays == []:
+    if essays == []:
         essays = Essay.objects.all().order_by('-created_on')
 
     context = {
@@ -222,11 +215,11 @@ def index(request):
 
 @login_required(login_url="login")
 def submit(request):
-    context = {}
     form = EssayForm(request.POST or None, **{'user' : request.user})
     if request.method == 'POST':
         print("\n\n\n\n\n\n",request.POST,"\n\n\n")
         if form.is_valid():
+
             essay = Essay(
                 title=form.cleaned_data["title"],
                 body=form.cleaned_data["body"],
@@ -245,11 +238,11 @@ def submit(request):
 
 def load_assignments(request):
     teacher = request.GET.get('teacher')
-    if "------------------------------------" != teacher:
+    if "-SELECT-" != teacher:
         assigns = User.objects.get(email=teacher).assignments.all()
-
+        print(assigns)
     else:
-        assigns = "<option value="">------------------------------------</option>"
+        assigns = Assignment.objects.none()
     return render(request, 'submit_options.html', {'assignments': assigns})
 
 
@@ -266,71 +259,55 @@ def detail(request, pk):
 @login_required(login_url="login")
 def teacher(request):
     user = request.user
-
+    assignments = []
+    query = ""
     if not user.teacher:
         return redirect("http://localhost:8000/home")
+    context = {}
 
-    query = ""
+    if request.method == "GET":
+        query = request.GET.get('q', 'Search for an essay')
 
-    if request.GET:
-        query = request.GET.get("q", "")
+    if query != "":
         queryset = []
         queries = query.split(" ")
 
         for q in queries:
-            essays = Essay.objects.filter(teacher=user.email).filter(
-                Q(title__icontains=q) |
-                Q(body__icontains=q)
-            ).order_by('-created_on').distinct()
+            assignments = user.assignments.all().filter(
+                Q(assignment_description__icontains=q) |
+                Q(assignment_name__icontains=q)
+            ).order_by('assignment_name').distinct()
 
-            for essay in essays:
-                queryset.append(essay)
+            for assignment in assignments:
+                queryset.append(assignment)
 
-        essays = list(set(queryset))
+        assignments = list(set(queryset))
 
-    else:
-        try:
-            essays = Essay.objects.all().filter(teacher=user.email).order_by('-created_on')
-        except Essay.DoesNotExist:
-            essays = []
+    if request.user.teacher and not request.user.admin:
+        return redirect("teacher")
 
-    context = {
-        'essays': essays,
-        'name': user.get_full_name(),
-        "search": query != ""
-    }
+    if assignments == []:
+        assignments = user.assignments.all().order_by('assignment_name')
+
+    context['assignments'] = assignments
+
     return render(request, "teacher.html", context)
 
 
 @login_required(login_url="login")
-def grade(request):  # max 7973 characters/request, <100 requests/day
+def grade(request, pk):  # max 7973 characters/request, <100 requests/day
 
     if not request.user.teacher:
         return redirect("home")
 
-    if request.GET:
-        query = request.GET.get("q", "")
-        queryset = []
-
-        essays = Essay.objects.filter(teacher=request.user.email).filter(
-            Q(assignment__icontains=query)
-        ).order_by('-created_on').distinct()
-        for essay in essays:
-            # send celery worker to grade the essay
-            grade_essay.delay(essay.id)
-
-        context = {
-            'essays': essays
-        }
-
-        return render(request, "grade.html", context)
-
-    essays = []
-
-    for essay in Essay.objects.filter(teacher=request.user.email):
-        if essay.marked_body != "":
-            print(essay.marked_body)
-            essays.append(essay)
+    essays = Essay.objects.all().filter(assignment=Assignment.objects.get(pk=pk))
+    print(essays)
+    for essay in essays:
+        # send celery worker to grade the essay
+        print(essay.graded)
+        if not essay.graded:
+            print("inside")
+            essay.marked_body = grade_essay.delay(essay.pk)
 
     context = {
         'essays': essays
@@ -339,46 +316,24 @@ def grade(request):  # max 7973 characters/request, <100 requests/day
     return render(request, "grade.html", context)
 
 
-def reformat(body):
-    temp = body.split("\r\n")
-    tempText = "<p>"
-
-    for paragraph in temp:
-        tempText += paragraph + "</p><p>"
-
-    temp = tempText.split("\t")
-    tempText = "&emsp;"
-
-    for tab in temp:
-        tempText += tab + "&emsp;"
-
-    temp = ""
-    for word in tempText.split(" "):
-        if len(word) <= 4:
-            temp += word + " "
-        elif word[0:2] == "**":
-            temp += "<mark style=\"background-color:yellow;\"><b>" + word[2:len(word) - 2] + "</b></mark> "
-        else:
-            temp += word + " "
-
-    return temp + "</p>"
-
-
 @login_required(login_url="login")
 def teacher_detail(request, pk):
+    context = {}
     user = request.user
 
     if not user.teacher:
         redirect("home")
 
-    try:
-        essay = Essay.objects.get(pk=pk)
-    except Essay.DoesNotExist:
+    if Assignment.objects.filter(pk=pk).exists():
+        assignment = Assignment.objects.get(pk=pk)
+        essays = Essay.objects.filter(assignment=assignment)
+    else:
+        assignment = "None"
         essay = {}
+        context['error'] = "That Assignment Request Does Not Exist"
+    context['assignment'] = assignment
+    context['essays'] = essays
 
-    context = {
-        'essay': essay,
-    }
     return render(request, "teacher_detail.html", context)
 
 
@@ -512,3 +467,15 @@ def assignment(request):
         return render(request, "assignment.html", context)
     else:
         return redirect("home")
+
+@login_required(login_url="login")
+def teacher_essays(request, pk1, pk2):
+    if request.user.student and not request.user.admin:
+        return redirect("home")
+
+    essay = Essay.objects.all().get(pk=pk2)
+
+    context = {
+        "essay": essay,
+    }
+    return render(request, "teacher_detail_essay.html", context)

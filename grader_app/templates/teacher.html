@@ -11,12 +11,12 @@
     </div>
 
     <div class="col-md-8 offset-md-2" style="padding-top: 2em;">
-        <h1>Essays</h1>
+        <h1>Assignments</h1>
         <hr>
 
         {% if user.is_authenticated %}
         
-            {% if essays|length == 0 %}
+            {% if assignments|length == 0 %}
                 {% if search == False %}
                     <h3>None of your students submitted an Essay</h3> 
                 {% else %}           
@@ -24,19 +24,11 @@
                 {% endif %} 
             {% endif %}
     
-            {% for essay in essays %}
-                <h2><a href="{% url 'teacher_detail' essay.pk%}">{{ essay.title }}</a></h2>
-                <h3> Assignment: {{essay.assignment}}</h3>
-                <h4> By: {{essay.author}}</h4>
-                <h6> Created on {{ essay.created_on }}&emsp;&emsp;&emsp;{% if essay.citation_type != "None" %} Type: <b>{{essay.citation_type}}</b>  {% endif %}</h6>
-                <p>{{ essay.body | slice:":400"}}{% if essay.body|length > 400 %}...{% endif %}</p>
+            {% for assignment in assignments %}
+                <h2><a href="{% url 'teacher_detail' assignment.pk%}">{{ assignment.assignment_name }}</a></h2>
+                <h6> {{ assignment.assignment_description }}</h6>
                 <hr>
             {% endfor %}
-
-            <form action="{% url 'grade'%}" method="post" style="width:8%; display:inline-block;">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-primary" id="btn" style="top:50%;">Grade</button>
-            </form>
 
         {% else %}
             <h4 style="padding-bottom: 1em;">You are not logged in. Please log in to submit or view your essays.</h4>

@@ -14,7 +14,7 @@ class Assignment(models.Model):
     assignment_description = models.TextField()
 
     def __str__(self):
-        return "%s - %s" % (self.assignment_name, self.assignment_description)
+        return self.assignment_name
 
 
 dropdown = (("None", "None"), ("APA", "APA"), ("MLA", "MLA"))
@@ -131,7 +131,7 @@ class User(AbstractBaseUser):
         return self.email
 
     def get_full_name(self):
-        return "%s %s %s" % (self.first_name, self.middle_name, self.last_name)
+        return "%s %s" % (self.first_name, self.last_name)
 
     def get_short_name(self):
         return self.first_name
@@ -140,7 +140,7 @@ class User(AbstractBaseUser):
         return self.year_in_school
 
     def __str__(self):
-        return self.email
+        return self.get_full_name()
 
     def has_perm(self, perm, obj=None):
         return True

@@ -51,7 +51,7 @@ class EssayForm(forms.Form):
                     thingy.append((temp[teacher], temp[teacher]))
 
             if len(thingy) >= 1:
-                thingy.insert(0, ("------------------------------------", "------------------------------------"))
+                thingy.insert(0, ("-SELECT-", "-SELECT-"))
 
             empty = False
             if len(thingy) == 0:

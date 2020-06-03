@@ -15,14 +15,18 @@
 
     {% else %}
 
+		<div class="col-md-7 offset-md-3 container" style="padding-top: 2em; width:70%; text-align: left;">
+        <h2>Graded Essays</h2>
+        <hr>
         {% for essay in essays %}
             <h2><a href="{% url 'teacher_detail' essay.pk%}">{{ essay.title }}</a></h2>
             <h3> Assignment: {{essay.assignment}}</h3>
             <h4> By: {{essay.author}}</h4>
             <h6> Created on {{ essay.created_on }}&emsp;&emsp;&emsp;{% if essay.citation_type != "None" %} Type: <b>{{essay.citation_type}}</b>  {% endif %}</h6>
-            <p>{{ essay.marked_body }}</p>
+            <p>{{ essay.marked_body | safe}}</p>
             <hr>
         {% endfor %}
+        </div>
 
     {% endif %}
 
