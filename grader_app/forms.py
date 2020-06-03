@@ -77,9 +77,9 @@ class LoginForm(forms.Form):
 
 
 class SetupForm(forms.Form):
-    first_name = forms.CharField(max_length=150, required=True)
-    middle_name = forms.CharField(max_length=150)
-    last_name = forms.CharField(max_length=150, required=True)
+    first_name = forms.CharField(max_length=150, required=True, widget=forms.TextInput(attrs={"class": "form-control"}))
+    middle_name = forms.CharField(max_length=150, widget=forms.TextInput(attrs={"class": "form-control"}))
+    last_name = forms.CharField(max_length=150, required=True, widget=forms.TextInput(attrs={"class": "form-control"}))
     FRESHMAN = 'FR'
     SOPHOMORE = 'SO'
     JUNIOR = 'JR'
@@ -139,9 +139,9 @@ class TeacherForm(forms.Form):
 
 
 class RegisterForm(forms.ModelForm):
-    password = forms.CharField(widget=forms.PasswordInput)
-    password2 = forms.CharField(label='Confirm password', widget=forms.PasswordInput)
-
+    password = forms.CharField(widget=forms.PasswordInput(attrs={"class": "form-control"}))
+    password2 = forms.CharField(label='Confirm password', widget=forms.PasswordInput(attrs={"class": "form-control"}))
+    email = forms.EmailField(widget=forms.TextInput(attrs={"class": "form-control"}))
     class Meta:
         model = User
         fields = ('email',)

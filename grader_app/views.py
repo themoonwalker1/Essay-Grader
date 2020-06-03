@@ -1,8 +1,17 @@
-from django.shortcuts import render, redirect
-from .models import Essay, Assignment, Comment
-from .forms import EssayForm, LoginForm, InfoForm, ChangeForm, TeacherForm, AssignmentForm, CommentForm
+import email.message
+import json
+import smtplib
+
+from django import forms
+from django.contrib import auth
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+from django.shortcuts import render, redirect
 from requests_oauthlib import OAuth2Session
+
+from .forms import EssayForm, LoginForm, InfoForm, ChangeForm, TeacherForm, AssignmentForm, CommentForm, RegisterForm, \
+    SetupForm
+from .models import Essay, Assignment, Comment
 from .models import User
 from django.contrib import auth
 from django.db.models import Q
@@ -12,6 +21,7 @@ from celery.result import ResultBase
 from time import sleep
 import smtplib
 import email.message
+from .tasks import grade_essay
 
 # Create your views here.
 
@@ -21,14 +31,13 @@ def login(request):
     if request.user is not None and request.user.is_authenticated:
         return redirect("home")
 
-
     context = {
         'url': 'login'
     }
 
     CODE = None
     CLIENT_ID = "FeZBHle5SNytiEwAh333mPmoEmfFDQSF1Jigy2bW"
-    CLIENT_SECRET = "saNPOvrrCGhNK1TywLjTsKo3M5uFzfQEgUtTpvvZsNIQPB75eeWYqhBxYMZJb0lKG5LZRZx1ZVN7ZUEiUUUqPeE8GMH0ZwdhbG4yNKKYmcCDu0UXV2gopeUB3B4cAIzw"
+    CLIENT_SECRET = "saNPOvrrCGhNK1TywLjTsKo3M5uFzfQEgUtTpvvZsNIQPB75eeWYqhBxYMZJb0lKG5LZRZx1ZVN7ZUEiUUUqPeE8GMH0ZwdhbG4yNKKYmcCDu0UXV2gopeUB3B4cAIzw "
     if request.method == 'POST':
         form = LoginForm(request.POST)
 
@@ -44,13 +53,13 @@ def login(request):
                 context['form'] = form
 
             context['error'] = "Username or Password is incorrect"
-
         else:
             form = LoginForm()
             context['form'] = form
 
-
-    else:
+    elif request.method == "GET" or request.user is None:
+        form = LoginForm()
+        context['form'] = form
         oauth = OAuth2Session(CLIENT_ID,
                               redirect_uri="http://localhost:8000/login",
                               scope=["read"])
@@ -111,11 +120,12 @@ def login(request):
 def logout(request):
     auth.logout(request)
     return redirect("home")
-    '''
-def create(request):    
+
+
+def create(request):
     if request.user.is_authenticated:
         return redirect("home")
-    context = {"method" : request.method}
+    context = {"method": request.method}
     if request.method == "POST":
         form = RegisterForm(request.POST)
         if form.is_valid():
@@ -128,7 +138,7 @@ def create(request):
             except forms.ValidationError:
                 context['Error1'] = "Email is already taken"
                 error = True
-                
+
             try:
                 password = form.clean_password2()
                 if len(password) < 8:
@@ -139,7 +149,7 @@ def create(request):
             except ValueError:
                 context['Error2'] = "Passwords need to be at least 8 characters"
                 error = True
-                
+
             if not error:
                 new_user = User.objects.create_studentuser(email=email, password=password)
 
@@ -152,16 +162,17 @@ def create(request):
         else:
             form = RegisterForm()
             context['form'] = form
-                
+
     else:
         form = RegisterForm()
         context['form'] = form
     return render(request, "create.html", context)
-            
-def setup(request) :
+
+
+def setup(request):
     context = {
-        "method" : request.method,
-        "form" : SetupForm()
+        "method": request.method,
+        "form": SetupForm()
     }
     if context['method'] == "POST":
         form = SetupForm(request.POST)
@@ -173,7 +184,8 @@ def setup(request) :
             user.year_in_school = form.cleaned_data.get('year_in_school')
             user.save()
             return redirect("home")
-    return render(request, "setup.html", context) '''
+    return render(request, "setup.html", context)
+
 
 @login_required(login_url="login")
 def index(request):
@@ -216,9 +228,9 @@ def index(request):
 
 @login_required(login_url="login")
 def submit(request):
-    form = EssayForm(request.POST or None, **{'user' : request.user})
+    form = EssayForm(request.POST or None, **{'user': request.user})
     if request.method == 'POST':
-        print("\n\n\n\n\n\n",request.POST,"\n\n\n")
+        print("\n\n\n\n\n\n", request.POST, "\n\n\n")
         if form.is_valid():
             assignment = form.cleaned_data["assignment"]
             essay = Essay(
@@ -230,8 +242,12 @@ def submit(request):
                 citation_type=form.cleaned_data["citation_type"]
             )
             essay.save()
-            message = """Your student %s has just submitted an Essay for the assignment %s. \n\nYou also currently have %s submissions for that assignment.\n\n-------------------------------------------------\n\n%s\n\n%s""" % (request.user, assignment.assignment_name, Essay.objects.filter(assignment=assignment).count(), essay.title, essay.body[:400] + "...")
-            send_email(message=message, subject="New Submission for assignment %s." % (assignment.assignment_name), emails=[form.cleaned_data["teachers"]])
+            message = """Your student %s has just submitted an Essay for the assignment %s. \n\nYou also currently have %s submissions for that assignment.\n\n-------------------------------------------------\n\n%s\n\n%s""" % (
+                request.user, assignment.assignment_name, Essay.objects.filter(assignment=assignment).count(),
+                essay.title,
+                essay.body[:400] + "...")
+            send_email(message=message, subject="New Submission for assignment %s." % (assignment.assignment_name),
+                       emails=[form.cleaned_data["teachers"]])
             return redirect("home")
     context = {
         'form': form,
@@ -264,7 +280,6 @@ def detail(request, pk):
                 essay=essay
             )
             c.save()
-
 
     form = CommentForm(None)
     comments = Comment.objects.filter(essay=essay)
@@ -432,7 +447,7 @@ def settings_changePassword(request):
     profile = request.user
 
     context = {
-        'error' : "Cannot change password due to Ion login"
+        'error': "Cannot change password due to Ion login"
     }
 
     if request.method == 'POST':
@@ -498,7 +513,8 @@ def settings_changeTeachers(request):
             if not error:
                 profile.set_teachers(teachers)
                 profile.save()
-                message = """The student - %s - has added you in their teachers list.\n\nIf this is a mistake please contact them at "%s".""" % (request.user.get_full_name(), request.user.email)
+                message = """The student - %s - has added you in their teachers list.\n\nIf this is a mistake please contact them at "%s".""" % (
+                    request.user.get_full_name(), request.user.email)
                 emails = list()
                 for teacher in teachers.values():
                     if teacher != "" and not teacher in initial.values():
@@ -509,8 +525,6 @@ def settings_changeTeachers(request):
                 context['saved'] = True
         else:
             context['error'] = "Invalid Email(s)"
-
-
 
     form = TeacherForm(initial)
 
@@ -549,13 +563,15 @@ def assignment(request):
                             if t.email == user.email:
                                 students.append(student.email)
 
-                message = """Your teacher %s has just posted a new assignment - %s.\n\nAssignment description: %s""" % (user.get_full_name(), a.assignment_name, a.assignment_description)
+                message = """Your teacher %s has just posted a new assignment - %s.\n\nAssignment description: %s""" % (
+                    user.get_full_name(), a.assignment_name, a.assignment_description)
                 send_email(message, "New Assignment Alert", students)
                 return redirect("home")
 
         return render(request, "assignment.html", context)
     else:
         return redirect("home")
+
 
 @login_required(login_url="login")
 def teacher_essays(request, pk1, pk2):
@@ -575,14 +591,13 @@ def teacher_essays(request, pk1, pk2):
             )
             c.save()
 
-
     form = CommentForm(None)
     comments = Comment.objects.filter(essay=essay)
 
     context = {
         "essay": essay,
         "form": form,
-        "comments":comments
+        "comments": comments
     }
     return render(request, "teacher_detail_essay.html", context)
 

@@ -9,7 +9,8 @@
 	  padding: 8px 16px;
 	  text-align: center;
 	  text-decoration: none;
-	  display: inline-block;
+	  display: table-cell;
+	  align: bottom;
 	  font-size: 16px;
 	  margin: 4px 2px;
 	  transition-duration: 0.4s;
@@ -20,6 +21,7 @@
 	  -moz-appearance: button;
 	  appearance: button;
 	  text-decoration: none;
+	  width: 95%;
 	}
 	.login {
 	  background-color: #B7B7B7;
@@ -40,7 +42,7 @@
 		margin-top: -200px;
 		margin-left: -137.5px;
 		width: 275px;
-		/*min-height: 460px;*/
+		min-height: 450px;
 	}
 </style>
 
@@ -49,19 +51,20 @@
 {% block content %}
 <div class="col-md-8 offset-md-2 box navbar-light bg-light content" style="padding-top: 1.5em;">
     <h2><center>Login</center></h2>
-	<h6 style="color:red; padding-left:4px;">{{ error }}</h6><!--
-	<form action="{% url 'login' %}" style="padding-left:6px;" method="post">
+	<h6 style="color:red; padding-left:4px;">{{ error }}</h6>
+	<form action="{% url 'login' %}" method="post">
 		{% csrf_token %}
 		{{ form.as_p }}
 		
 		<div style="margin-top:5px; margin-bottom:10px;" >
-			<button type="submit" class="btn btn-primary" onclick="interval()" id="btn" value="{{ next }}">Submit</button>
+			<center><button style="width:50%;"type="submit" class="btn btn-primary" onclick="interval()" id="btn" value="{{ next }}">Login</button></center>
 		</div>
 		
-	</form>-->
+	</form>
+	<pre></pre>
 	<center>
-	<p style="font-size:15; width:90%; margin-left:3px; margin-right:3px;">Log in with <b>Ion</b></p>
-	<a href="{{ url }}" class="button login ion" onclick="interval()" id="btn" style=" width:95%; margin-bottom:13px;" value="login"><img src="https://avatars2.githubusercontent.com/u/10491321?s=400&u=4538843ad192aa96fb4c18223fcaa5e157a0e063&v=4" alt="" width="40" height="40"/></a>
+	<p style="font-size:15; width:90%; margin: 3px; padding:4px;">Or Log in with <b>Ion</b></p>
+	<a href="{{ url }}" class="button login ion" onclick="interval()" id="btn"  value="login"><img src="https://avatars2.githubusercontent.com/u/10491321?s=400&u=4538843ad192aa96fb4c18223fcaa5e157a0e063&v=4" alt="" width="40" height="40"/></a>
 	</center>
 </div>
 {% endblock %}
