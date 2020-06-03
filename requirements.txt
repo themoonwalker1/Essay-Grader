@@ -8,3 +8,4 @@ djangorestframework
 celery==3.1.25
 django-windows-tools
 django-celery
+nltk
