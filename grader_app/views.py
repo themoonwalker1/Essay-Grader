@@ -296,42 +296,42 @@ def detail(request, pk):
     return render(request, "detail.html", context)
 
 
-@login_required(login_url="login")
-def teacher(request):
-    user = request.user
-    assignments = []
-    query = ""
-    if not user.teacher:
-        return redirect("http://localhost:8000/home")
-    context = {}
-
-    if request.method == "GET":
-        query = request.GET.get('q', 'Search for an essay')
-
-    if query != "Search for an essay":
-        queryset = []
-        queries = query.split(" ")
-
-        for q in queries:
-            assignments = user.assignments.all().filter(
-                Q(assignment_description__icontains=q) |
-                Q(assignment_name__icontains=q)
-            ).order_by('assignment_name').distinct()
-
-            for assignment in assignments:
-                queryset.append(assignment)
-
-        assignments = list(set(queryset))
-
-    if request.user.teacher and not request.user.admin:
-        return redirect("teacher")
-
-    if assignments == []:
-        assignments = user.assignments.all().order_by('assignment_name')
-
-    context['assignments'] = assignments
-
-    return render(request, "teacher.html", context)
+# @login_required(login_url="login")
+# def teacher(request):
+#     user = request.user
+#     assignments = []
+#     query = ""
+#     if not user.teacher:
+#         return redirect("http://localhost:8000/home")
+#     context = {}
+#
+#     if request.method == "GET":
+#         query = request.GET.get('q', 'Search for an essay')
+#
+#     if query != "Search for an essay":
+#         queryset = []
+#         queries = query.split(" ")
+#
+#         for q in queries:
+#             assignments = user.assignments.all().filter(
+#                 Q(assignment_description__icontains=q) |
+#                 Q(assignment_name__icontains=q)
+#             ).order_by('assignment_name').distinct()
+#
+#             for assignment in assignments:
+#                 queryset.append(assignment)
+#
+#         assignments = list(set(queryset))
+#
+#     if request.user.teacher and not request.user.admin:
+#         return redirect("teacher")
+#
+#     if assignments == []:
+#         assignments = user.assignments.all().order_by('assignment_name')
+#
+#     context['assignments'] = assignments
+#
+#     return render(request, "teacher.html", context)
 
 
 # def get_celery_worker_status():
@@ -420,7 +420,17 @@ def reformat(body):
 
 
 @login_required(login_url="login")
-def teacher_detail(request, pk):
+def teacher(request):
+    context = {}
+    user = request.user
+
+    if not user.teacher:
+        redirect("home")
+
+    context['assignments'] = Assignment.objects.all()
+    return render(request, "teacher.html", context)
+
+def teacher_graded(request, pk):
     context = {}
     user = request.user
 
@@ -430,19 +440,33 @@ def teacher_detail(request, pk):
     if Assignment.objects.filter(pk=pk).exists():
         assignment = Assignment.objects.get(pk=pk)
         graded = Essay.objects.filter(assignment=assignment, graded=True)
-        not_graded = Essay.objects.filter(assignment=assignment, graded=False)
     else:
         assignment = "None"
         graded = []
-        not_graded = []
         context['error'] = "That Assignment Request Does Not Exist"
     context['assignment'] = assignment
     context['graded'] = graded
-    context['not_graded'] = not_graded
     print(graded)
-    print(not_graded)
-    return render(request, "teacher_detail.html", context)
+    return render(request, "teacher_graded.html", context)
 
+def teacher_not_graded(request, pk):
+    context = {}
+    user = request.user
+
+    if not user.teacher:
+        redirect("home")
+
+    if Assignment.objects.filter(pk=pk).exists():
+        assignment = Assignment.objects.get(pk=pk)
+        not_graded = Essay.objects.filter(assignment=assignment, graded=False)
+    else:
+        assignment = "None"
+        not_graded = []
+        context['error'] = "That Assignment Request Does Not Exist"
+    context['assignment'] = assignment
+    context['not_graded'] = not_graded
+    print(not_graded)
+    return render(request, "teacher_not_graded.html", context)
 
 @login_required(login_url="login")
 def settings_changeInfo(request):
@@ -599,35 +623,6 @@ def assignment(request):
         return render(request, "assignment.html", context)
     else:
         return redirect("home")
-
-
-@login_required(login_url="login")
-def teacher_essays(request, pk1, pk2):
-    if request.user.student and not request.user.admin:
-        return redirect("home")
-
-    essay = Essay.objects.all().get(pk=pk2)
-    if request.method == "POST":
-
-        form = CommentForm(request.POST or None)
-        if form.is_valid():
-            c = Comment(
-                author=request.user,
-                body=form.cleaned_data.get("Comment"),
-                essay=essay
-            )
-            c.save()
-
-    form = CommentForm(None)
-    comments = Comment.objects.filter(essay=essay)
-
-    context = {
-        "essay": essay,
-        "form": form,
-        "comments": comments
-    }
-    return render(request, "teacher_detail_essay.html", context)
-
 
 def send_email(message, subject, emails):
     m = email.message.Message()

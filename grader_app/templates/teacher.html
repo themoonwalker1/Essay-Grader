@@ -1,37 +1,218 @@
 {% extends "base.html" %}
+{% block head %}
+<style>
+    .a{
+        padding-left: 15px;
+        width:34%;
+        height:80vh;
+        float:left;
+        display: inline-block;
+    }
+    .b{
+        padding-right: 15px;
+        width: 63%;
+        height:80vh;
+        float:right;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+    }
 
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      -webkit-transition: .4s;
+      transition: .4s;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      -webkit-transition: .4s;
+      transition: .4s;
+    }
+
+    input:checked + .slider {
+      background-color: #565656;
+    }
+
+    input:focus + .slider {
+      box-shadow: 0 0 1px #2196F3;
+    }
+
+    input:checked + .slider:before {
+      -webkit-transform: translateX(26px);
+      -ms-transform: translateX(26px);
+      transform: translateX(26px);
+    }
+
+    .slider.round {
+      border-radius: 34px;
+    }
+
+    .slider.round:before {
+      border-radius: 50%;
+    }
+    .essay{
+        color: black;
+        vertical-align: center;
+    }
+    .essay:hover {
+        color: black;
+        background-color: #efefef;
+    }
+</style>
+{% endblock %}
 {% block content %}
 
-    <div class="wrapper">
-        <div class="search-bar mt-sm-2 mr-2 offset-md-2 col-md-8">
-            <form method="get">
-                <input type="text" class="form-control" name="q" id="id_q" placeholder="Search for Essay">
-            </form>
-        </div>
-    </div>
-
-    <div class="col-md-8 offset-md-2" style="padding-top: 2em;">
-        <h1>Assignments</h1>
-        <hr>
-
-        {% if user.is_authenticated %}
-        
-            {% if assignments|length == 0 %}
-                {% if search == False %}
-                    <h3>None of your students submitted an Essay</h3> 
-                {% else %}           
-                    <h3>No results based on your search</h3>
-                {% endif %} 
-            {% endif %}
-    
-            {% for assignment in assignments %}
-                <h2><a href="{% url 'teacher_detail' assignment.pk%}">{{ assignment.assignment_name }}</a></h2>
-                <h6> {{ assignment.assignment_description }}</h6>
-                <hr>
-            {% endfor %}
-
+        <div class="scrollable a">
+        {% if assignment == "None" %}
+            <h3>{{ error }}</h3>
         {% else %}
-            <h4 style="padding-bottom: 1em;">You are not logged in. Please log in to submit or view your essays.</h4>
+            <h2 style="display:inline-block;">Assignment</h2>
+            <h5>
+                <select class="form-control" id="assignment" >
+                    {% if assignments|length == 0 %}
+                        <option value="">No Assignments Made</option>
+                    {% else %}
+                    {% for assignment in assignments %}
+<!--                        <option value="">-SELECT-</option>-->
+                        <option value="{{assignment.pk}}">{{assignment.assignment_name}}</option>
+                    {% endfor %}
+                    {% endif %}
+                </select>
+            </h5>
         {% endif %}
-    </div>
+        <hr>
+            <div id="not_graded">
+            </div>
+            <div id="graded">
+            </div>
+        </div>
+        <div class="scrollable b" id="essay_box" thing="{% url 'ajax_load_essay' %}">
+
+        </div>
+        <footer class="navbar-light bg-light appear navbar-bar" style="height:50px;">
+            <div style="float: left; width: 35%;">
+            <div style="display: inline-block; float: left; margin-left: 10px; padding-left:10px; margin-top: 4px; padding-top:4px; ">
+            <h5 id="name_thing" style="display: inline-block;">Show Graded</h5>
+        <label id="switch" class="switch" style="display:inline-block;">
+            <input type="checkbox" onclick="toggleType()" id="slider">
+            <span class="slider round"></span>
+        </label>
+            </div>
+            <div style="float:right; margin-right: 10px; padding-right:10px; margin-top: 2.5px; ">
+            <button type="button" id="thingy" class="btn btn-primary" stuff="{% url 'grade' 123 %}" onclick="gradeAll()">Grade all Essays</button>
+            </div>
+            </div>
+        </footer>
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+        <script>
+            function showEssays(){
+                var pk = $("#assignment").val();
+                if (pk != ""){
+                    var url = "{% url 'teacher_graded' 123 %}";
+                    url = url.replace('123', pk);
+                    console.log(url);
+                    $.ajax({
+                        url: url,
+                        data:{},
+                        success: function (data) {
+                          console.log(data);
+                          $("#graded").html(data);
+                       }
+                    });
+                    url = "{% url 'teacher_not_graded' 123 %}";
+                    url = url.replace('123', pk);
+                    console.log(url);
+                    $.ajax({
+                        url: url,
+                        data:{},
+                        success: function (data) {
+                          console.log(data);
+                          $("#not_graded").html(data);
+                       }
+                    });
+                }
+            }
+            $("#assignment").change(showEssays);
+            function showEssay(i) {
+                console.log("Trying to show" + i);
+                var url = $("#essay_box").attr("thing");
+                $.ajax({
+                    url: url,
+                    data: {
+                      'pk': i
+                    },
+                    success: function (data) {
+                      console.log(data);
+                      $("#essay_box").html(data);
+                   }
+                  });
+            }
+            function gradeAll() {
+                console.log("Trying to grade");
+                var i = $("#assignment").val();
+                var url = $("#thingy").attr("stuff");
+                url = url.replace("123", i);
+                $.ajax({
+                    url: url,
+                    success: function (data) {
+                      console.log(data);
+                      $("#graded").html(data);
+                      $("#not_graded").html("<h3>None of your students submitted and essay for this assignment</h3><hr>");
+                   }
+                });
+                var g = document.getElementById('graded');
+                var ng = document.getElementById('not_graded');
+                g.style.display = "initial";
+                ng.style.display = "none";
+            }
+            function toggleType() {
+                console.log("Just has been toggled");
+                var g = document.getElementById('graded');
+                var ng = document.getElementById('not_graded');
+                $("#essay_box").html("");
+                if (g.style.display == "none"){
+                    g.style.display = "initial";
+                    ng.style.display = "none";
+                } else {
+                    g.style.display = "none";
+                    ng.style.display = "initial";
+                }
+            }
+            function onLoad(){
+              console.log('page is fully loaded');
+              showEssays();
+              var a = document.getElementsByClassName('assignment_list');
+              for (var i = 0; i < a.length; i++) {
+                a[i].style.height = window.clientHeight;
+                console.log(a[i].style.height);
+              }
+              var b = document.getElementById('graded');
+              b.style.display = "none";
+            }
+
+            function delay(){}
+            window.addEventListener('load', onLoad());
+        </script>
 {% endblock %}

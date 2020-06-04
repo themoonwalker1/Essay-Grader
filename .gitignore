@@ -7,6 +7,7 @@
 *.pot
 *.pyc
 essay_grader/__pycache__/*
+essay_grader/static/
 grader_app/__pycache__/*
 __pycache__/*
 grader_app/migrations/__pycache__/*
