@@ -1,34 +1,202 @@
 {% extends "base.html" %}
+{% block head %}
+<style>
+    .a{
+        padding-left: 15px;
+        width:34%;
+        height:80vh;
+        float:left;
+        display: inline-block;
+    }
+    .b{
+        padding-right: 15px;
+        width: 63%;
+        height:80vh;
+        float:right;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      -webkit-transition: .4s;
+      transition: .4s;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      -webkit-transition: .4s;
+      transition: .4s;
+    }
+
+    input:checked + .slider {
+      background-color: #565656;
+    }
+
+    input:focus + .slider {
+      box-shadow: 0 0 1px #2196F3;
+    }
+
+    input:checked + .slider:before {
+      -webkit-transform: translateX(26px);
+      -ms-transform: translateX(26px);
+      transform: translateX(26px);
+    }
+
+    .slider.round {
+      border-radius: 34px;
+    }
+
+    .slider.round:before {
+      border-radius: 50%;
+    }
+    .essay{
+        color: black;
+        vertical-align: center;
+    }
+    .essay:hover {
+        color: black;
+        background-color: #efefef;
+    }
+</style>
+{% endblock %}
 {% block content %}
 
-        <div class="wrapper">
-            <div class="search-bar mt-sm-2 mr-2 offset-md-2 col-md-8">
-                <form method="get">
-                    <input type="text" class="form-control" name="q" id="id_q" placeholder="Search for Essay">
-                </form>
-            </div>
-        </div>
-
-        <div class="col-md-8 offset-md-2" style="padding-top: 2em;">
+        <div class="scrollable a">
         {% if assignment == "None" %}
             <h3>{{ error }}</h3>
         {% else %}
-            <h2 style="display:inline-block;">Essays for assignment - {{ assignment.assignment_name }}</h2> <form action="{% url 'grade' assignment.pk %}" style="display:inline-block; float:right;"><div style="margin-top:5px;" ><button type="submit" class="btn btn-primary" onclick="interval()" id="btn">Grade all Essays</button></div>
-
-			</form>
+            <h2 style="display:inline-block;">Assignment - {{ assignment.assignment_name }}</h2>
         {% endif %}
         <hr>
-        {% if essays|length == 0 %}
+        <div id="not_graded">
+        {% if not_graded|length == 0 %}
             <h3>None of your students submitted and essay for this assignment</h3>
             <hr>
         {% else %}
-        {% for essay in essays %}
-            <h2><a href="{% url 'teacher_detail_essay' assignment.pk essay.pk%}" style="display:inline-block;">{{ essay.title }}</a>{% if not essay.graded %}<a style="color:red; display:inline-block; float: right;">Not Graded</a>{% else %}<a style="color:green; display:inline-block; float: right;">Graded</a>{% endif %}</h2>
-            <h4> By: {{essay.author.get_full_name}}</h4>
-            <h6> Created on {{ essay.created_on }}&emsp;&emsp;&emsp;{% if essay.citation_type != "None" %} Type: <b>{{essay.citation_type}}</b>  {% endif %}</h6>
+        {% for essay in not_graded %}
+            <a href="javascript:showEssay({{essay.pk}})" style="text-decoration: none;" class="essay">
+                <div class="essay" style="padding:6px;">
+                    <h5>{{ essay.title }} {% if not essay.graded %}<label style="color:red; display:inline-block; float: right; font-size:18px;">Not Graded</label>{% else %}<label style="color:green; display:inline-block; float: right; font-size:18px;">Graded</label>{% endif %}</h5>
+                    <h6> By: {{essay.author.get_full_name}}</h6>
+                    <h6> Created on {{ essay.created_on }}{% if essay.citation_type != "None" %} <label style="float:right;">Type: <b>{{essay.citation_type}}</b>  {% endif %}</label></h6>
+                </div>
+            </a>
             <hr>
         {% endfor %}
         {% endif %}
         </div>
+        <div id="graded">
+        {% if graded|length == 0 %}
+            <h3>None of your students submitted and essay for this assignment</h3>
+            <hr>
+        {% else %}
+        {% for essay in graded %}
+            <a href="javascript:showEssay({{essay.pk}})" style="text-decoration: none;" class="essay">
+                <div class="essay" style="padding:6px;">
+                    <h5>{{ essay.title }} {% if not essay.graded %}<label style="color:red; display:inline-block; float: right; font-size:18px;">Not Graded</label>{% else %}<label style="color:green; display:inline-block; float: right; font-size:18px;">Graded</label>{% endif %}</h5>
+                    <h6> By: {{essay.author.get_full_name}}</h6>
+                    <h6> Created on {{ essay.created_on }}{% if essay.citation_type != "None" %} <label style="float:right;">Type: <b>{{essay.citation_type}}</b>  {% endif %}</label></h6>
+                </div>
+            </a>
+            <hr>
+        {% endfor %}
+        {% endif %}
+        </div>
+        </div>
+        <div class="scrollable b" id="essay_box" thing="{% url 'ajax_load_essay' %}">
 
+        </div>
+        <footer class="navbar-light bg-light appear navbar-bar" style="height:50px;">
+            <div style="float: left; width: 35%;">
+            <div style="display: inline-block; float: left; margin-left: 10px; padding-left:10px; margin-top: 4px; padding-top:4px; ">
+            <h5 id="name_thing" style="display: inline-block;">Show Graded</h5>
+        <label id="switch" class="switch" style="display:inline-block;">
+            <input type="checkbox" onclick="toggleType()" id="slider">
+            <span class="slider round"></span>
+        </label>
+            </div>
+            <div style="float:right; margin-right: 10px; padding-right:10px; margin-top: 2.5px; ">
+            <button type="button" id="thingy" class="btn btn-primary" stuff="{% url 'grade' assignment.pk%}" onclick="gradeAll({{assignment.pk}})">Grade all Essays</button>
+            </div>
+            </div>
+        </footer>
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+        <script>
+            function showEssay(i) {
+                console.log("Trying to show" + i);
+                var url = $("#essay_box").attr("thing");
+                $.ajax({
+                    url: url,
+                    data: {
+                      'pk': i
+                    },
+                    success: function (data) {
+                      console.log(data);
+                      $("#essay_box").html(data);
+                   }
+                  });
+            }
+            function gradeAll(i) {
+                console.log("Trying to grade" + i);
+                var url = $("#thingy").attr("stuff");
+                $.ajax({
+                    url: url,
+                    success: function (data) {
+                      console.log(data);
+                      $("#graded").html(data);
+                      $("#not_graded").html("<h3>None of your students submitted and essay for this assignment</h3><hr>");
+                   }
+                });
+                var g = document.getElementById('graded');
+                var ng = document.getElementById('not_graded');
+                g.style.display = "initial";
+                ng.style.display = "none";
+            }
+            function toggleType() {
+                console.log("Just has been toggled");
+                var g = document.getElementById('graded');
+                var ng = document.getElementById('not_graded');
+                $("#essay_box").html("");
+                if (g.style.display == "none"){
+                    g.style.display = "initial";
+                    ng.style.display = "none";
+                } else {
+                    g.style.display = "none";
+                    ng.style.display = "initial";
+                }
+            }
+            window.addEventListener('load', (event) => {
+              console.log('page is fully loaded');
+              var a = document.getElementsByClassName('assignment_list');
+              for (var i = 0; i < a.length; i++) {
+                a[i].style.height = window.clientHeight;
+                console.log(a[i].style.height);
+              }
+              var b = document.getElementById('graded');
+              b.style.display = "none";
+            });
+        </script>
 {% endblock %}

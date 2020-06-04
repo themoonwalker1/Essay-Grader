@@ -1,39 +1,51 @@
 <!DOCTYPE html>
-<html lang="en" class="theme-light">
-    <head>
-        <title>TJHSST Essay Grader</title>
+<html class="theme-light" lang="en">
+<head>
+    <title>TJHSST Essay Grader</title>
 
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+    <link crossorigin="anonymous" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+          integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" rel="stylesheet">
+    <script crossorigin="anonymous"
+            integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+            src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script crossorigin="anonymous"
+            integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+            src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+    <script crossorigin="anonymous"
+            integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+            src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
 
-		<nav id="navbar" class="navbar navbar-light bg-light appear navbar-bar" style="padding-top: 0.5em;" onscroll="scroll">
+    <nav class="navbar navbar-light bg-light appear navbar-bar" id="navbar" onscroll="scroll"
+         style="padding-top: 0.5em;">
 
-                <a href="http://localhost:8000/home" class="navbar-title"><h1 style="font-size: 2.7vw !important;">Essay Grader</h1></a>
-                {% if user.is_authenticated %}
-					{% if user.student %}
-                        <a class="navbar-brand navbar-link" href="http://localhost:8000/submit">Submit</a>
-                    {% endif %}
+        <a class="navbar-title" href="http://localhost:8000/home"><h1 style="font-size: 2.7vw !important;">Essay
+            Grader</h1></a>
+        {% if user.is_authenticated %}
+        {% if user.student %}
+        <a class="navbar-brand navbar-link" href="http://localhost:8000/submit">Submit</a>
+        {% endif %}
 
-                    {% if user.teacher %}
-                        <a class="navbar-brand navbar-link" href="http://localhost:8000/teacher/assignment">Add Assignment</a>
-                        <a class="navbar-brand navbar-link" href="http://localhost:8000/teacher/home">Grade</a>
-					{% endif %}
-                    <a class="navbar-brand navbar-link" href="{% url 'logout' %}">Logout</a>
-                    <a class="navbar-brand" style="padding-left: 3em;vertical-align:middle;font-size: 1.2vw;">You are logged in as {{ user.first_name }} {{ user.last_name }}</a>
-                    <a style="vertical-align:middle; position:relative; top:-3px; padding-left: 2vw;" href="{% url 'settings_info' %}"><img
-                            class="gear" src="https://freeiconshop.com/wp-content/uploads/edd/settings-solid.png"
-                            alt="" height="18vw" width="18vw"/></a>
-                {% else %}
+        {% if user.teacher %}
+        <a class="navbar-brand navbar-link" href="http://localhost:8000/teacher/assignment">Add Assignment</a>
+        <a class="navbar-brand navbar-link" href="http://localhost:8000/teacher/home">Grade</a>
+        {% endif %}
+        <a class="navbar-brand navbar-link" href="{% url 'logout' %}">Logout</a>
+        <a class="navbar-brand" style="padding-left: 3em;vertical-align:middle;font-size: 1.2vw;">You are logged in as
+            {{ user.first_name }} {{ user.last_name }}</a>
+        <a href="{% url 'settings_info' %}"
+           style="vertical-align:middle; position:relative; top:-3px; padding-left: 2vw;"><img
+                alt="" class="gear"
+                height="18vw" src="https://freeiconshop.com/wp-content/uploads/edd/settings-solid.png"
+                width="18vw"/></a>
+        {% else %}
 
-                    <a class="navbar-brand" href="{% url 'create' %}" style="padding-left: 3em;">Create Account</a>
+        <a class="navbar-brand" href="{% url 'create' %}" style="padding-left: 3em;">Create Account</a>
 
-                {% endif %}
+        {% endif %}
 
-        </nav>
-		
-        <style type="text/css">
+    </nav>
+
+    <style type="text/css">
             *:before,
             *:after {
             box-sizing: inherit;
@@ -158,22 +170,32 @@
             margin: 0 auto;
             padding-bottom: 4rem;
            }
-        </style>
-        {% block head %}{% endblock head %}
-    </head>
+           div.scrollable{
+                overflow-x: hidden;
+                overflow-y: auto;
+                padding: 4px;
+                margin:4px;
+           }
 
-    <body>
-        <hr style="margin:0px; margin-top:10px; visibility:hidden;">
-		<footer class="navbar-light bg-light appear navbar-bar">
-			<a class="navbar-brand" style="display:inline-block; vertical-align:middle; font-size: 1.2vw;"><h6>Created by: Aditya Vasantharao (2023), Chinmay Bhandaru (2023), Karthik Bhargav (2023)</h6></a>
-		</footer>
-        <div class="contents">
-            {% block content %}{% endblock content %}
-        </div>
 
-    </body>
 
-    <script>
+    </style>
+    {% block head %}{% endblock head %}
+</head>
+
+<body>
+<hr style="margin:0px; margin-top:10px; visibility:hidden;">
+<footer class="navbar-light bg-light appear navbar-bar">
+    <a class="navbar-brand" style="display:inline-block; vertical-align:middle; font-size: 1.2vw;"><h6>Created by:
+        Aditya Vasantharao (2023), Chinmay Bhandaru (2023), Karthik Bhargav (2023)</h6></a>
+</footer>
+<div class="contents">
+    {% block content %}{% endblock content %}
+</div>
+
+</body>
+
+<script>
         function interval(){
             setTimeout(disableButton, 1);
         }
@@ -181,5 +203,8 @@
             document.getElementById("btn").disabled = true;
             console.log(document.getElementById("btn").disabled)
         }
-    </script>
+
+
+
+</script>
 </html>

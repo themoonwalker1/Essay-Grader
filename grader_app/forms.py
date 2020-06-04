@@ -38,7 +38,7 @@ class EssayForm(forms.Form):
             "placeholder": "Title"
         })
     )
-    body = forms.CharField(widget=forms.TextInput(
+    body = forms.CharField(widget=forms.Textarea(
         attrs={
             "class": "form-control",
             "placeholder": "Write your essay here!"

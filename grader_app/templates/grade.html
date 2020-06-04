@@ -1,33 +1,17 @@
-{% extends "base.html" %}
-{% block content %}
-
-    {% if essays|length == 0 %}
-
-        <h2>No graded assignments. Search for an assignment here to grade all of the essays in that assignment:</h2>
-
-        <div class="wrapper">
-            <div class="search-bar mt-sm-2 mr-2 offset-md-2 col-md-8">
-                <form method="get">
-                    <input type="text" class="form-control" name="q" id="id_q" placeholder="Search for Essay">
-                </form>
-            </div>
+<div id="graded">
+{% if essays|length == 0 %}
+    <h3>None of your students submitted and essay for this assignment</h3>
+    <hr>
+{% else %}
+{% for essay in essays %}
+    <a href="javascript:showEssay({{essay.pk}})" style="text-decoration: none;" class="essay">
+        <div class="essay" style="padding:6px;">
+            <h5>{{ essay.title }} {% if not essay.graded %}<label style="color:red; display:inline-block; float: right; font-size:18px;">Not Graded</label>{% else %}<label style="color:green; display:inline-block; float: right; font-size:18px;">Graded</label>{% endif %}</h5>
+            <h6> By: {{essay.author.get_full_name}}</h6>
+            <h6> Created on {{ essay.created_on }}{% if essay.citation_type != "None" %} <label style="float:right;">Type: <b>{{essay.citation_type}}</b>  {% endif %}</label></h6>
         </div>
-
-    {% else %}
-
-		<div class="col-md-7 offset-md-3 container" style="padding-top: 2em; width:70%; text-align: left;">
-        <h2>Graded Essays</h2>
-        <hr>
-        {% for essay in essays %}
-            <h2><a href="{% url 'teacher_detail' essay.pk%}">{{ essay.title }}</a></h2>
-            <h3> Assignment: {{essay.assignment}}</h3>
-            <h4> By: {{essay.author}}</h4>
-            <h6> Created on {{ essay.created_on }}&emsp;&emsp;&emsp;{% if essay.citation_type != "None" %} Type: <b>{{essay.citation_type}}</b>  {% endif %}</h6>
-            <p>{{ essay.marked_body | safe}}</p>
-            <hr>
-        {% endfor %}
-        </div>
-
-    {% endif %}
-
-{% endblock %}
+    </a>
+    <hr>
+{% endfor %}
+{% endif %}
+</div>

@@ -130,6 +130,7 @@ def create(request):
         form = RegisterForm(request.POST)
         if form.is_valid():
             error = False
+            email = password = ""
             try:
                 email = form.cleaned_data.get('email')
                 qs = User.objects.filter(email=email)
@@ -263,6 +264,12 @@ def load_assignments(request):
     return render(request, 'submit_options.html', {'assignments': assigns})
 
 
+def load_essay(request):
+    essay_pk = request.GET.get('pk')
+    essay = Essay.objects.get(pk=essay_pk)
+    return render(request, 'load_essay.html', {'essay': essay})
+
+
 @login_required(login_url="login")
 def detail(request, pk):
     essay = Essay.objects.get(pk=pk)
@@ -301,7 +308,7 @@ def teacher(request):
     if request.method == "GET":
         query = request.GET.get('q', 'Search for an essay')
 
-    if query != "":
+    if query != "Search for an essay":
         queryset = []
         queries = query.split(" ")
 
@@ -415,7 +422,6 @@ def reformat(body):
 @login_required(login_url="login")
 def teacher_detail(request, pk):
     context = {}
-    essays = []
     user = request.user
 
     if not user.teacher:
@@ -423,14 +429,18 @@ def teacher_detail(request, pk):
 
     if Assignment.objects.filter(pk=pk).exists():
         assignment = Assignment.objects.get(pk=pk)
-        essays = Essay.objects.filter(assignment=assignment)
+        graded = Essay.objects.filter(assignment=assignment, graded=True)
+        not_graded = Essay.objects.filter(assignment=assignment, graded=False)
     else:
         assignment = "None"
-        essay = {}
+        graded = []
+        not_graded = []
         context['error'] = "That Assignment Request Does Not Exist"
     context['assignment'] = assignment
-    context['essays'] = essays
-
+    context['graded'] = graded
+    context['not_graded'] = not_graded
+    print(graded)
+    print(not_graded)
     return render(request, "teacher_detail.html", context)
 
 
