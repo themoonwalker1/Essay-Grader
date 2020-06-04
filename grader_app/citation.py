@@ -1,7 +1,7 @@
 class APACitation():
     def __init__(self):
         self.authors = []
-        self.year = None
+        self.year = ""
         self.title = ""
         self.journal = ""
         self.volume = None
