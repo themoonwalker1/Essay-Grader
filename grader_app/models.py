@@ -16,7 +16,7 @@ class Comment(models.Model):
 class Assignment(models.Model):
     assignment_name = models.CharField(max_length=150, blank=False)
     assignment_description = models.TextField()
-
+    due_date = models.CharField(max_length=19)
     def __str__(self):
         return self.assignment_name
 

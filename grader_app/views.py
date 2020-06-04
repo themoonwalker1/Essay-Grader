@@ -22,7 +22,9 @@ from time import sleep
 import smtplib
 import email.message
 from .tasks import grade_essay
-
+from django.http import JsonResponse
+import datetime
+import pytz
 
 # Create your views here.
 
@@ -231,6 +233,7 @@ def index(request):
 def submit(request):
     form = EssayForm(request.POST or None, **{'user': request.user})
     if request.method == 'POST':
+
         if form.is_valid():
             assignment = form.cleaned_data["assignment"]
             essay = Essay(
@@ -595,6 +598,7 @@ def assignment(request):
     if request.user.teacher:
         context = {"form": AssignmentForm()}
         if request.method == "POST":
+            print(request.POST)
             user = request.user
             form = AssignmentForm(request.POST)
 
@@ -602,6 +606,7 @@ def assignment(request):
                 a = Assignment(
                     assignment_description=form.cleaned_data.get("assignment_description"),
                     assignment_name=form.cleaned_data.get("assignment_name"),
+                    due_date=request.POST.get('due_date')
                 )
                 a.save()
                 user.assignments.add(a)
@@ -636,3 +641,22 @@ def send_email(message, subject, emails):
         m.set_payload(message)
         session.sendmail('essay.grader.app@gmail.com', receiver_address, m.as_string())
     session.quit()
+
+def validate_due_date(request):
+    assignment = Assignment.objects.get(pk=request.GET.get('pk'))
+    split = assignment.due_date.split(' ')
+    date = split[0].split('/')
+    time = split[1].split(':')
+    month = int(date[0])
+    day = int(date[1])
+    year = int(date[2])
+    hour = int(time[0])
+    minute = int(time[1])
+    seconds = int(00)
+    if split[2] == "PM":
+        hour += 12
+    due_date_time = datetime.datetime(year, month, day, hour, minute, seconds).replace(tzinfo=pytz.timezone('US/Eastern'))
+    today = datetime.datetime.now().replace(tzinfo=pytz.timezone('US/Eastern'))
+    print(due_date_time)
+    print(today)
+    return JsonResponse({'expired' : (today > due_date_time)})

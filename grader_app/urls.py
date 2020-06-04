@@ -12,6 +12,7 @@ urlpatterns = [
     path("submit", views.submit, name="submit"),
     path('ajax/load-assignments/', views.load_assignments, name='ajax_load_assignments'),
     path('ajax/load-essay/', views.load_essay, name="ajax_load_essay"),
+    path('ajax/validate/', views.validate_due_date, name="ajax_validate"),
     path("teacher/home", views.teacher, name="teacher"),
     path("teacher/assignment", views.assignment, name="assignment"),
     path("teacher/<int:pk>/graded", views.teacher_graded, name="teacher_graded"),

@@ -10,7 +10,14 @@
                 {% csrf_token %} <pre> </pre>
 
                 {{ form.as_p }}
-                
+                <label>Assignment Due Date</label>
+                    <div class="input-group date" id="datetimepicker1" data-target-input="nearest">
+                  <input type="text" class="form-control datetimepicker-input" data-target="#datetimepicker1" name="due_date" required id="id_due_date"/>
+                  <div class="input-group-append" data-target="#datetimepicker1" data-toggle="datetimepicker">
+                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                  </div>
+                </div>
+                <br>
                 <div style="margin-top:5px;" >
                     <button type="submit" id="btn" class="btn btn-primary" onclick="interval()" value="{{ next }}">Add</button>
                 </div>

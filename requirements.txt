@@ -10,3 +10,4 @@ django-windows-tools
 django-celery
 nltk
 django-ckeditor
+pytz
