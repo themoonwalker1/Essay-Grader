@@ -135,6 +135,7 @@ class APACitation():
         #if len(authorLastNames) > 20:
             #mark error
 
+
 class MLACitation():
     def __init__(self):
         self.authors = []
