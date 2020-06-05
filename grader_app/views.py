@@ -107,7 +107,7 @@ def login(request):
                     auth.login(request, user)
                     return redirect("http://localhost:8000/home")
 
-            except TokenExpiredError:
+            except Exception:
                 args = {"client_id": client_id, "client_secret": client_secret}
                 oauth.refresh_token("https://ion.tjhsst.edu/oauth/token/", **args)
     return render(request, "login.html", context)
