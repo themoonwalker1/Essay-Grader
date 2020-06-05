@@ -13,10 +13,12 @@ class Comment(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
     essay = models.ForeignKey('Essay', on_delete=models.CASCADE)
 
+
 class Assignment(models.Model):
     assignment_name = models.CharField(max_length=150, blank=False)
     assignment_description = models.TextField()
     due_date = models.CharField(max_length=19)
+
     def __str__(self):
         return self.assignment_name
 
@@ -126,7 +128,7 @@ class User(AbstractBaseUser):
     REQUIRED_FIELDS = []
 
     def username(self):
-        return self.first_name + " " + self.last_name
+        return "%s %s" % (self.first_name, self.last_name)
 
     def get_identification(self):
         return self.email
@@ -146,10 +148,12 @@ class User(AbstractBaseUser):
     def __str__(self):
         return self.get_full_name()
 
-    def has_perm(self, perm, obj=None):
+    @staticmethod
+    def has_perm(perm, obj=None):
         return True
 
-    def has_module_perms(self, app_label):
+    @staticmethod
+    def has_module_perms(app_label):
         return True
 
     @property

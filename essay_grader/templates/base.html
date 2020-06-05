@@ -213,9 +213,14 @@
 <script>
         function interval(){
             setTimeout(disableButton, 1);
+            setTimeout(undisableButton, 1000)
         }
         function disableButton(){
             document.getElementById("btn").disabled = true;
+            console.log(document.getElementById("btn").disabled)
+        }
+        function undisableButton(){
+            document.getElementById("btn").disabled = false;
             console.log(document.getElementById("btn").disabled)
         }
 

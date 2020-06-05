@@ -1,33 +1,28 @@
+import datetime
+import email.message
 import email.message
 import json
 import smtplib
 
+import pytz
 from django import forms
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from requests_oauthlib import OAuth2Session
 
-from .forms import EssayForm, LoginForm, InfoForm, ChangeForm, TeacherForm, AssignmentForm, CommentForm, RegisterForm, \
-    SetupForm
+from .forms import EssayForm, LoginForm, InfoForm, ChangeForm, TeacherForm, AssignmentForm, \
+    CommentForm, RegisterForm, SetupForm
 from .models import Essay, Assignment, Comment
 from .models import User
-from django.contrib import auth
-from django.db.models import Q
-import json
 from .tasks import grade_all
-from celery.result import ResultBase
-from time import sleep
-import smtplib
-import email.message
-from .tasks import grade_essay
-from django.http import JsonResponse
-import datetime
-import pytz
+
 
 # Create your views here.
 
+# noinspection PyUnresolvedReferences
 def login(request):
     admins = {"2023avasanth", "2023pbhandar", "2023kbhargav"}
 
@@ -37,17 +32,16 @@ def login(request):
     context = {
         'url': 'login'
     }
-
-    CODE = None
-    CLIENT_ID = "FeZBHle5SNytiEwAh333mPmoEmfFDQSF1Jigy2bW"
-    CLIENT_SECRET = "saNPOvrrCGhNK1TywLjTsKo3M5uFzfQEgUtTpvvZsNIQPB75eeWYqhBxYMZJb0lKG5LZRZx1ZVN7ZUEiUUUqPeE8GMH0ZwdhbG4yNKKYmcCDu0UXV2gopeUB3B4cAIzw"
+    client_id = "FeZBHle5SNytiEwAh333mPmoEmfFDQSF1Jigy2bW"
+    client_secret = "saNPOvrrCGhNK1TywLjTsKo3M5uFzfQEgUtTpvvZsNIQPB75eeWYqhBxYMZJb0lKG5LZRZx" \
+                    "1ZVN7ZUEiUUUqPeE8GMH0ZwdhbG4yNKKYmcCDu0UXV2gopeUB3B4cAIzw"
     if request.method == 'POST':
         form = LoginForm(request.POST)
 
         if form.is_valid():
-            email = form.cleaned_data["email"]
-            if User.objects.filter(email=email).exists():
-                user = auth.authenticate(email=email, password=form.cleaned_data["password"])
+            mail_id = form.cleaned_data["email"]
+            if User.objects.filter(email=mail_id).exists():
+                user = auth.authenticate(email=mail_id, password=form.cleaned_data["password"])
                 if user is not None:
                     auth.login(request, user)
                     return redirect("http://localhost:8000/home")
@@ -63,7 +57,7 @@ def login(request):
     elif request.method == "GET" or request.user is None:
         form = LoginForm()
         context['form'] = form
-        oauth = OAuth2Session(CLIENT_ID,
+        oauth = OAuth2Session(client_id,
                               redirect_uri="http://localhost:8000/login",
                               scope=["read"])
         authorization_url, state = oauth.authorization_url("https://ion.tjhsst.edu/oauth/authorize/")
@@ -71,16 +65,16 @@ def login(request):
         if "code" in request.GET:
             CODE = request.GET.get("code")
 
-            token = oauth.fetch_token("https://ion.tjhsst.edu/oauth/token/",
-                                      code=CODE,
-                                      client_secret=CLIENT_SECRET)
+            oauth.fetch_token("https://ion.tjhsst.edu/oauth/token/",
+                              code=CODE,
+                              client_secret=client_secret)
 
             try:
                 raw_profile = oauth.get("https://ion.tjhsst.edu/api/profile")
                 profile = json.loads(raw_profile.content.decode())
-                email = profile["tj_email"]
-                if User.objects.filter(email=email).exists():
-                    user = auth.authenticate(email=email,
+                mail_id = profile["tj_email"]
+                if User.objects.filter(email=mail_id).exists():
+                    user = auth.authenticate(email=mail_id,
                                              password=profile.get("ion_username") + profile.get("user_type"))
                     if user is not None:
                         auth.login(request, user)
@@ -91,15 +85,15 @@ def login(request):
 
                 else:
                     if profile.get("ion_username") in admins or profile.get("is_eighth_admin"):
-                        new_user = User.objects.create_superuser(email=email,
+                        new_user = User.objects.create_superuser(email=mail_id,
                                                                  password=profile.get("ion_username") + profile.get(
                                                                      "user_type"))
                     elif profile.get("is_teacher"):
-                        new_user = User.objects.create_teacheruser(email=email,
+                        new_user = User.objects.create_teacheruser(email=mail_id,
                                                                    password=profile.get("ion_username") + profile.get(
                                                                        "user_type"))
                     else:
-                        new_user = User.objects.create_studentuser(email=email,
+                        new_user = User.objects.create_studentuser(email=mail_id,
                                                                    password=profile.get("ion_username") + profile.get(
                                                                        "user_type"))
                     new_user.logged_with_ion = True
@@ -108,14 +102,14 @@ def login(request):
                     new_user.last_name = profile.get("last_name")
                     new_user.year_in_school = profile.get("grade").get("name").upper()[:3]
                     new_user.save()
-                    user = auth.authenticate(email=email,
+                    user = auth.authenticate(email=mail_id,
                                              password=profile.get("ion_username") + profile.get("user_type"))
                     auth.login(request, user)
                     return redirect("http://localhost:8000/home")
 
-            except Exception as e:
-                args = {"client_id": CLIENT_ID, "client_secret": CLIENT_SECRET}
-                token = oauth.refresh_token("https://ion.tjhsst.edu/oauth/token/", **args)
+            except TokenExpiredError:
+                args = {"client_id": client_id, "client_secret": client_secret}
+                oauth.refresh_token("https://ion.tjhsst.edu/oauth/token/", **args)
     return render(request, "login.html", context)
 
 
@@ -132,10 +126,10 @@ def create(request):
         form = RegisterForm(request.POST)
         if form.is_valid():
             error = False
-            email = password = ""
+            mail = password = ""
             try:
-                email = form.cleaned_data.get('email')
-                qs = User.objects.filter(email=email)
+                mail = form.cleaned_data.get('email')
+                qs = User.objects.filter(email=mail)
                 if qs.exists():
                     raise forms.ValidationError("email is taken")
             except forms.ValidationError:
@@ -154,9 +148,9 @@ def create(request):
                 error = True
 
             if not error:
-                new_user = User.objects.create_studentuser(email=email, password=password)
-
-                user = auth.authenticate(email=email, password=password)
+                new_user = User.objects.create_studentuser(email=mail, password=password)
+                new_user.save()
+                user = auth.authenticate(email=mail, password=password)
                 auth.login(request, user)
                 return redirect("http://localhost:8000/setup")
             else:
@@ -217,7 +211,7 @@ def index(request):
     if request.user.teacher and not request.user.admin:
         return redirect("teacher")
 
-    if essays == []:
+    if not essays:
         essays = Essay.objects.all().order_by('-created_on')
 
     context = {
@@ -235,7 +229,7 @@ def submit(request):
     if request.method == 'POST':
 
         if form.is_valid():
-            assignment = form.cleaned_data["assignment"]
+            new_assignment = form.cleaned_data["assignment"]
             essay = Essay(
                 title=form.cleaned_data["title"],
                 body=form.cleaned_data["body"],
@@ -245,11 +239,15 @@ def submit(request):
                 citation_type=form.cleaned_data["citation_type"]
             )
             essay.save()
-            message = """Your student %s has just submitted an Essay for the assignment %s. \n\nYou also currently have %s submissions for that assignment.\n\n-------------------------------------------------\n\n%s\n\n%s""" % (
-                request.user, assignment.assignment_name, Essay.objects.filter(assignment=assignment).count(),
-                essay.title,
-                essay.body[:400] + "...")
-            send_email(message=message, subject="New Submission for assignment %s." % (assignment.assignment_name),
+            message = "Your student %s has just submitted an Essay for the assignment %s. " \
+                      "\n\nYou also currently have %s submissions for that assignment." \
+                      "\n\n-------------------------------------------------\n\n%s\n\n%s" % (
+                          request.user, new_assignment.assignment_name,
+                          Essay.objects.filter(assignment=new_assignment).count(),
+                          essay.title,
+                          essay.body[:400] + "...")
+
+            send_email(message=message, subject="New Submission for assignment %s." % new_assignment.assignment_name,
                        emails=[form.cleaned_data["teachers"]])
             return redirect("home")
     context = {
@@ -259,9 +257,9 @@ def submit(request):
 
 
 def load_assignments(request):
-    teacher = request.GET.get('teacher')
-    if "-SELECT-" != teacher:
-        assigns = User.objects.get(email=teacher).assignments.all()
+    user_teacher = request.GET.get('teacher')
+    if "-SELECT-" != user_teacher:
+        assigns = User.objects.get(email=user_teacher).assignments.all()
     else:
         assigns = Assignment.objects.none()
     return render(request, 'submit_options.html', {'assignments': assigns})
@@ -401,8 +399,6 @@ def grade(request, pk):  # max 7973 characters/request, <100 requests/day
 
 
 def reformat(body):
-    punctuations = '''!()-[]{};:'"\,<>./?@#$%^&*_~'''
-
     temp = body.split("\r\n")
     tempText = "<p>"
 
@@ -433,6 +429,7 @@ def teacher(request):
     context['assignments'] = Assignment.objects.all()
     return render(request, "teacher.html", context)
 
+
 def teacher_graded(request, pk):
     context = {}
     user = request.user
@@ -441,16 +438,17 @@ def teacher_graded(request, pk):
         redirect("home")
 
     if Assignment.objects.filter(pk=pk).exists():
-        assignment = Assignment.objects.get(pk=pk)
-        graded = Essay.objects.filter(assignment=assignment, graded=True)
+        all_assignments = Assignment.objects.get(pk=pk)
+        graded = Essay.objects.filter(assignment=all_assignments, graded=True)
     else:
-        assignment = "None"
+        all_assignments = "None"
         graded = []
         context['error'] = "That Assignment Request Does Not Exist"
-    context['assignment'] = assignment
+    context['assignment'] = all_assignments
     context['graded'] = graded
     print(graded)
     return render(request, "teacher_graded.html", context)
+
 
 def teacher_not_graded(request, pk):
     context = {}
@@ -460,16 +458,17 @@ def teacher_not_graded(request, pk):
         redirect("home")
 
     if Assignment.objects.filter(pk=pk).exists():
-        assignment = Assignment.objects.get(pk=pk)
-        not_graded = Essay.objects.filter(assignment=assignment, graded=False)
+        all_assignments = Assignment.objects.get(pk=pk)
+        not_graded = Essay.objects.filter(assignment=all_assignments, graded=False)
     else:
-        assignment = "None"
+        all_assignments = "None"
         not_graded = []
         context['error'] = "That Assignment Request Does Not Exist"
-    context['assignment'] = assignment
+    context['assignment'] = all_assignments
     context['not_graded'] = not_graded
     print(not_graded)
     return render(request, "teacher_not_graded.html", context)
+
 
 @login_required(login_url="login")
 def settings_changeInfo(request):
@@ -542,10 +541,10 @@ def settings_changeTeachers(request):
 
     initial = {}
 
-    teacher = profile.get_teachers()
+    user_teacher = profile.get_teachers()
 
     for name in names:
-        initial[name] = teacher.get(name)
+        initial[name] = user_teacher.get(name)
 
     if request.method == 'POST':
         form = TeacherForm(request.POST)
@@ -568,12 +567,13 @@ def settings_changeTeachers(request):
             if not error:
                 profile.set_teachers(teachers)
                 profile.save()
-                message = """The student - %s - has added you in their teachers list.\n\nIf this is a mistake please contact them at "%s".""" % (
-                    request.user.get_full_name(), request.user.email)
+                message = "The student - %s - has added you in their teachers list." \
+                          "\n\nIf this is a mistake please contact them at \"%s\"" % (
+                              request.user.get_full_name(), request.user.email)
                 emails = list()
-                for teacher in teachers.values():
-                    if teacher != "" and not teacher in initial.values():
-                        emails.append(teacher)
+                for user_teacher in teachers.values():
+                    if user_teacher != "" and user_teacher not in initial.values():
+                        emails.append(user_teacher)
 
                 send_email(message, "New Student Alert", emails)
 
@@ -585,10 +585,10 @@ def settings_changeTeachers(request):
 
     context['form'] = form
 
-    teacher = profile.get_teachers()
+    user_teacher = profile.get_teachers()
 
     for name in names:
-        initial[name] = teacher.get(name)
+        initial[name] = user_teacher.get(name)
 
     return render(request, "settings_teacher.html", context)
 
@@ -614,9 +614,9 @@ def assignment(request):
 
                 students = list()
                 for student in User.objects.all().filter(student=True):
-                    for teacher in student.get_teachers().values():
-                        if teacher != "":
-                            t = User.objects.get(email=teacher)
+                    for teacher_user in student.get_teachers().values():
+                        if teacher_user != "":
+                            t = User.objects.get(email=teacher_user)
                             if t.email == user.email:
                                 students.append(student.email)
 
@@ -628,6 +628,7 @@ def assignment(request):
         return render(request, "assignment.html", context)
     else:
         return redirect("home")
+
 
 def send_email(message, subject, emails):
     m = email.message.Message()
@@ -642,9 +643,10 @@ def send_email(message, subject, emails):
         session.sendmail('essay.grader.app@gmail.com', receiver_address, m.as_string())
     session.quit()
 
+
 def validate_due_date(request):
-    assignment = Assignment.objects.get(pk=request.GET.get('pk'))
-    split = assignment.due_date.split(' ')
+    check_assignment = Assignment.objects.get(pk=request.GET.get('pk'))
+    split = check_assignment.due_date.split(' ')
     date = split[0].split('/')
     time = split[1].split(':')
     month = int(date[0])
@@ -655,8 +657,9 @@ def validate_due_date(request):
     seconds = int(00)
     if split[2] == "PM":
         hour += 12
-    due_date_time = datetime.datetime(year, month, day, hour, minute, seconds).replace(tzinfo=pytz.timezone('US/Eastern'))
+    due_date_time = datetime.datetime(year, month, day, hour, minute, seconds).replace(
+        tzinfo=pytz.timezone('US/Eastern'))
     today = datetime.datetime.now().replace(tzinfo=pytz.timezone('US/Eastern'))
     print(due_date_time)
     print(today)
-    return JsonResponse({'expired' : (today > due_date_time)})
+    return JsonResponse({'expired': (today > due_date_time)})

@@ -1,8 +1,8 @@
 from django import forms
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
-from ckeditor.widgets import CKEditorWidget
 
-from .models import User, Essay, Assignment
+from .models import User, Assignment
+
 
 class CommentForm(forms.Form):
     Comment = forms.CharField(widget=forms.TextInput(
@@ -12,7 +12,9 @@ class CommentForm(forms.Form):
         })
     )
 
+
 dropdown = (("None", "None"), ("APA", "APA"), ("MLA", "MLA"))
+
 
 class AssignmentForm(forms.Form):
     assignment_name = forms.CharField(max_length=150, widget=forms.TextInput(attrs={
@@ -142,6 +144,7 @@ class RegisterForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput(attrs={"class": "form-control"}))
     password2 = forms.CharField(label='Confirm password', widget=forms.PasswordInput(attrs={"class": "form-control"}))
     email = forms.EmailField(widget=forms.TextInput(attrs={"class": "form-control"}))
+
     class Meta:
         model = User
         fields = ('email',)

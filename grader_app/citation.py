@@ -10,6 +10,7 @@ class APACitation():
         self.pageEnd = None
         self.url = ""
 
+
 class MLACitation():
     def __init__(self):
         self.authors = []

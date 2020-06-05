@@ -10,7 +10,6 @@ words = long_txt.splitlines()
 for _ in range(100):
     words.append(".")
 
-
 upper_words = [word for word in words if word[0].isupper()]
 name_words = [word for word in upper_words if not word.isupper()]
 for n in range(1000):
