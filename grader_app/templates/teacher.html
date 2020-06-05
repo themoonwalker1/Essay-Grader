@@ -91,11 +91,11 @@
             <h2 style="display:inline-block;">Assignment</h2>
             <h5>
                 <select class="form-control" id="assignment" >
+                    <option value="">-SELECT-</option>
                     {% if assignments|length == 0 %}
                         <option value="">No Assignments Made</option>
                     {% else %}
                     {% for assignment in assignments %}
-<!--                        <option value="">-SELECT-</option>-->
                         <option value="{{assignment.pk}}">{{assignment.assignment_name}}</option>
                     {% endfor %}
                     {% endif %}
@@ -121,42 +121,42 @@
         </label>
             </div>
             <div style="float:right; margin-right: 10px; padding-right:10px; margin-top: 2.5px; ">
-            <button type="button" id="thingy" class="btn btn-primary" stuff="{% url 'grade' 123 %}" onclick="gradeAll()">Grade all Essays</button>
+            <button type="button" id="thingy" class="btn btn-primary" stuff="{% url 'grade' 123 %}" onclick="gradeAll()">Mark All</button>
             </div>
             </div>
         </footer>
         <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
         <script>
             function showEssays(){
+                console.log("reloading essays");
                 var pk = $("#assignment").val();
                 if (pk != ""){
                     var url = "{% url 'teacher_graded' 123 %}";
                     url = url.replace('123', pk);
-                    console.log(url);
                     $.ajax({
                         url: url,
                         data:{},
                         success: function (data) {
-                          console.log(data);
                           $("#graded").html(data);
                        }
                     });
                     url = "{% url 'teacher_not_graded' 123 %}";
                     url = url.replace('123', pk);
-                    console.log(url);
                     $.ajax({
                         url: url,
                         data:{},
                         success: function (data) {
-                          console.log(data);
                           $("#not_graded").html(data);
                        }
                     });
+                } else {
+                    $("#not_graded").html("");
+                    $("#graded").html("");
+                    $("#essay_box").html("");
                 }
             }
-            $("#assignment").change(showEssays);
             function showEssay(i) {
-                console.log("Trying to show" + i);
+                console.log("Trying to show essay with pk : " + i);
                 var url = $("#essay_box").attr("thing");
                 $.ajax({
                     url: url,
@@ -164,20 +164,18 @@
                       'pk': i
                     },
                     success: function (data) {
-                      console.log(data);
+                      console.log("This is the data I got " + data);
                       $("#essay_box").html(data);
                    }
                   });
             }
             function gradeAll() {
-                console.log("Trying to grade");
                 var i = $("#assignment").val();
                 var url = $("#thingy").attr("stuff");
                 url = url.replace("123", i);
                 $.ajax({
                     url: url,
                     success: function (data) {
-                      console.log(data);
                       $("#graded").html(data);
                       $("#not_graded").html("<h3>None of your students submitted and essay for this assignment</h3><hr>");
                    }
@@ -188,7 +186,6 @@
                 ng.style.display = "none";
             }
             function toggleType() {
-                console.log("Just has been toggled");
                 var g = document.getElementById('graded');
                 var ng = document.getElementById('not_graded');
                 $("#essay_box").html("");
@@ -201,18 +198,35 @@
                 }
             }
             function onLoad(){
-              console.log('page is fully loaded');
               showEssays();
               var a = document.getElementsByClassName('assignment_list');
               for (var i = 0; i < a.length; i++) {
                 a[i].style.height = window.clientHeight;
-                console.log(a[i].style.height);
               }
               var b = document.getElementById('graded');
               b.style.display = "none";
             }
-
-            function delay(){}
+            function gradeEssay() {
+                var url = $("#add_grade").attr("url");
+                var n = $("#numerator").val();
+                var d = $("#denominator").val();
+                if (n!="" && d!=""){
+                $.ajax({
+                    url: url,
+                    data: {
+                      'numerator':n,
+                      'denominator':d
+                    },
+                    success: function (data) {
+                      console.log("added grade " + n + " / " + d);
+                   }
+                });
+                $("#essay_box").html("");
+                }
+            }
             window.addEventListener('load', onLoad());
+            $("#assignment").change(showEssays);
+            setInterval(showEssays, 1000);
+
         </script>
 {% endblock %}

@@ -18,6 +18,7 @@ urlpatterns = [
     path("teacher/<int:pk>/graded", views.teacher_graded, name="teacher_graded"),
     path("teacher/<int:pk>/not_graded", views.teacher_not_graded, name="teacher_not_graded"),
     path("teacher/<int:pk>/grade", views.grade, name="grade"),
+    path("teacher/<int:pk>/grade_essay", views.grade_essay, name="grade_essay"),
     path("settings/info", views.settings_changeInfo, name="settings_info"),
     path("settings/password", views.settings_changePassword, name="settings_password"),
     path("settings/teachers", views.settings_changeTeachers, name="settings_teachers"),

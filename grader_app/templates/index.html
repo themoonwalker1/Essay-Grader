@@ -29,7 +29,7 @@
         
         {% if user %}
             {% for essay in essays %}
-                <h2><a href="{% url 'detail' essay.pk%}">{{ essay.title }}</a></h2>
+                <h2><a href="{% url 'detail' essay.pk%}" style="display:inline-block;">{{ essay.title }}</a><a style="float:right;">{% if essay.graded %}{{essay.grade_numerator}}/{{essay.grade_denominator}}{% endif%}</a></h2>
                 <h5> Assignment: {{essay.assignment}}</h5>
                 <h5> By: {{essay.author}}</h5>
                 <h5> For: {{essay.teacher}}</h5>

@@ -1,4 +1,19 @@
-<h2 id="Title">{{ essay.title }}</h2>
+<h2 id="Title" style="display:inline-block;">{{ essay.title }}</h2>
+<div style="float:right;">
+    {% if essay.grade_denominator == 0 %}
+        <h5>{{essay.grade_denominator}}</h5>
+        <h2 style="float:right; margin-right:20px;">
+            <input type="text" class="form-control" name="numerator" id="numerator" style="display:inline-block; width:60px;">
+            <b>/</b>
+            <input type="text" class="form-control" name="denominator" id="denominator" style="display:inline-block;width:60px;">
+        </h2>
+        <h3>
+            <button value="{{ essay.pk }}" url="{% url 'grade_essay' essay.pk %}" style="float:right; margin:25px;" class="btn btn-primary" type="submit" id="add_grade" onclick="gradeEssay()">Grade This Essay</button>
+        </h3>
+    {% else %}
+        <h2 style="float:right; margin-right:20px;">{{essay.grade_numerator}}<b>/</b>{{essay.grade_denominator}}</h2>
+    {% endif %}
+</div>
 <h3 id="Author">{{ essay.author.get_full_name }}</h3>
 <h4 id="Created">{{ essay.created_on }}</h4><br>
 <h6 id="Body">{% if essay.graded %}{{ essay.marked_body | safe}}{% else %}{{ essay.body | linebreaks}}{% endif %}</h6>
