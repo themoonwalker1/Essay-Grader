@@ -269,8 +269,15 @@ def load_assignments(request):
 def load_essay(request):
     essay_pk = request.GET.get('pk')
     essay = Essay.objects.get(pk=essay_pk)
+    comments = Comment.objects.filter(essay=essay)
+    form = CommentForm(None)
     print(essay.grade_numerator, essay.grade_denominator)
-    return render(request, 'load_essay.html', {'essay': essay})
+    data = {
+        'essay': essay,
+        'comments': comments,
+        'form': form
+    }
+    return render(request, 'load_essay.html', data)
 
 
 @login_required(login_url="login")
@@ -669,7 +676,8 @@ def validate_due_date(request):
 def grade_essay(request, pk):
     essay = Essay.objects.get(pk=pk)
     print(pk, essay)
-    if request.GET.get('denominator') != '' and request.GET.get('denominator') != 0 and request.GET.get('numerator') != '':
+    if request.GET.get('denominator') != '' and request.GET.get('denominator') != 0 and request.GET.get(
+            'numerator') != '':
         essay.grade_numerator = int(request.GET.get('numerator'))
         essay.grade_denominator = int(request.GET.get('denominator'))
         essay.graded = True
@@ -677,4 +685,12 @@ def grade_essay(request, pk):
             result = grade_all([essay.id])
             essay.marked_body = result[0][1]
         essay.save()
+    return JsonResponse({})
+
+
+def comment(request):
+    essay = Essay.objects.get(pk=request.GET.get('pk'))
+    comm = Comment(essay=essay, body=request.GET.get('body'), author=User.objects.get(email=request.GET.get("email")))
+    comm.save()
+    print(comm.body)
     return JsonResponse({})

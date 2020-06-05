@@ -7,6 +7,7 @@
         height:80vh;
         float:left;
         display: inline-block;
+        border-right: 2px solid #ababab;
     }
     .b{
         padding-right: 15px;
@@ -83,7 +84,7 @@
 </style>
 {% endblock %}
 {% block content %}
-
+        <label id="info" user="{{user.email}}"></label>
         <div class="scrollable a">
         {% if assignment == "None" %}
             <h3>{{ error }}</h3>
@@ -127,8 +128,25 @@
         </footer>
         <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
         <script>
+            function addComment(pk){
+                var url = "ajax/comment/";
+                var body = document.getElementById("id_Comment").value;
+                var email = document.getElementById("info").getAttribute("user");
+                if (body != ""){
+                $.ajax({
+                    url: url,
+                    data: {
+                      'pk': pk,
+                      'body': body,
+                      'email':email,
+                    },
+                    success: function (data) {
+                   }
+                });
+                }
+                setTimeout(1, showEssay(pk));
+            }
             function showEssays(){
-                console.log("reloading essays");
                 var pk = $("#assignment").val();
                 if (pk != ""){
                     var url = "{% url 'teacher_graded' 123 %}";
@@ -156,7 +174,6 @@
                 }
             }
             function showEssay(i) {
-                console.log("Trying to show essay with pk : " + i);
                 var url = $("#essay_box").attr("thing");
                 $.ajax({
                     url: url,
@@ -164,7 +181,6 @@
                       'pk': i
                     },
                     success: function (data) {
-                      console.log("This is the data I got " + data);
                       $("#essay_box").html(data);
                    }
                   });
@@ -218,7 +234,6 @@
                       'denominator':d
                     },
                     success: function (data) {
-                      console.log("added grade " + n + " / " + d);
                    }
                 });
                 $("#essay_box").html("");
