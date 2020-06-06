@@ -11,3 +11,4 @@ django-celery
 nltk
 django-ckeditor
 pytz
+requests
