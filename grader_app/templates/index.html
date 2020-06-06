@@ -10,7 +10,7 @@
     <div class="wrapper">
         <div class="search-bar mt-sm-2 mr-2 offset-md-2 col-md-8">
             <form method="get">
-                <input type="text" class="form-control" name="q" id="id_q" placeholder="Search for Essay"/>
+                <input type="text" class="form-control" name="q" id="id_q" query="{{ query }}" placeholder="Search for Essay"/>
             </form>
         </div>
     </div>
@@ -51,7 +51,7 @@
                 <h5> For: {{essay.teacher}}</h5>
                 <h6> Created on {{ essay.created_on }}
                     {% if essay.citation_type != "None" %}
-                    Type: <b class="grade">{{essay.citation_type}}</b>
+                    <b class="grade">Type: {{essay.citation_type}}</b>
                     {% endif %}
                 </h6>
                 <hr>

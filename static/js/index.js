@@ -1,1 +1,1 @@
-document.getElementById("id_q").value = "{{query}}"
+document.getElementById("id_q").value = document.getElementById("id_q").getAttribute("query");
