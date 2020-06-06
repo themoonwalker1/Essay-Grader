@@ -90,7 +90,7 @@ input:checked + .slider:before {
     float: left;
     margin-left: 10px;
     padding-left:10px;
-    margin-top: 4px;
+    margin-top: 2px;
     padding-top:4px;
 }
 .label{
@@ -99,6 +99,5 @@ input:checked + .slider:before {
 .button-div{
     float:right;
     margin-right: 10px;
-    padding-right:10px;
-    margin-top: 2.5px;
+    padding-right:6px;
 }
