@@ -1,68 +1,30 @@
 {% extends "base.html" %}
+{% load static %}
 {% block content %}
 
-    {% if user.is_authenticated %}
+{% if user.is_authenticated %}
 
-        <div class="col-md-8 offset-md-2" style="padding-top: 1em;">
-            <h3>Add an essay:</h3>
-            <h4 id="error"></h4>
-            <form action="submit" method="post" id="essayForm" data-assignments-url="{% url 'ajax_load_assignments' %}" novalidate>
-                {% csrf_token %}
-                {{ form.media }}
-                {{ form.as_p }}
-                <div style="margin-top:5px;" >
-                    <button type="submit" id="btn" class="btn btn-primary" onclick="interval()" value="{{ next }}">Submit</button>
-                </div>
-            </form>
+<div class="col-md-8 offset-md-2" style="padding-top: 1em;">
+    <h3>Add an essay:</h3>
+    <h4 id="error"></h4>
+    <form action="submit" data-assignments-url="{% url 'ajax_load_assignments' %}" id="essayForm" method="post"
+          novalidate>
+        {% csrf_token %}
+        {{ form.media }}
+        {{ form.as_p }}
+        <br>
+        <div>
+            <button class="btn btn-primary" id="btn" onclick="interval()" type="submit" value="{{ next }}">
+                Submit
+            </button>
         </div>
-    {% else %}
-        <h3>You must be logged in to view this page.</h3>
-    {% endif %}
-<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-  <script>
-    function change() {
-      var url = $("#essayForm").attr("data-assignments-url");
-      var assignmentId = $("#id_teachers").val();
-      $.ajax({
-        url: url,
-        data: {
-          'teacher': assignmentId
-        },
-        success: function (data) {
-          $("#id_assignment").html(data);
-       }
-      });
-	  setTimeout(checkDueDate, 100);
-    }
-    function checkDueDate(){
-        var id = document.getElementById("id_assignment").value;
-        console.log("assignment: " + id);
-        var time = "";
-        $.ajax({
-        url: "/ajax/validate",
-        data: {
-          'pk': id
-        },
-        success: function (data) {
-          if (data.expired){
-            document.getElementById("id_body").disabled = true;
-            document.getElementById("id_title").disabled = true;
-            document.getElementById("id_citation_type").disabled = true;
-            document.getElementById("btn").disabled = true;
-            $("#error").html("Sorry, but this assignment is expired");
-          } else {
-            document.getElementById("id_body").disabled = false;
-            document.getElementById("id_title").disabled = false;
-            document.getElementById("id_citation_type").disabled = false;
-            document.getElementById("btn").disabled = false;
-            $("#error").html("");
-          }
-       }
-      });
-    }
-    $("#id_assignment").change(checkDueDate);
-    $(window).on("load",change);
-    $("#id_teachers").change(change);
-    window.setInterval(checkDueDate,5000)
-  </script>
+    </form>
+</div>
+{% else %}
+<h3>You must be logged in to view this page.</h3>
+{% endif %}
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'js/submit.js' %}"></script>
 {% endblock %}

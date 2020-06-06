@@ -1,5 +1,7 @@
+<!-- Essay in Full View -->
 <h2 id="Title" style="display:inline-block;">{{ essay.title }}</h2>
 <div style="float:right;">
+    <!-- Grading form -->
     {% if essay.grade_denominator == 0 %}
         <h2 style="float:right; margin-right:20px;">
             <input type="text" class="form-control" name="numerator" id="numerator" style="display:inline-block; width:60px;">
@@ -13,11 +15,13 @@
         <h2 style="float:right; margin-right:20px;">{{essay.grade_numerator}}<b>/</b>{{essay.grade_denominator}}</h2>
     {% endif %}
 </div>
+<!-- Essay Details -->
 <h3 id="Author">{{ essay.author.get_full_name }}</h3>
 <h4 id="Created">{{ essay.created_on }}</h4><br>
 <h6 id="Body">{% if essay.graded %}{{ essay.marked_body | safe}}{% else %}{{ essay.body | linebreaks}}{% endif %}</h6>
 <hr>
 <br>
+<!-- Comments -->
 {% for comment in comments %}
     <div class="comment">
     <h6 style="display: inline-block;">{{comment.author.get_full_name}}</h6>
@@ -25,7 +29,7 @@
     <p>{{comment.body}}</p>
     </div>
 {% endfor %}
-
+<!-- Comment Form -->
 {{ form.as_p }}
 <button id="btn" onclick="interval(); addComment({{essay.pk}})" class="btn btn-primary">
     Comment

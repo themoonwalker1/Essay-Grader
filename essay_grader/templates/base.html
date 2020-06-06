@@ -1,230 +1,138 @@
 <!DOCTYPE html>
+{% load static %}
 <html class="theme-light" lang="en">
 <head>
     <title>TJHSST Essay Grader</title>
 
-    <link crossorigin="anonymous" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
-          integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" rel="stylesheet">
+    <!------------ Online stylesheets and scripts ------------->
+
+    <!-- Bootstrap 4 -->
+    <link crossorigin="anonymous"
+          href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+          integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
+          rel="stylesheet">
+
     <script crossorigin="anonymous"
             integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
             src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+
     <script crossorigin="anonymous"
-            integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
-            src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+            integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut"
+            src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"></script>
+
     <script crossorigin="anonymous"
-            integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
-            src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
-
-    <nav class="navbar navbar-light bg-light appear navbar-bar" id="navbar" onscroll="scroll"
-         style="padding-top: 0.5em;">
-
-        <a class="navbar-title" href="http://localhost:8000/home"><h1 style="font-size: 2.7vw !important;">Essay
-            Grader</h1></a>
-        {% if user.is_authenticated %}
-        {% if user.student %}
-        <a class="navbar-brand navbar-link" href="http://localhost:8000/submit">Submit</a>
-        {% endif %}
-
-        {% if user.teacher %}
-        <a class="navbar-brand navbar-link" href="http://localhost:8000/teacher/assignment">Add Assignment</a>
-        <a class="navbar-brand navbar-link" href="http://localhost:8000/teacher/home">Grade</a>
-        {% endif %}
-        <a class="navbar-brand navbar-link" href="{% url 'logout' %}">Logout</a>
-        <a class="navbar-brand" style="padding-left: 3em;vertical-align:middle;font-size: 1.2vw;">You are logged in as
-            {{ user.first_name }} {{ user.last_name }}</a>
-        <a href="{% url 'settings_info' %}"
-           style="vertical-align:middle; position:relative; top:-3px; padding-left: 2vw;"><img
-                alt="" class="gear"
-                height="18vw" src="https://freeiconshop.com/wp-content/uploads/edd/settings-solid.png"
-                width="18vw"/></a>
-        {% else %}
-
-        <a class="navbar-brand" href="{% url 'create' %}" style="padding-left: 3em;">Create Account</a>
-
-        {% endif %}
-
-    </nav>
-        <!-- Bootstrap 4 -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+            integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
+            src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"></script>
 
     <!-- Font Awesome -->
-    <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+    <link crossorigin="anonymous"
+          href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN"
+          rel="stylesheet">
 
     <!-- Moment.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.23.0/moment.min.js" integrity="sha256-VBLiveTKyUZMEzJd6z2mhfxIqz3ZATCuVMawPZGzIfA=" crossorigin="anonymous"></script>
+    <script crossorigin="anonymous"
+            integrity="sha256-VBLiveTKyUZMEzJd6z2mhfxIqz3ZATCuVMawPZGzIfA="
+            src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.23.0/moment.min.js"></script>
 
     <!-- Tempus Dominus Bootstrap 4 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.1.2/css/tempusdominus-bootstrap-4.min.css" integrity="sha256-XPTBwC3SBoWHSmKasAk01c08M6sIA5gF5+sRxqak2Qs=" crossorigin="anonymous" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.1.2/js/tempusdominus-bootstrap-4.min.js" integrity="sha256-z0oKYg6xiLq3yJGsp/LsY9XykbweQlHl42jHv2XTBz4=" crossorigin="anonymous"></script>
+    <link crossorigin="anonymous"
+          href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.1.2/css/tempusdominus-bootstrap-4.min.css"
+          integrity="sha256-XPTBwC3SBoWHSmKasAk01c08M6sIA5gF5+sRxqak2Qs="
+          rel="stylesheet"/>
 
-    <style type="text/css">
-            *:before,
-            *:after {
-            box-sizing: inherit;
-            }
-            .comment{
-                padding: 3px;
-                border-bottom: 1px solid #cccccc;
-            }
-            .navbar-bar {
-				overflow: hidden;
-            }
-            .authors {
-                margin-right: 0em;
-                overflow: hidden;
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif !important;
-                position: relative;
-                top: .5em;
-                padding-left: 1vw;
-                vertical-align: middle;
-                font-size: .7vw;
-                color: var(--font-color) !important;
-            }
-            .navbar-title {
-                text-decoration: none;
-                padding-left: 1em;
-                color: var(--color-title) !important;
-            }
-            .navbar-title:hover {
-                text-decoration: none;
-            }
-            .navbar-link {
-                vertical-align:middle;
-                font-size: 1.2vw;
-                color: var(--font-color) !important;
-            }
-            .navbar-link:hover {
-                color: #343a40 !important;
-            }
-			.theme-light {
-			  --color-title: #0060df;
-			  --color-secondary: #fbfbfe;
-			  --color-accent: #fd6f53;
-			  --font-color: #000000;
-			}
-			.theme-dark {
-			  --color-title: #17ed90;
-			  --color-secondary: #2a2c2d;
-			  --color-accent: #12cdea;
-			  --font-color: #ffffff;
-			}
-            .search-bar{
-                max-width: 500px;
-                width: 100%;
-                display: inline-block;
-                height: 20px;
-            }
-            .wrapper{
-                margin-top: 18px;
-            }
-			.gear {
-				-webkit-animation-name: spin;
-				-webkit-animation-duration: 4000ms;
-				-webkit-animation-iteration-count: infinite;
-				-webkit-animation-timing-function: linear;
-				-moz-animation-name: spin;
-				-moz-animation-duration: 4000ms;
-				-moz-animation-iteration-count: infinite;
-				-moz-animation-timing-function: linear;
-				-ms-animation-name: spin;
-				-ms-animation-duration: 4000ms;
-				-ms-animation-iteration-count: infinite;
-				-ms-animation-timing-function: linear;
-				
-				animation-name: spin;
-				animation-duration: 4000ms;
-				animation-iteration-count: infinite;
-				animation-timing-function: linear;
-			}
-			@-ms-keyframes spin {
-				from { -ms-transform: rotate(0deg); }
-				to { -ms-transform: rotate(360deg); }
-			}
-			@-moz-keyframes spin {
-				from { -moz-transform: rotate(0deg); }
-				to { -moz-transform: rotate(360deg); }
-			}
-			@-webkit-keyframes spin {
-				from { -webkit-transform: rotate(0deg); }
-				to { -webkit-transform: rotate(360deg); }
-			}
-			@keyframes spin {
-				from {
-					transform:rotate(0deg);
-				}
-				to {
-					transform:rotate(360deg);
-				}
-			}
-			footer {
-			   margin-top: 1em;
-               position: absolute;
-			   left:0px;
-			   bottom:0px;
-               right: 0px;
-			   height:40px;
-			   line-height:40px;
-			   width:100%;
-			   vertical-align: middle;
-			   text-align:center;
-		   }
-           body {
-               position: relative;
-               min-height: 100%;
-               margin: 0;
-           }
-           html {
-               height: 100%;
-               font-size: 100%;
-               box-sizing: border-box;
-           }
-           .contents {
-            margin: 0 auto;
-            padding-bottom: 4rem;
-           }
-           div.scrollable{
-                overflow-x: hidden;
-                overflow-y: auto;
-                padding: 4px;
-                margin:4px;
-           }
+    <script crossorigin="anonymous"
+            integrity="sha256-z0oKYg6xiLq3yJGsp/LsY9XykbweQlHl42jHv2XTBz4=" src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.1.2/js/tempusdominus-bootstrap-4.min.js"></script>
 
 
+    <!-- JQuery + Ajax -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 
-    </style>
+    <!------------ Static css files ------------->
+
+    <link href="{% static 'css/base.css' %}" rel="stylesheet" type="text/css">
+    {% block css %}{% endblock css %}
+
+    <!------------ Navigation Bar ------------->
+
+    <nav class="navbar navbar-light bg-light appear navbar-bar" id="navbar" onscroll="scroll">
+
+        <a class="navbar-title" href="http://localhost:8000/home">
+            <h1>
+                Essay Grader
+            </h1>
+        </a>
+        {% if user.is_authenticated %}
+        <!-- Logged in user -->
+        {% if user.student %}
+        <!-- Student User -->
+
+        <a class="navbar-brand navbar-link" href="http://localhost:8000/submit">
+            Submit
+        </a>
+        {% endif %}
+        {% if user.teacher %}
+        <!-- Teacher user -->
+
+        <a class="navbar-brand navbar-link" href="http://localhost:8000/teacher/assignment">
+            Add Assignment
+        </a>
+
+        <a class="navbar-brand navbar-link" href="http://localhost:8000/teacher/home">
+            Grade
+        </a>
+        {% endif %}
+        <a class="navbar-brand navbar-link" href="{% url 'logout' %}">
+            Logout
+        </a>
+
+        <!-- User's Name -->
+
+        <a class="navbar-brand name">
+            You are logged in as {{ user.first_name }} {{ user.last_name }}
+        </a>
+
+        <a class=settings" href="{% url 'settings_info' %}">
+            <img class="gear" height="18vh" src="{% static 'img/gear.png' %}" width="18vw"/>
+        </a>
+        {% else %}
+        <a class="navbar-brand create" href="{% url 'create' %}">Create Account</a>
+        {% endif %}
+    </nav>
     {% block head %}{% endblock head %}
 </head>
 
+<!------------ Body ------------->
+
 <body>
-<hr style="margin:0px; margin-top:10px; visibility:hidden;">
-<footer class="navbar-light bg-light appear navbar-bar">
-    <a class="navbar-brand" style="display:inline-block; vertical-align:middle; font-size: 1.2vw;"><h6>Created by:
-        Aditya Vasantharao (2023), Chinmay Bhandaru (2023), Karthik Bhargav (2023)</h6></a>
-</footer>
+
+<!-- Page Bodies -->
+
 <div class="contents">
-    {% block content %}{% endblock content %}
+    {% block content %}
+
+    {% endblock content %}
 </div>
+
+<hr class="invisible">
+
+<!-- Credits Footer -->
+
+<!--    <footer class="navbar-light bg-light appear navbar-bar">-->
+
+<!--        <a class="navbar-brand authors">-->
+
+<!--            <h6>-->
+<!--                Created by: Aditya Vasantharao (2023), Chinmay Bhandaru (2023), Karthik Bhargav (2023)-->
+<!--            </h6>-->
+<!--        </a>-->
+
+<!--    </footer>-->
 
 </body>
 
-<script>
-        function interval(){
-            setTimeout(disableButton, 1);
-            setTimeout(undisableButton, 1000)
-        }
-        function disableButton(){
-            document.getElementById("btn").disabled = true;
-            console.log(document.getElementById("btn").disabled)
-        }
-        function undisableButton(){
-            document.getElementById("btn").disabled = false;
-            console.log(document.getElementById("btn").disabled)
-        }
+<!------------ Static Scripts ------------->
 
+<script language="javascript" src="{% static 'js/base.js' %}"></script>
+{% block js %}{% endblock js %}
 
-
-</script>
 </html>

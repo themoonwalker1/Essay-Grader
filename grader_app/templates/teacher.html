@@ -1,247 +1,63 @@
 {% extends "base.html" %}
-{% block head %}
-<style>
-    .a{
-        padding-left: 15px;
-        width:34%;
-        height:80vh;
-        float:left;
-        display: inline-block;
-        border-right: 2px solid #ababab;
-    }
-    .b{
-        padding-right: 15px;
-        width: 63%;
-        height:80vh;
-        float:right;
-    }
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 60px;
-      height: 34px;
-    }
-
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #ccc;
-      -webkit-transition: .4s;
-      transition: .4s;
-    }
-
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 26px;
-      width: 26px;
-      left: 4px;
-      bottom: 4px;
-      background-color: white;
-      -webkit-transition: .4s;
-      transition: .4s;
-    }
-
-    input:checked + .slider {
-      background-color: #565656;
-    }
-
-    input:focus + .slider {
-      box-shadow: 0 0 1px #2196F3;
-    }
-
-    input:checked + .slider:before {
-      -webkit-transform: translateX(26px);
-      -ms-transform: translateX(26px);
-      transform: translateX(26px);
-    }
-
-    .slider.round {
-      border-radius: 34px;
-    }
-
-    .slider.round:before {
-      border-radius: 50%;
-    }
-    .essay{
-        color: black;
-        vertical-align: center;
-    }
-    .essay:hover {
-        color: black;
-        background-color: #efefef;
-    }
-</style>
+{% load static %}
+{% block css %}
+<link href="{% static 'css/teacher.css' %}" rel="stylesheet" type="text/css"/>
 {% endblock %}
 {% block content %}
-        <label id="info" user="{{user.email}}"></label>
-        <div class="scrollable a">
-        {% if assignment == "None" %}
-            <h3>{{ error }}</h3>
-        {% else %}
-            <h2 style="display:inline-block;">Assignment</h2>
-            <h5>
-                <select class="form-control" id="assignment" >
-                    <option value="">-SELECT-</option>
-                    {% if assignments|length == 0 %}
-                        <option value="">No Assignments Made</option>
-                    {% else %}
-                    {% for assignment in assignments %}
-                        <option value="{{assignment.pk}}">{{assignment.assignment_name}}</option>
-                    {% endfor %}
-                    {% endif %}
-                </select>
-            </h5>
-        {% endif %}
-        <hr>
-            <div id="not_graded">
-            </div>
-            <div id="graded">
-            </div>
-        </div>
-        <div class="scrollable b" id="essay_box" thing="{% url 'ajax_load_essay' %}">
+<!------------ Left Side Scrollable ------------->
+<label id="info" user="{{user.email}}"></label>
+<div class="scrollable a">
+    {% if assignment == "None" %}
+    <h3>{{ error }}</h3>
+    {% else %}
+    <h2 style="display:inline-block;">Assignment</h2>
+    <h5>
+        <!-- Assignment Form -->
+        <select class="form-control" id="assignment" url="{% url 'teacher_graded' 123 %}">
+            <option value="">-SELECT-</option>
+            {% if assignments|length == 0 %}
+            <option value="">No Assignments Made</option>
+            {% else %}
+            {% for assignment in assignments %}
+            <option value="{{assignment.pk}}">{{assignment.assignment_name}}</option>
+            {% endfor %}
+            {% endif %}
+        </select>
+    </h5>
+    {% endif %}
+    <hr>
+    <!-- Not Graded Essays -->
+    <div id="not_graded">
+    </div>
+    <!-- Graded Essays -->
+    <div id="graded">
+    </div>
+</div>
+<!------------ Right Side Scrollable ------------->
+<div class="scrollable b" id="essay_box" thing="{% url 'ajax_load_essay' %}"></div>
 
-        </div>
-        <footer class="navbar-light bg-light appear navbar-bar" style="height:50px;">
-            <div style="float: left; width: 35%;">
-            <div style="display: inline-block; float: left; margin-left: 10px; padding-left:10px; margin-top: 4px; padding-top:4px; ">
-            <h5 id="name_thing" style="display: inline-block;">Show Graded</h5>
-        <label id="switch" class="switch" style="display:inline-block;">
-            <input type="checkbox" onclick="toggleType()" id="slider">
-            <span class="slider round"></span>
-        </label>
-            </div>
-            <div style="float:right; margin-right: 10px; padding-right:10px; margin-top: 2.5px; ">
-            <button type="button" id="thingy" class="btn btn-primary" stuff="{% url 'grade' 123 %}" onclick="gradeAll()">Mark All</button>
-            </div>
-            </div>
-        </footer>
-        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-        <script>
-            function addComment(pk){
-                var url = "ajax/comment/";
-                var body = document.getElementById("id_Comment").value;
-                var email = document.getElementById("info").getAttribute("user");
-                if (body != ""){
-                $.ajax({
-                    url: url,
-                    data: {
-                      'pk': pk,
-                      'body': body,
-                      'email':email,
-                    },
-                    success: function (data) {
-                   }
-                });
-                }
-                setTimeout(1, showEssay(pk));
-            }
-            function showEssays(){
-                var pk = $("#assignment").val();
-                if (pk != ""){
-                    var url = "{% url 'teacher_graded' 123 %}";
-                    url = url.replace('123', pk);
-                    $.ajax({
-                        url: url,
-                        data:{},
-                        success: function (data) {
-                          $("#graded").html(data);
-                       }
-                    });
-                    url = "{% url 'teacher_not_graded' 123 %}";
-                    url = url.replace('123', pk);
-                    $.ajax({
-                        url: url,
-                        data:{},
-                        success: function (data) {
-                          $("#not_graded").html(data);
-                       }
-                    });
-                } else {
-                    $("#not_graded").html("");
-                    $("#graded").html("");
-                    $("#essay_box").html("");
-                }
-            }
-            function showEssay(i) {
-                var url = $("#essay_box").attr("thing");
-                $.ajax({
-                    url: url,
-                    data: {
-                      'pk': i
-                    },
-                    success: function (data) {
-                      $("#essay_box").html(data);
-                   }
-                  });
-            }
-            function gradeAll() {
-                var i = $("#assignment").val();
-                var url = $("#thingy").attr("stuff");
-                url = url.replace("123", i);
-                $.ajax({
-                    url: url,
-                    success: function (data) {
-                      $("#graded").html(data);
-                      $("#not_graded").html("<h3>None of your students submitted and essay for this assignment</h3><hr>");
-                   }
-                });
-                var g = document.getElementById('graded');
-                var ng = document.getElementById('not_graded');
-                g.style.display = "initial";
-                ng.style.display = "none";
-            }
-            function toggleType() {
-                var g = document.getElementById('graded');
-                var ng = document.getElementById('not_graded');
-                $("#essay_box").html("");
-                if (g.style.display == "none"){
-                    g.style.display = "initial";
-                    ng.style.display = "none";
-                } else {
-                    g.style.display = "none";
-                    ng.style.display = "initial";
-                }
-            }
-            function onLoad(){
-              showEssays();
-              var a = document.getElementsByClassName('assignment_list');
-              for (var i = 0; i < a.length; i++) {
-                a[i].style.height = window.clientHeight;
-              }
-              var b = document.getElementById('graded');
-              b.style.display = "none";
-            }
-            function gradeEssay() {
-                var url = $("#add_grade").attr("url");
-                var n = $("#numerator").val();
-                var d = $("#denominator").val();
-                if (n!="" && d!=""){
-                $.ajax({
-                    url: url,
-                    data: {
-                      'numerator':n,
-                      'denominator':d
-                    },
-                    success: function (data) {
-                   }
-                });
-                $("#essay_box").html("");
-                }
-            }
-            window.addEventListener('load', onLoad());
-            $("#assignment").change(showEssays);
-            setInterval(showEssays, 1000);
+<!-- Footer with Options -->
 
-        </script>
+<footer class="navbar-light bg-light appear navbar-bar footer">
+    <div class="option_container">
+        <!-- Switch -->
+        <div class="switch-div">
+            <h5 class="label" id="name_thing">Show Graded</h5>
+            <label class="switch" class="label" id="switch">
+                <input id="slider" onclick="toggleType()" type="checkbox">
+                <span class="slider round"></span>
+            </label>
+        </div>
+        <!-- Button -->
+        <div class="button-div">
+            <button class="btn btn-primary" id="thingy" onclick="gradeAll()" stuff="{% url 'grade' 123 %}"
+                    type="button">Mark All
+            </button>
+        </div>
+    </div>
+</footer>
 {% endblock %}
+{% block js %}
+<script src="{% static 'js/teacher.js' %}"></script>
+{% endblock %}
+

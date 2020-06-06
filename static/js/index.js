@@ -1,0 +1,1 @@
+document.getElementById("id_q").value = "{{query}}"
