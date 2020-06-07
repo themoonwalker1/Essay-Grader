@@ -77,21 +77,21 @@ A platform to speed up essay grading.
 ## Goals
 * Bold == Working On
 * Website Features
-	- [ ] ***Settings***
-		- [ ] Add Teacher
-		- [ ] Password Change
-		- [ ] Add Login/Logout to the Sidebar(Maybe idk)
+	- [x] ***Settings***
+		- [x] Add Teacher
+		- [x] Password Change
+		- [x] Add Login/Logout to the Sidebar
 * Essay Checking 
 	- [x] Grammar
 	- [x] Formatting
-	- [ ] ***Citation Formatting***
+	- [x] ***Citation Formatting***
 	- [ ] ***Citation Cross-Referencing***
 	- [x] Header Formatting
 	- [ ] Plagarism Checker
 * Interface:
 	* Teacher 
 		- [x] Seeing Students Essay's and being able to grade it
-		- [ ] Comment System(Interact with Students)
+		- [x] Comment System(Interact with Students)
 	* Student
 		- [x] Submitting Essay
 * Automation
