@@ -691,3 +691,15 @@ def comment(request):
     comm.save()
     print(comm.body)
     return JsonResponse({})
+
+
+def dark(request):
+    u = User.objects.get(email=request.GET.get("email"))
+    print("Before: ", u.dark_mode, " After: ", request.GET.get("dark"))
+    if request.GET.get("dark") == "true":
+        u.dark_mode = True
+    else:
+        u.dark_mode = False
+    print("Actually After: ", u.dark_mode)
+    u.save()
+    return JsonResponse({})

@@ -5,12 +5,14 @@
     float:left;
     display: inline-block;
     border-right: 2px solid #ababab;
+    color: var(--font-color) !important;
 }
 .b{
     padding-right: 15px;
     width: 63%;
     height:80vh;
     float:right;
+    color: var(--font-color) !important;
 }
 .switch {
     position: relative;
@@ -71,12 +73,12 @@ input:checked + .slider:before {
     border-radius: 50%;
 }
 .essay{
-    color: black;
+    color: var(--font-color) !important;
     vertical-align: center;
 }
 .essay:hover {
-    color: black;
-    background-color: #efefef;
+    color: var(--link-hover) !important;
+    background-color: var(--navbar);
 }
 .footer{
     height:50px;
