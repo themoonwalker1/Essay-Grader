@@ -3,6 +3,7 @@ import requests
 from enum import Enum
 from urlextract import URLExtract
 
+#get value from enum: https://stackoverflow.com/questions/24487405/enum-getting-value-of-enum-on-string-conversion
 
 class APACitationStatus(str, Enum):
     AUTHOR = "author"
@@ -51,8 +52,8 @@ class APACitation():
         else:
             raise Exception("Bad formatting in the author section: '" + author_section + "'")
         
-        #single author case
-        #get rid of any non-English alphabetic characters (vowels w/ accents, etc.)
+        # single author case
+        # get rid of any non-English alphabetic characters (vowels w/ accents, etc.)
         filtered_authors = ""
 
         for i in author_section:
@@ -296,6 +297,14 @@ class APACitation():
 
             self.url = url
 
+class MLACitationStatus(str, Enum):
+    YEAR = "year"
+    AUTHOR = "author"
+    TITLE = "title"
+    JOURNAL = "journal"
+    URL = "url"
+    OTHER_INFO = "other info"
+
 
 class MLACitation():
     def __init__(self):
@@ -304,10 +313,13 @@ class MLACitation():
         self.year = ""
         self.url = ""
         self.otherInfo = []
+        self.citation_status = MLACitationStatus.YEAR
         self.warnings = {"title_capitalization": ""}
 
     def filter_latin(self, text):
-        #get rid of any non-English alphabetic characters (vowels w/ accents, etc.)
+
+        # get rid of any non-English alphabetic characters (vowels w/ accents, etc.)
+
         filtered_authors = ""
         
         for i in text:
@@ -320,20 +332,25 @@ class MLACitation():
 
         return filtered_authors
 
-    def checkMLAcitation(self, citation): #NOTE: when implementing, wrap the method in a try catch and print out any error + the citation status
+    def checkMLAcitation(self, citation): 
+        
+        #NOTE: when implementing, wrap the method in a try catch and print out any error + the citation status
+
         try:
             pattern = re.compile("[0-9]{4}")
             result = pattern.search(citation)
             self.year = result.group(0)
         except:
-            raise Exception("Unable to find year in citation")
+            raise Exception("Unable to find year in citation.")
+
+        self.citation_status = MLACitationStatus.AUTHOR
             
         cursor = 0
 
         while True:
             ascii_value = ord(citation[cursor])
 
-            #check if the current character is not " &-'." or any alphanumeric in English or Latin-1
+            # check if the current character is not " &-'." or any alphanumeric in English or Latin-1
 
             if ascii_value == 32 or ascii_value == 39 or 45 <= ascii_value <= 46 or 65 <= ascii_value <= 90 or 97 <= ascii_value <= 122 or 192 <= ascii_value <= 255:
                 cursor += 1
@@ -347,7 +364,7 @@ class MLACitation():
             else:
                 raise Exception("Bad formatting in the author section: '" + author_section + "'")
             
-            #three or more authors
+            # three or more authors
             if ", et al." in author_section:
                 temp = author_section.replace(", et al", "")
                 authors = temp.split(", ")
@@ -359,7 +376,7 @@ class MLACitation():
                 else:
                     raise Exception("Bad formatting in the author section: '" + author_section + "'")
 
-            #two authors
+            # two authors
             elif ", and " in author_section:
                 authors = author_section.split(", and ")
                 if ", " not in authors[0]:
@@ -386,7 +403,7 @@ class MLACitation():
                 else:
                     raise Exception("Bad formatting in the author section: '" + author_section + "'")
             
-            #one author
+            # one author
             elif ", " in author_section:
                 authors = author_section.split(", ")
                 filteredAuthor = [filter_latin(i) for i in firstAuthor]
@@ -399,13 +416,15 @@ class MLACitation():
 
             elif "et. al." in author_section or "et.al." in author_section:
                 raise Exception("'Et al.' should not have a period after the 'Et'.")
-            #no match; bad formatting 
+            # no match; bad formatting 
             else:
                 raise Exception("Bad formatting in the author section: '" + author_section + "'")
 
         cursor += 1
+
+        self.citation_status = MLACitationStatus.TITLE
         
-        #check the title section
+        # check the title section
         if "www." not in citation or "doi" not in citation:
             if "<i>" not in citation[cursor : cursor + 6]:
                 raise Exception("Bad formatting in the title section.")
@@ -452,12 +471,30 @@ class MLACitation():
 
         self.title = title
 
+        # check for url
+        self.citation_status = MLACitationStatus.URL
+
         extractor = URLExtract()
         if extractor.has_urls(citation):
             urls = extractor.find_urls(citation)
-
             self.url = urls[0]
+            if self.url + "." not in citation: 
+                raise Exception("Bad formatting in the URL section.")
+
             if citation[cursor : cursor + 3] != "<i>" or citation[cursor + 1 : cursor + 4] != "<i>":
                 self.warnings["container"] = "The container may not exist or may not be italicized"
+
         elif citation[cursor : cursor + 3] == "<i>" or citation[cursor + 1 : cursor + 4] == "<i>":
             self.warnings["container"] = "The container might exist when not necessary (if the citation is about a book), or the block immediately following the title may be improperly italicized."
+
+        if self.url != "":
+            citation.replace(self.url + ".", "")
+
+        # check for other info
+        # right now, it's too complex to validate the entire MLA citation without prior knowledge on what type of citation it is, 
+        # so the other info is just stored without checking
+        self.citation_status = MLACitationStatus.OTHER_INFO
+
+        remainingText = citation[cursor:]
+        info = remainingText.split(", ")
+        self.otherInfo = [i for i in info]
