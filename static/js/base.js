@@ -15,3 +15,12 @@ function undisableButton(){
     document.getElementById("btn").disabled = false;
     console.log(document.getElementById("btn").disabled)
 }
+(function () {
+
+    if (document.getElementById('info').getAttribute("dark_mode") == "True") {
+        document.getElementById("gear").classList.add("invert");
+    } else {
+        document.getElementById("gear").classList.remove("invert");
+    }
+    console.log
+})();
