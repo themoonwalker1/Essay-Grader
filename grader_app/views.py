@@ -107,7 +107,7 @@ def login(request):
                     auth.login(request, user)
                     return redirect("http://localhost:8000/home")
 
-            except TokenExpiredError:
+            except Exception:
                 args = {"client_id": client_id, "client_secret": client_secret}
                 oauth.refresh_token("https://ion.tjhsst.edu/oauth/token/", **args)
     return render(request, "login.html", context)
@@ -212,7 +212,7 @@ def index(request):
         return redirect("teacher")
 
     if not essays:
-        essays = Essay.objects.all().order_by('-created_on')
+        essays = Essay.objects.all().filter(author=request.user).order_by('-created_on')
 
     context = {
         "essays": essays,
@@ -236,7 +236,8 @@ def submit(request):
                 author=request.user,
                 assignment=form.cleaned_data["assignment"],
                 teacher=User.objects.get(email=form.cleaned_data["teachers"]),
-                citation_type=form.cleaned_data["citation_type"]
+                citation_type=form.cleaned_data["citation_type"],
+                marked_body=form.cleaned_data['body']
             )
             essay.save()
             message = "Your student %s has just submitted an Essay for the assignment %s. " \
@@ -268,7 +269,15 @@ def load_assignments(request):
 def load_essay(request):
     essay_pk = request.GET.get('pk')
     essay = Essay.objects.get(pk=essay_pk)
-    return render(request, 'load_essay.html', {'essay': essay})
+    comments = Comment.objects.filter(essay=essay)
+    form = CommentForm(None)
+    print(essay.grade_numerator, essay.grade_denominator)
+    data = {
+        'essay': essay,
+        'comments': comments,
+        'form': form
+    }
+    return render(request, 'load_essay.html', data)
 
 
 @login_required(login_url="login")
@@ -385,7 +394,6 @@ def grade(request, pk):  # max 7973 characters/request, <100 requests/day
     for result in results:
         # print("Original", result[1])
         essay = Essay.objects.get(id=result[0])
-        essay.graded = True
         essay.marked_body = reformat(result[1])
         essay.save()
 
@@ -663,3 +671,23 @@ def validate_due_date(request):
     print(due_date_time)
     print(today)
     return JsonResponse({'expired': (today > due_date_time)})
+
+
+def grade_essay(request, pk):
+    essay = Essay.objects.get(pk=pk)
+    print(pk, essay)
+    if request.GET.get('denominator') != '' and request.GET.get('denominator') != 0 and request.GET.get(
+            'numerator') != '':
+        essay.grade_numerator = int(request.GET.get('numerator'))
+        essay.grade_denominator = int(request.GET.get('denominator'))
+        essay.graded = True
+        essay.save()
+    return JsonResponse({})
+
+
+def comment(request):
+    essay = Essay.objects.get(pk=request.GET.get('pk'))
+    comm = Comment(essay=essay, body=request.GET.get('body'), author=User.objects.get(email=request.GET.get("email")))
+    comm.save()
+    print(comm.body)
+    return JsonResponse({})

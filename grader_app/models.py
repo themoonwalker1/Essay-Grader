@@ -23,9 +23,6 @@ class Assignment(models.Model):
         return self.assignment_name
 
 
-dropdown = (("None", "None"), ("APA", "APA"), ("MLA", "MLA"))
-
-
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None):
         if not email:
@@ -172,6 +169,7 @@ class User(AbstractBaseUser):
 
 
 class Essay(models.Model):
+    dropdown = (("None", "None"), ("APA", "APA"), ("MLA", "MLA"))
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="author")
     assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name="teacher", null=True)
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
@@ -179,5 +177,7 @@ class Essay(models.Model):
     body = models.TextField()
     created_on = models.DateTimeField(auto_now_add=True)
     citation_type = models.CharField(max_length=150, choices=dropdown, default="None")
-    marked_body = models.TextField(default=body)
+    marked_body = models.TextField(default="")
     graded = models.BooleanField(default=False)
+    grade_numerator = models.IntegerField(default=0)
+    grade_denominator = models.IntegerField(default=0)

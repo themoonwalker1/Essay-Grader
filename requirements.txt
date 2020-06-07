@@ -12,4 +12,5 @@ nltk
 django-ckeditor
 pytz
 scikit-learn
-
+requests
+urlextract

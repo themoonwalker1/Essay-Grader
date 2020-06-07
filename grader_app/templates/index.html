@@ -1,18 +1,24 @@
 {% extends "base.html" %}
-
+{% load static %}
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/index.css' %}"/>
+{% endblock %}
+<!------------ Student Index Interface ------------->
 {% block content %}
-        
+    <!-- Search Bar -->
     {% if user.is_authenticated %}
-        <div class="wrapper">
-            <div class="search-bar mt-sm-2 mr-2 offset-md-2 col-md-8">
-                <form method="get">
-                    <input type="text" class="form-control" name="q" id="id_q" placeholder="Search for Essay">
-                </form>
-            </div>
+    <div class="wrapper">
+        <div class="search-bar mt-sm-2 mr-2 offset-md-2 col-md-8">
+            <form method="get">
+                <input type="text" class="form-control" name="q" id="id_q" query="{{ query }}" placeholder="Search for Essay"/>
+            </form>
         </div>
+    </div>
     {% endif %}
 
-    <div class="col-md-8 offset-md-2" style="padding-top: 2em;">
+    <!-- Error Messages -->
+
+    <div class="col-md-8 offset-md-2 index">
         <h1>Essays</h1>
         <hr>
         {% if user.is_authenticated %}
@@ -20,26 +26,40 @@
                 {% if search == False %}
                     <h3>No essays yet, why don't you submit one?</h3>
                 {% else %}
-                    <h3>No results based on your search<h3>
+                    <h3>No results based on your search</h3>
                 {% endif %}
             {% endif %}
         {% else %}
-            <h4 style="padding-bottom: 1em;">You are not logged in. Please log in to submit and view your essays.</h4>
+            <h4 class="message">You are not logged in. Please log in to submit and view your essays.</h4>
         {% endif %}
-        
-        {% if user %}
+
+        <!-- All Essays Created by student -->
+
+        {% if user.is_authenticated %}
             {% for essay in essays %}
-                <h2><a href="{% url 'detail' essay.pk%}">{{ essay.title }}</a></h2>
+                <h2>
+                    <a href="{% url 'detail' essay.pk%}" class="title">
+                        {{ essay.title }}
+                    </a>
+                    <a class="grade">
+                        {% if essay.graded %}{{essay.grade_numerator}}/{{essay.grade_denominator}}{% endif%}
+                    </a>
+                </h2>
+                <!-- Essay Information -->
                 <h5> Assignment: {{essay.assignment}}</h5>
                 <h5> By: {{essay.author}}</h5>
                 <h5> For: {{essay.teacher}}</h5>
-                <h6> Created on {{ essay.created_on }}&emsp;&emsp;&emsp;{% if essay.citation_type != "None" %} Type: <b>{{essay.citation_type}}</b>  {% endif %}</h6>
+                <h6> Created on {{ essay.created_on }}
+                    {% if essay.citation_type != "None" %}
+                    <b class="grade">Type: {{essay.citation_type}}</b>
+                    {% endif %}
+                </h6>
                 <hr>
             {% endfor %}
         {% endif %}
     </div>
+{% endblock %}
 
-    <script type="text/javascript">
-        document.getElementById("id_q").value = "{{query}}"
-    </script>
+{% block js %}
+    <script type="text/javascript" src="{% static 'js/index.js' %}" language="JavaScript"></script>
 {% endblock %}
