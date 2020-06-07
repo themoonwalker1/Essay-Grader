@@ -3,6 +3,7 @@ import requests
 from enum import Enum
 from urlextract import URLExtract
 
+
 class APACitationStatus(str, Enum):
     AUTHOR = "author"
     YEAR = "year"
@@ -13,13 +14,14 @@ class APACitationStatus(str, Enum):
     PAGES = "page number"
     URL = "url"
 
+
 class APACitation():
     def __init__(self):
         self.authors = []
         self.year = ""
         self.title = ""
         self.journal = ""
-        self.volume = "" 
+        self.volume = ""
         self.issue = ""
         self.pages = []
         self.url = ""
@@ -32,13 +34,13 @@ class APACitation():
         while True:
             ascii_value = ord(citation[cursor])
 
-            #check if the current character is not " &-'." or any alphanumeric in English or Latin-1
+            # check if the current character is not " &-'." or any alphanumeric in English or Latin-1
 
             if ascii_value == 32 or 38 <= ascii_value <= 39 or 45 <= ascii_value <= 46 or 65 <= ascii_value <= 90 or 97 <= ascii_value <= 122 or 192 <= ascii_value <= 255:
                 cursor += 1
             else:
                 break
-                    #RIGHT NOW CURSOR SHOULD EQUAL TO "(", IF IT DOESNT MARK ERROR 
+                # RIGHT NOW CURSOR SHOULD EQUAL TO "(", IF IT DOESNT MARK ERROR
 
         if citation[cursor] != "(":
             raise Exception("Bad formatting in the author section: unable to find open parenthesis.")
@@ -52,20 +54,20 @@ class APACitation():
         #single author case
         #get rid of any non-English alphabetic characters (vowels w/ accents, etc.)
         filtered_authors = ""
-        
+
         for i in author_section:
-            if(192 <= ord(i) <= 255):
+            if (192 <= ord(i) <= 255):
                 filtered_authors += 'X'
             else:
                 filtered_authors += i
 
-        #check for single author
+        # check for single author
         if not re.match("^[A-Z][a-z]+[,][ ][A-Z][.]$", filtered_authors) \
-        or not re.match("^[A-Z][A-Za-z-']+[.]$", filtered_authors) \
-        or not re.match("^[a-z]['][A-Z][a-z]+[,][ ][A-Z][.][ ][A-Z][.]$", filtered_authors) \
-        or not re.match("^[a-z]['][A-Z][a-z]+[,][ ][A-Z][.]$", filtered_authors) \
-        or not re.match("^[A-Z][a-z]+[,][ ][A-Z][.][ ][A-Z][.]$", filtered_authors) \
-        or not re.match("^[A-Z][a-z]+[,][ ][A-Z][.][-][A-Z][.]$", filtered_authors):
+                or not re.match("^[A-Z][A-Za-z-']+[.]$", filtered_authors) \
+                or not re.match("^[a-z]['][A-Z][a-z]+[,][ ][A-Z][.][ ][A-Z][.]$", filtered_authors) \
+                or not re.match("^[a-z]['][A-Z][a-z]+[,][ ][A-Z][.]$", filtered_authors) \
+                or not re.match("^[A-Z][a-z]+[,][ ][A-Z][.][ ][A-Z][.]$", filtered_authors) \
+                or not re.match("^[A-Z][a-z]+[,][ ][A-Z][.][-][A-Z][.]$", filtered_authors):
             if " " in filtered_authors and filtered_authors[-1] == ".":
                 tokens = filtered_authors[:-1].split(" ")
                 for token in tokens:
@@ -74,7 +76,7 @@ class APACitation():
                 else:
                     self.authors.append(filtered_authors)
 
-        #one author with multiple parts in name
+        # one author with multiple parts in name
         try:
             name = filtered_authors.split(", ")
             if len(name) == 2:
@@ -85,14 +87,13 @@ class APACitation():
                 else:
                     firstName = name[1]
                     if re.match("^[A-Z][.][ ][A-Z][.]$", firstName) is not None \
-                    or re.match("^[A-Z][.][-][A-Z][.]$", firstName) is not None \
-                    or re.match("^[A-Z][.]$", firstName) is not None:
+                            or re.match("^[A-Z][.][-][A-Z][.]$", firstName) is not None \
+                            or re.match("^[A-Z][.]$", firstName) is not None:
                         self.authors.append(name[0])
         except:
             pass
 
-        
-        #check for multiple authors
+        # check for multiple authors
         if self.authors == []:
             author_section = author_section[:-1]
             delimiters = [' & ', ' ... ', ' . . . ']
@@ -103,7 +104,8 @@ class APACitation():
                     delim = i
                     break
             else:
-                raise Exception("Wrong formatting before last author (last author should be preceded by a '&' or ellipsis).")
+                raise Exception(
+                    "Wrong formatting before last author (last author should be preceded by a '&' or ellipsis).")
 
             author_section = author_section.replace(delim, " ", 1)
 
@@ -115,19 +117,20 @@ class APACitation():
             for i in range(len(authors)):
                 author = authors[i]
 
-                #last name case
+                # last name case
                 if i % 2 == 0:
                     for ch in author:
-                        if not (ord(ch) == 32 or ord(ch) == 39 or ord(ch) == 45 or 65 <= ord(ch) <= 90 or 97 <= ord(ch) <= 122 or 192 <= ord(ch) <= 255):
+                        if not (ord(ch) == 32 or ord(ch) == 39 or ord(ch) == 45 or 65 <= ord(ch) <= 90 or 97 <= ord(
+                                ch) <= 122 or 192 <= ord(ch) <= 255):
                             raise Exception("Bad formatting in the author section: '" + author + "'")
                     else:
                         self.authors.append(author)
                 else:
-                    #get rid of all Latin-1 characters in author first name
+                    # get rid of all Latin-1 characters in author first name
                     filtered_author = ""
 
                     for ch in author:
-                        if(192 <= ord(ch) <= 255):
+                        if (192 <= ord(ch) <= 255):
                             filtered_author += 'X'
                         elif not (45 <= ord(ch) <= 46 or 65 <= ord(ch) <= 90):
                             raise Exception("Bad formatting in the author section: '" + filtered_author + "'")
@@ -135,28 +138,28 @@ class APACitation():
                             filtered_author += ch
 
                     if not re.match("^[A-Z][.]$", filtered_author) \
-                    or not re.match("^[A-Z][.][ ][A-Z][.]$", filtered_author) \
-                    or not re.match("^[A-Z][.][-][A-Z][.]$", filtered_author):
+                            or not re.match("^[A-Z][.][ ][A-Z][.]$", filtered_author) \
+                            or not re.match("^[A-Z][.][-][A-Z][.]$", filtered_author):
                         raise Exception("Bad formatting in an author's initials: '" + filtered_author + "'")
 
-
         if len(self.authors) > 20:
-            raise Exception("Too many authors listed (there should be a maximum of 20 authors).")           
+            raise Exception("Too many authors listed (there should be a maximum of 20 authors).")
 
-        #check the year section
+            # check the year section
         self.citation_status = APACitationStatus.YEAR
 
         if '. (' not in citation:
-            raise Exception("Error in citation formatting: the year number must be directly preceded by a period, a space, and an open parenthesis, but this was not found.")
+            raise Exception(
+                "Error in citation formatting: the year number must be directly preceded by a period, a space, and an open parenthesis, but this was not found.")
 
-        #move cursor to the first number in the year
+        # move cursor to the first number in the year
         cursor += 1
         year = ""
 
         while citation[cursor].isalnum():
             year += citation[cursor]
             cursor += 1
-        
+
         if not re.match("^[0-9]{4}$", year) or not re.match("^[0-9]{4}[a-z]$", year):
             raise Exception("Bad formatting in the year section: '" + year + "'")
 
@@ -169,14 +172,14 @@ class APACitation():
         if ". <i>" not in citation[cursor + 4:] or ".<i>" not in citation[cursor + 4:]:
             raise Exception("The journal title should be italicized.")
 
-        #check title
+        # check title
         self.citation_status = APACitationStatus.TITLE
 
         cursor += 1
-        
-        if citation[cursor + 1 : cursor + 4] == "<i>":
+
+        if citation[cursor + 1: cursor + 4] == "<i>":
             cursor += 4
-        elif citation[cursor + 2 : cursor + 5] == "<i>":
+        elif citation[cursor + 2: cursor + 5] == "<i>":
             cursor += 5
 
         if not citation[cursor].isupper():
@@ -184,7 +187,7 @@ class APACitation():
 
         title = ""
 
-        while citation[cursor + 1 : cursor + 6] != ". <i>" or citation[cursor + 1 : cursor + 5] != ".<i>":
+        while citation[cursor + 1: cursor + 6] != ". <i>" or citation[cursor + 1: cursor + 5] != ".<i>":
             title += citation[cursor]
             cursor += 1
 
@@ -193,7 +196,7 @@ class APACitation():
 
         words = title.split(" ")
 
-        #TODO: implement truecasing
+        # TODO: implement truecasing
         for word in words[1:]:
             if word[0].isalpha() and word[0].isupper():
                 self.warnings["title_capitalization"].append(word)
@@ -202,27 +205,29 @@ class APACitation():
 
         self.title = " ".join(words)
 
-        #check journal name
+        # check journal name
         self.citation_status = APACitationStatus.JOURNAL
 
         journal = ""
-        while citation[cursor + 1 : cursor + 3] != ", ":
+        while citation[cursor + 1: cursor + 3] != ", ":
             journal += citation[cursor]
             cursor += 1
 
         if "<i>" not in journal or "</i>" in journal:
-            raise Exception("The journal title should be italicized, and the italics should not stop until the end of the volume number.")
+            raise Exception(
+                "The journal title should be italicized, and the italics should not stop until the end of the volume number.")
 
         journal = journal.replace("<i>", "")
 
         self.journal = journal
 
-        if citation[cursor : cursor + 2] != ", ":
-            raise Exception("There should be a comma and a space after the journal title, and both of these should be in italics.")
+        if citation[cursor: cursor + 2] != ", ":
+            raise Exception(
+                "There should be a comma and a space after the journal title, and both of these should be in italics.")
 
         cursor += 2
 
-        #check for volume number
+        # check for volume number
         self.citation_status = APACitationStatus.VOLUME
 
         volume = ""
@@ -241,34 +246,34 @@ class APACitation():
 
         cursor += 1
 
-        #check for issue number
+        # check for issue number
         self.citation_status = APACitationStatus.ISSUE
 
         issue = ""
         while citation[cursor] != ")":
             issue += citation[cursor]
             cursor += 1
-        
+
         if not issue.isdigit():
             raise Exception("Bad formatting in the issue number: '" + issue + "'")
 
         self.issue = issue
 
-        if citation[cursor + 1 : cursor + 3] != ", ":
+        if citation[cursor + 1: cursor + 3] != ", ":
             raise Exception("The issue number should have a comma and a space after the ending parenthesis.")
 
         cursor += 3
 
-        #check for page number
+        # check for page number
         self.citation_status = APACitationStatus.PAGES
-    
+
         pages = ""
         pageNumbers = []
 
         while citation[cursor] != ".":
             pages += citation[cursor]
             cursor += 1
-        
+
         if not re.match("^[0-9]+[-][0-9]+$", pages) or not re.match("^[0-9]+$", pages):
             raise Exception("Bad formatting in the page number section: '" + pages + "'")
 
@@ -276,10 +281,10 @@ class APACitation():
             pageNumbers = pages.split("-")
         else:
             pageNumbers = [pages]
-        
+
         self.pages = pageNumbers
 
-        #check url
+        # check url
         self.citation_status = APACitationStatus.URL
 
         if "http://" in citation or "https://" in citation:
@@ -290,6 +295,7 @@ class APACitation():
                 raise Exception("Invalid URL: '" + url + "'")
 
             self.url = url
+
 
 class MLACitation():
     def __init__(self):

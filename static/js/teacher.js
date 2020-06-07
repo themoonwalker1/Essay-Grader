@@ -67,8 +67,6 @@ function gradeAll() {
     });
     var g = document.getElementById('graded');
     var ng = document.getElementById('not_graded');
-    g.style.display = "initial";
-    ng.style.display = "none";
 }
 function toggleType() {
     var g = document.getElementById('graded');
@@ -96,16 +94,16 @@ function gradeEssay() {
     var n = $("#numerator").val();
     var d = $("#denominator").val();
     if (n!="" && d!="" && d!="0"){
-    $.ajax({
-        url: url,
-        data: {
-          'numerator':n,
-          'denominator':d
-        },
-        success: function (data) {
-       }
-    });
-    $("#essay_box").html("");
+        $.ajax({
+            url: url,
+            data: {
+              'numerator':n,
+              'denominator':d
+            },
+            success: function (data) {
+           }
+        });
+        $("#essay_box").html("");
     }
 }
 window.addEventListener('load', onLoad());

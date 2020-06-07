@@ -681,9 +681,6 @@ def grade_essay(request, pk):
         essay.grade_numerator = int(request.GET.get('numerator'))
         essay.grade_denominator = int(request.GET.get('denominator'))
         essay.graded = True
-        if essay.body == essay.marked_body:
-            result = grade_all([essay.id])
-            essay.marked_body = result[0][1]
         essay.save()
     return JsonResponse({})
 
