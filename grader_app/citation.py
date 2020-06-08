@@ -27,7 +27,8 @@ class APACitation():
         self.pages = []
         self.url = ""
         self.citation_status = APACitationStatus.AUTHOR
-        self.warnings = {}
+        self.warnings = {"title_capitalization": []}
+        self.errors = {}
 
     def __str__(self):
         return "Author(s): " + str(self.authors) + "\n" + \
@@ -38,24 +39,26 @@ class APACitation():
             "Issue Number: " + self.issue + "\n" + \
             "Page Numbers (start, end): " + str(self.pages) + "\n" + \
             "URL/DOI: " + self.url + "\n" + \
-            "Warnings: " + str(list(self.warnings.values())) + "\n"
+            "Warnings: " + str(self.warnings) + "\n" + \
+            "Errors: " + str(self.errors)
     
     def checkAPAcitation(self, citation): #NOTE: when implementing, wrap the method in a try catch and print out any error + the citation status
         cursor = 0
+        ellipses = [' ... ', ' . . . ', ' … ']
 
         while True:
             ascii_value = ord(citation[cursor])
 
             # check if the current character is not " &-'." or any alphanumeric in English or Latin-1
 
-            if ascii_value == 32 or 38 <= ascii_value <= 39 or 44 <= ascii_value <= 46 or 65 <= ascii_value <= 90 or 97 <= ascii_value <= 122 or 192 <= ascii_value <= 255:
+            if ascii_value == 32 or 38 <= ascii_value <= 39 or 44 <= ascii_value <= 46 or 65 <= ascii_value <= 90 or 97 <= ascii_value <= 122 or 192 <= ascii_value <= 255 or ascii_value == 8230:
                 cursor += 1
             else:
                 break
                 # RIGHT NOW CURSOR SHOULD EQUAL TO "(", IF IT DOESNT MARK ERROR
 
         if citation[cursor] != "(":
-            raise Exception("Bad formatting in the author section: unable to find open parenthesis.")
+            raise Exception("Bad formatting in the author section (unknown error).")
 
         author_section = ""
         if citation[cursor - 1] == " ":
@@ -116,8 +119,7 @@ class APACitation():
 
             # check for multiple authors
             if self.authors == []:
-                author_section = author_section[:-1]
-                delimiters = [' & ', ' ... ', ' . . . ']
+                delimiters = [' & ', ' ... ', ' . . . ', ' … ']
                 delim = ""
 
                 for i in delimiters:
@@ -151,7 +153,7 @@ class APACitation():
                         for ch in author:
                             if (192 <= ord(ch) <= 255):
                                 filtered_author += 'X'
-                            elif not (45 <= ord(ch) <= 46 or 65 <= ord(ch) <= 90):
+                            elif not (ord(ch) == 32 or 45 <= ord(ch) <= 46 or 65 <= ord(ch) <= 90):
                                 raise Exception("Bad formatting in the author section: '" + filtered_author + "'")
                             else:
                                 filtered_author += ch
@@ -163,13 +165,16 @@ class APACitation():
 
         if len(self.authors) > 20:
             raise Exception("Too many authors listed (there should be a maximum of 20 authors).")
+        
+        for i in ellipses:
+            if i in citation and len(authors) != 20:
+                raise Exception("In APA 7, you must list the first 19 authors and then use the ellipsis before the last author.")
 
             # check the year section
         self.citation_status = APACitationStatus.YEAR
 
         if '. (' not in citation:
-            raise Exception(
-                "Error in citation formatting: the year number must be directly preceded by a period, a space, and an open parenthesis, but this was not found.")
+            raise Exception("Error in citation formatting: the year number must be directly preceded by a period, a space, and an open parenthesis, but this was not found.")
 
         # move cursor to the first number in the year
         cursor += 1
@@ -235,16 +240,14 @@ class APACitation():
             cursor += 1
 
         if "<i>" not in journal or "</i>" in journal:
-            raise Exception(
-                "The journal title should be italicized, and the italics should not stop until the end of the volume number.")
+            raise Exception("The journal title should be italicized, and the italics should not stop until the end of the volume number.")
 
         journal = journal.replace("<i>", "")
 
         self.journal = journal
 
         if citation[cursor: cursor + 2] != ", ":
-            raise Exception(
-                "There should be a comma and a space after the journal title, and both of these should be in italics.")
+            raise Exception("There should be a comma and a space after the journal title, and both of these should be in italics.")
 
         cursor += 2
 
@@ -299,11 +302,16 @@ class APACitation():
                 pages += citation[cursor]
                 cursor += 1
 
-            if not re.match("^[0-9]+[-][0-9]+$", pages) and not re.match("^[0-9]+$", pages):
-                raise Exception("Bad formatting in the page number section: '" + pages + "'")
+            if not re.match("^[0-9]+[-][0-9]+$", pages) and not re.match("^[0-9]+$", pages) and not re.match("^[0-9]+[–][0-9]+$", pages):
+                if "http://" in pages or "https://" in pages:
+                    raise Exception("The URL must be preceded by a period, not a comma.")
+                else:
+                    raise Exception("Bad formatting in the page number section: '" + pages + "'")
 
             if "-" in pages:
                 pageNumbers = pages.split("-")
+            elif '–' in pages:
+                pageNumbers = pages.split("–")
             else:
                 pageNumbers = [pages]
 
@@ -338,14 +346,22 @@ class MLACitation():
         self.url = ""
         self.otherInfo = []
         self.citation_status = MLACitationStatus.YEAR
-        self.warnings = {"title_capitalization": ""}
+        self.warnings = {}
+        self.errors = {}
+
+    def __str__(self):
+        return "Author(s): " + str(self.authors) + "\n" + \
+            "Year: " + self.year + "\n" + \
+            "Title: " + self.title + "\n" + \
+            "Other Info: " + str(self.otherInfo) + "\n" + \
+            "URL/DOI: " + self.url + "\n" + \
+            "Warnings: " + str(self.warnings) + "\n" + \
+            "Errors: " + str(self.errors)
 
     def filter_latin(self, text):
-
         # get rid of any non-English alphabetic characters (vowels w/ accents, etc.)
-
         filtered_authors = ""
-        
+
         for i in text:
             if(192 <= ord(i) <= 222):
                 filtered_authors += 'X'
@@ -357,13 +373,12 @@ class MLACitation():
         return filtered_authors
 
     def checkMLAcitation(self, citation): 
-        
         #NOTE: when implementing, wrap the method in a try catch and print out any error + the citation status
 
         try:
-            pattern = re.compile("[0-9]{4}")
+            pattern = re.compile("[ ][0-9]{4}")
             result = pattern.search(citation)
-            self.year = result.group(0)
+            self.year = result.group(0)[1:]
         except:
             raise Exception("Unable to find year in citation.")
 
@@ -375,8 +390,7 @@ class MLACitation():
             ascii_value = ord(citation[cursor])
 
             # check if the current character is not " &-'." or any alphanumeric in English or Latin-1
-
-            if ascii_value == 32 or ascii_value == 39 or 45 <= ascii_value <= 46 or 65 <= ascii_value <= 90 or 97 <= ascii_value <= 122 or 192 <= ascii_value <= 255:
+            if ascii_value == 32 or ascii_value == 39 or 44 <= ascii_value <= 46 or 65 <= ascii_value <= 90 or 97 <= ascii_value <= 122 or 192 <= ascii_value <= 255:
                 cursor += 1
             else:
                 break
@@ -385,17 +399,19 @@ class MLACitation():
             author_section = ""
             if citation[cursor - 1] == " ":
                 author_section = citation[:cursor - 1]
+            elif citation[cursor : cursor + 4] == "<i> ":
+                author_section = citation[:cursor]
             else:
-                raise Exception("Bad formatting in the author section: '" + author_section + "'")
+                raise Exception("Bad formatting in the author section (unknown error).")
             
             # three or more authors
             if ", et al." in author_section:
                 temp = author_section.replace(", et al", "")
                 authors = temp.split(", ")
-                filteredAuthor = [filter_latin(i) for i in firstAuthor]
+                filteredAuthor = [self.filter_latin(i) for i in authors]
 
                 if re.match("^[A-Za-z][A-Za-z-' ]+$", filteredAuthor[0]) is not None \
-                and re.match("^[A-Z][A-Za-z-']+[.]$", filteredAuthor[1]) is not None:
+                and re.match("^[A-Z][A-Za-z-'. ]+[.]$", filteredAuthor[1]) is not None:
                     self.authors.append(authors[0] + ", et al.")
                 else:
                     raise Exception("Bad formatting in the author section: '" + author_section + "'")
@@ -407,10 +423,10 @@ class MLACitation():
                     raise Exception("Bad formatting in the author section: '" + author_section + "'")
 
                 firstAuthor = authors[0].split(", ")
-                filteredFirstAuthor = [filter_latin(i) for i in firstAuthor]
+                filteredFirstAuthor = [self.filter_latin(i) for i in firstAuthor]
 
                 if re.match("^[A-Za-z][A-Za-z-' ]+$", filteredFirstAuthor[0]) is not None \
-                and re.match("^[A-Z][A-Za-z-']+$", filteredFirstAuthor[1]) is not None:
+                and re.match("^[A-Z][A-Za-z-'. ]+$", filteredFirstAuthor[1]) is not None:
                     self.authors.append(firstAuthor[0])
                 else:
                     raise Exception("Bad formatting in the author section: '" + author_section + "'")
@@ -419,10 +435,10 @@ class MLACitation():
                     raise Exception("Bad formatting in the author section: '" + author_section + "'")
 
                 secondAuthor = authors[1].split(" ", 1)
-                filteredSecondAuthor = [filter_latin(i) for i in secondAuthor]
+                filteredSecondAuthor = [self.filter_latin(i) for i in secondAuthor]
 
                 if re.match("^[A-Z][A-Za-z-']+$", filteredSecondAuthor[0]) is not None \
-                and re.match("^[A-Za-z][A-Za-z-' ]+[.]$", filteredSecondAuthor[1]) is not None:
+                and re.match("^[A-Za-z][A-Za-z-'. ]+[.]$", filteredSecondAuthor[1]) is not None:
                     self.authors.append(filteredSecondAuthor[1][:-1])
                 else:
                     raise Exception("Bad formatting in the author section: '" + author_section + "'")
@@ -430,10 +446,10 @@ class MLACitation():
             # one author
             elif ", " in author_section:
                 authors = author_section.split(", ")
-                filteredAuthor = [filter_latin(i) for i in firstAuthor]
+                filteredAuthor = [self.filter_latin(i) for i in authors]
 
                 if re.match("^[A-Za-z][A-Za-z-' ]+$", filteredAuthor[0]) is not None \
-                and re.match("^[A-Z][A-Za-z-']+[.]$", filteredAuthor[1]) is not None:
+                and re.match("^[A-Z][A-Za-z-' ]+[.]$", filteredAuthor[1]) is not None:
                     self.authors.append(authors[0])
                 else:
                     raise Exception("Bad formatting in the author section: '" + author_section + "'")
@@ -444,29 +460,16 @@ class MLACitation():
             else:
                 raise Exception("Bad formatting in the author section: '" + author_section + "'")
 
-        cursor += 1
-
         self.citation_status = MLACitationStatus.TITLE
         
         # check the title section
-        if "www." not in citation or "doi" not in citation:
-            if "<i>" not in citation[cursor : cursor + 6]:
-                raise Exception("Bad formatting in the title section.")
-            elif "\"" in citation[cursor : cursor + 6]:
-                raise Exception("Bad formatting in the title section.")
-        else:
-            if "<i>" in citation[cursor : cursor + 6]:
-                raise Exception("Bad formatting in the title section.")
-            elif "\"" not in citation[cursor : cursor + 6]:
-                raise Exception("Bad formatting in the title section.")
-
         if citation[cursor : cursor + 3] == "<i>":
             cursor += 3
         elif citation[cursor + 1 : cursor + 4] == "<i>":
             cursor += 4
         elif citation[cursor + 1] == "\"":
             cursor += 2
-        elif citation[cursor] == "\"":
+        elif citation[cursor - 1 : cursor + 1] == ".\"":
             raise Exception("Bad formatting in the title section.")
 
         title = ""
@@ -477,6 +480,9 @@ class MLACitation():
 
         title = title.replace("\"", "")
         title = title.replace("</i>", "")
+
+        if title[0] == " ":
+            title = title[1:]
 
         if not title[0].isalpha() and not title[0].isupper():
             raise Exception("The first word in the title must be capitalized.")
@@ -501,13 +507,17 @@ class MLACitation():
         extractor = URLExtract()
         if extractor.has_urls(citation):
             urls = extractor.find_urls(citation)
-            self.url = urls[0]
+            self.url = urls[0][:-1]
             if self.url + "." not in citation: 
                 raise Exception("Bad formatting in the URL section.")
-            response = requests.get(self.url)
-            if response.status_code >= 400:
-                raise Exception("Invalid URL: '" + url + "'")
-
+            try:
+                response = requests.get('http://' + self.url)
+            except:
+                try:
+                    response = requests.get('https://' + self.url)
+                except:
+                    raise Exception("Invalid URL: '" + url + "'")
+            
             if citation[cursor : cursor + 3] != "<i>" and citation[cursor + 1 : cursor + 4] != "<i>":
                 self.warnings["container"] = "The container may not exist or may not be italicized"
 
@@ -526,13 +536,39 @@ class MLACitation():
         info = remainingText.split(", ")
         self.otherInfo = [i for i in info]
 
-
-citation = APACitation()
-text = "Sánchez-Baracaldo, P. (2015). Origin of marine planktonic cyanobacteria. <i>Scientific Reports, 5</i>(17418). https://doi.org/10.1038/srep17418"
+text = "Klee, Paul.<i> Twittering Machine</i>. 1922. Museum of Modern Art, New York.<i> The Artchive</i>, www.artchive.com/artchive/K/klee/twittering_machine.jpg.html. Accessed May 2006."
+citation = MLACitation()
 try:
-    citation.checkAPAcitation(text)
-
+    citation.checkMLAcitation(text)
 except Exception as e:
     print(e)
-    print(citation.citation_status.value)
 print(citation)
+
+
+# citations = []
+# count = 1
+# with open("test.txt", encoding="utf-8") as f:
+#     for i in f.readlines():
+#         if i == "References":
+#             continue
+#         else:
+#             count += 1
+#             citation = APACitation()
+#             try:
+#                 citation.checkAPAcitation(i)
+#             except Exception as e:
+#                 print('ERROR (' + str(count) + '): ' + str(e))
+#                 citation.errors[citation.citation_status.value] = str(e)
+#                 print("Location: " + citation.citation_status.value)
+#                 print(i)
+#                 print()
+#             finally:
+#                 citations.append(citation)
+#                 continue
+# count = 1
+# for i in citations:
+#     print()
+#     print(str(count) + ": ")
+#     print(i)
+#     print()
+#     count += 1
