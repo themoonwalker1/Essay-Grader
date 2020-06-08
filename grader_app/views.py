@@ -3,7 +3,7 @@ import email.message
 import email.message
 import json
 import smtplib
-
+import re
 import pytz
 from django import forms
 from django.contrib import auth
@@ -237,7 +237,8 @@ def submit(request):
                 assignment=form.cleaned_data["assignment"],
                 teacher=User.objects.get(email=form.cleaned_data["teachers"]),
                 citation_type=form.cleaned_data["citation_type"],
-                marked_body=form.cleaned_data['body']
+                marked_body=form.cleaned_data['body'],
+                raw_body=raw(form.cleaned_data['body']),
             )
             essay.save()
             message = "Your student %s has just submitted an Essay for the assignment %s. " \
@@ -256,6 +257,9 @@ def submit(request):
     }
     return render(request, "submit.html", context)
 
+
+def raw(body):
+    return re.compile(r'<[^>]+>').sub('', body)
 
 def load_assignments(request):
     user_teacher = request.GET.get('teacher')

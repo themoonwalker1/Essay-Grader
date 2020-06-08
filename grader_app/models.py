@@ -175,6 +175,7 @@ class Essay(models.Model):
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     title = models.CharField(max_length=500)
     body = models.TextField()
+    raw_body = models.TextField(default="")
     created_on = models.DateTimeField(auto_now_add=True)
     citation_type = models.CharField(max_length=150, choices=dropdown, default="None")
     marked_body = models.TextField(default="")
