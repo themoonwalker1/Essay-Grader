@@ -27,7 +27,7 @@ class APACitation():
         self.pages = []
         self.url = ""
         self.citation_status = APACitationStatus.AUTHOR
-        self.warnings = {}
+        self.warnings = {"title_capitalization": []}
 
     def __str__(self):
         return "Author(s): " + str(self.authors) + "\n" + \
@@ -38,7 +38,7 @@ class APACitation():
             "Issue Number: " + self.issue + "\n" + \
             "Page Numbers (start, end): " + str(self.pages) + "\n" + \
             "URL/DOI: " + self.url + "\n" + \
-            "Warnings: " + str(list(self.warnings.values())) + "\n"
+            "Warnings: " + str(self.warnings) + "\n"
     
     def checkAPAcitation(self, citation): #NOTE: when implementing, wrap the method in a try catch and print out any error + the citation status
         cursor = 0
@@ -48,7 +48,7 @@ class APACitation():
 
             # check if the current character is not " &-'." or any alphanumeric in English or Latin-1
 
-            if ascii_value == 32 or 38 <= ascii_value <= 39 or 44 <= ascii_value <= 46 or 65 <= ascii_value <= 90 or 97 <= ascii_value <= 122 or 192 <= ascii_value <= 255:
+            if ascii_value == 32 or 38 <= ascii_value <= 39 or 44 <= ascii_value <= 46 or 65 <= ascii_value <= 90 or 97 <= ascii_value <= 122 or 192 <= ascii_value <= 255 or ascii_value == 8230:
                 cursor += 1
             else:
                 break
@@ -116,8 +116,7 @@ class APACitation():
 
             # check for multiple authors
             if self.authors == []:
-                author_section = author_section[:-1]
-                delimiters = [' & ', ' ... ', ' . . . ']
+                delimiters = [' & ', ' ... ', ' . . . ', ' … ']
                 delim = ""
 
                 for i in delimiters:
@@ -151,7 +150,7 @@ class APACitation():
                         for ch in author:
                             if (192 <= ord(ch) <= 255):
                                 filtered_author += 'X'
-                            elif not (45 <= ord(ch) <= 46 or 65 <= ord(ch) <= 90):
+                            elif not (ord(ch) == 32 or 45 <= ord(ch) <= 46 or 65 <= ord(ch) <= 90):
                                 raise Exception("Bad formatting in the author section: '" + filtered_author + "'")
                             else:
                                 filtered_author += ch
@@ -235,16 +234,14 @@ class APACitation():
             cursor += 1
 
         if "<i>" not in journal or "</i>" in journal:
-            raise Exception(
-                "The journal title should be italicized, and the italics should not stop until the end of the volume number.")
+            raise Exception("The journal title should be italicized, and the italics should not stop until the end of the volume number.")
 
         journal = journal.replace("<i>", "")
 
         self.journal = journal
 
         if citation[cursor: cursor + 2] != ", ":
-            raise Exception(
-                "There should be a comma and a space after the journal title, and both of these should be in italics.")
+            raise Exception("There should be a comma and a space after the journal title, and both of these should be in italics.")
 
         cursor += 2
 
@@ -299,11 +296,16 @@ class APACitation():
                 pages += citation[cursor]
                 cursor += 1
 
-            if not re.match("^[0-9]+[-][0-9]+$", pages) and not re.match("^[0-9]+$", pages):
-                raise Exception("Bad formatting in the page number section: '" + pages + "'")
+            if not re.match("^[0-9]+[-][0-9]+$", pages) and not re.match("^[0-9]+$", pages) and not re.match("^[0-9]+[–][0-9]+$", pages):
+                if "http://" in pages or "https://" in pages:
+                    raise Exception("The URL must be preceded by a period, not a comma.")
+                else:
+                    raise Exception("Bad formatting in the page number section: '" + pages + "'")
 
             if "-" in pages:
                 pageNumbers = pages.split("-")
+            elif '–' in pages:
+                pageNumbers = pages.split("–")
             else:
                 pageNumbers = [pages]
 
@@ -528,11 +530,11 @@ class MLACitation():
 
 
 citation = APACitation()
-text = "Sánchez-Baracaldo, P. (2015). Origin of marine planktonic cyanobacteria. <i>Scientific Reports, 5</i>(17418). https://doi.org/10.1038/srep17418"
+text = "Brutemark, A., Vandelannoote, A., Engström-Öst, J., & Suikkanen, S. (2015). A less saline Baltic Sea promotes cyanobacterial growth, hampers intracellular microcystin production, and leads to strain-specific differences in allelopathy.<i> PLoS One, 10</i>(6), 1-15. http://doi.org/10.1371/journal.pone.0128904"
 try:
     citation.checkAPAcitation(text)
 
 except Exception as e:
-    print(e)
+    print('ERROR: ' + str(e))
     print(citation.citation_status.value)
 print(citation)
