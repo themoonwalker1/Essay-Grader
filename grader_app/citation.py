@@ -28,6 +28,7 @@ class APACitation():
         self.url = ""
         self.citation_status = APACitationStatus.AUTHOR
         self.warnings = {"title_capitalization": []}
+        self.errors = {}
 
     def __str__(self):
         return "Author(s): " + str(self.authors) + "\n" + \
@@ -38,10 +39,12 @@ class APACitation():
             "Issue Number: " + self.issue + "\n" + \
             "Page Numbers (start, end): " + str(self.pages) + "\n" + \
             "URL/DOI: " + self.url + "\n" + \
-            "Warnings: " + str(self.warnings) + "\n"
+            "Warnings: " + str(self.warnings) + "\n" + \
+            "Errors: " + str(self.errors)
     
     def checkAPAcitation(self, citation): #NOTE: when implementing, wrap the method in a try catch and print out any error + the citation status
         cursor = 0
+        ellipses = [' ... ', ' . . . ', ' … ']
 
         while True:
             ascii_value = ord(citation[cursor])
@@ -55,7 +58,7 @@ class APACitation():
                 # RIGHT NOW CURSOR SHOULD EQUAL TO "(", IF IT DOESNT MARK ERROR
 
         if citation[cursor] != "(":
-            raise Exception("Bad formatting in the author section: unable to find open parenthesis.")
+            raise Exception("Bad formatting in the author section (unknown error).")
 
         author_section = ""
         if citation[cursor - 1] == " ":
@@ -162,13 +165,16 @@ class APACitation():
 
         if len(self.authors) > 20:
             raise Exception("Too many authors listed (there should be a maximum of 20 authors).")
+        
+        for i in ellipses:
+            if i in citation and len(authors) != 20:
+                raise Exception("In APA 7, you must list the first 19 authors and then use the ellipsis before the last author.")
 
             # check the year section
         self.citation_status = APACitationStatus.YEAR
 
         if '. (' not in citation:
-            raise Exception(
-                "Error in citation formatting: the year number must be directly preceded by a period, a space, and an open parenthesis, but this was not found.")
+            raise Exception("Error in citation formatting: the year number must be directly preceded by a period, a space, and an open parenthesis, but this was not found.")
 
         # move cursor to the first number in the year
         cursor += 1
@@ -529,12 +535,30 @@ class MLACitation():
         self.otherInfo = [i for i in info]
 
 
-citation = APACitation()
-text = "Brutemark, A., Vandelannoote, A., Engström-Öst, J., & Suikkanen, S. (2015). A less saline Baltic Sea promotes cyanobacterial growth, hampers intracellular microcystin production, and leads to strain-specific differences in allelopathy.<i> PLoS One, 10</i>(6), 1-15. http://doi.org/10.1371/journal.pone.0128904"
-try:
-    citation.checkAPAcitation(text)
-
-except Exception as e:
-    print('ERROR: ' + str(e))
-    print(citation.citation_status.value)
-print(citation)
+citations = []
+count = 1
+with open("test.txt", encoding="utf-8") as f:
+    for i in f.readlines():
+        if i == "References":
+            continue
+        else:
+            count += 1
+            citation = APACitation()
+            try:
+                citation.checkAPAcitation(i)
+            except Exception as e:
+                print('ERROR (' + str(count) + '): ' + str(e))
+                citation.errors[citation.citation_status.value] = str(e)
+                print("Location: " + citation.citation_status.value)
+                print(i)
+                print()
+            finally:
+                citations.append(citation)
+                continue
+count = 1
+for i in citations:
+    print()
+    print(str(count) + ": ")
+    print(i)
+    print()
+    count += 1
