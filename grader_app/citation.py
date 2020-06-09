@@ -226,7 +226,7 @@ class APACitation():
 
         for word in words[1:]:
             if word[0].isalpha() and word[0].isupper():
-                self.title_caps.append(word)
+                title_caps.append(word)
         
         if title_caps != []:
             title_warning += "the following words are capitalized in the title: "

@@ -19,12 +19,16 @@ def grade_essay(essay_id) -> tuple:
     cursor = 0
     citation_heading = ""
 
-    body = check_citations(essay_id)
-
     if essay.citation_type == "APA":
         citation_heading = "References"
     else:
         citation_heading = "Works Cited"
+
+    if citation_heading not in essay.raw_body:
+        ret = "ERROR: No reference list/works cited header found (this may be due to a typo in the word \"References\" or the word \"Works Cited\"). Unable to mark essay." + essay.raw_body
+        return essay_id, ret
+
+    body = check_citations(essay_id)
 
     body = body.split(citation_heading)
     raw_citations = citation_heading + body[-1]
@@ -79,12 +83,13 @@ def check_citations(essay_id):
         except Exception as e:
             body.append(
                 "<br>ERROR (in the " + citation.citation_status.value + " section): " + 
-                str(e) + 
-                (("<br>WARNING: " + str(citation.warnings)[1:-1]) if citation.warnings != [] else "") +
+                str(e) +
                 "<br><mark style=\"background-color:yellow;\"><b>" + i + "</b></mark>"
                 )
         else:
+            citation.warnings = list(filter(None, [i.strip() for i in citation.warnings]))
             if citation.warnings != []:
+                print(str(citation.warnings) + " SDKLFJSSDKFJSDLKFJSDKLFJSDKLFJSDKLFJSDKLFJSKLFJSKDLFJSDKLFJKLSDFJ\n\n\nSDPFSDLFK")
                 body.append(
                     "<br>WARNING: " + str(citation.warnings)[1:-1] + 
                     "<br><mark style=\"background-color:orange;\"><b>" + i + "</b></mark>"
