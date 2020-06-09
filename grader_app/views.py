@@ -238,7 +238,7 @@ def submit(request):
                 teacher=User.objects.get(email=form.cleaned_data["teachers"]),
                 citation_type=form.cleaned_data["citation_type"],
                 marked_body=form.cleaned_data['body'],
-                raw_body=raw(form.cleaned_data['body']),
+                raw_body=form.data['body'],
             )
             essay.save()
             message = "Your student %s has just submitted an Essay for the assignment %s. " \
@@ -256,10 +256,6 @@ def submit(request):
         'form': form,
     }
     return render(request, "submit.html", context)
-
-
-def raw(body):
-    return re.compile(r'<[^>]+>').sub('', body)
 
 def load_assignments(request):
     user_teacher = request.GET.get('teacher')
@@ -308,76 +304,6 @@ def detail(request, pk):
     }
 
     return render(request, "detail.html", context)
-
-
-# @login_required(login_url="login")
-# def teacher(request):
-#     user = request.user
-#     assignments = []
-#     query = ""
-#     if not user.teacher:
-#         return redirect("http://localhost:8000/home")
-#     context = {}
-#
-#     if request.method == "GET":
-#         query = request.GET.get('q', 'Search for an essay')
-#
-#     if query != "Search for an essay":
-#         queryset = []
-#         queries = query.split(" ")
-#
-#         for q in queries:
-#             assignments = user.assignments.all().filter(
-#                 Q(assignment_description__icontains=q) |
-#                 Q(assignment_name__icontains=q)
-#             ).order_by('assignment_name').distinct()
-#
-#             for assignment in assignments:
-#                 queryset.append(assignment)
-#
-#         assignments = list(set(queryset))
-#
-#     if request.user.teacher and not request.user.admin:
-#         return redirect("teacher")
-#
-#     if assignments == []:
-#         assignments = user.assignments.all().order_by('assignment_name')
-#
-#     context['assignments'] = assignments
-#
-#     return render(request, "teacher.html", context)
-
-
-# def get_celery_worker_status():
-#         ERROR_KEY = "ERROR"
-#         print("aaaaaa")
-#         try:
-#             from celery.app.control import Inspect
-#             insp = Inspect()
-#             print(insp is not None)
-#             d = None
-#             try:
-#                 d = insp.stats()
-#             except Exception as e:
-#                 print(e)
-#             print("qwqewqe")
-#             if not d:
-#                 print("sssssss")
-#                 d = { ERROR_KEY: 'No running Celery workers were found.' }
-#         except IOError as e:
-#             from errno import errorcode
-#             msg = "Error connecting to the backend: " + str(e)
-#             if len(e.args) > 0 and errorcode.get(e.args[0]) == 'ECONNREFUSED':
-#                 msg += ' Check that the RabbitMQ server is running.'
-#             d = { ERROR_KEY: msg }
-#             print("sdfs")
-#             return d
-#         except ImportError as e:
-#             d = { ERROR_KEY: str(e)}
-#             print("wqweqrwer")
-#             return d
-#         print("wqqwq")
-#         return d
 
 @login_required(login_url="login")
 def grade(request, pk):  # max 7973 characters/request, <100 requests/day
