@@ -18,6 +18,7 @@ from .models import Essay, Assignment, Comment
 from .models import User
 from .tasks import grade_all
 from html import unescape
+from unicodedata import normalize
 
 # Create your views here.
 
@@ -232,7 +233,7 @@ def submit(request):
             data = format_body(form.data["body"])
             essay = Essay(
                 title=form.cleaned_data["title"],
-                body=data,
+                body=form.data["body"],
                 author=request.user,
                 assignment=form.cleaned_data["assignment"],
                 teacher=User.objects.get(email=form.cleaned_data["teachers"]),
@@ -259,8 +260,11 @@ def submit(request):
 
 def format_body(body):
     formatted_body = unescape(body)
-    print(formatted_body)
-    formatted_body = re.sub("<.{4,}>", "", formatted_body)
+    formatted_body = normalize("NFKC", formatted_body)
+    tags = re.findall("<[^<]+?>", formatted_body)
+    for i in tags:
+        if i != "<em>" and i != "</em>":
+            formatted_body = formatted_body.replace(i, "")
     formatted_body = formatted_body.replace("<p>", "")
     formatted_body = formatted_body.replace("</p>", "")
     formatted_body = formatted_body.replace("    ", "")

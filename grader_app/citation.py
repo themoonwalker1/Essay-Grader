@@ -27,8 +27,7 @@ class APACitation():
         self.pages = []
         self.url = ""
         self.citation_status = APACitationStatus.AUTHOR
-        self.warnings = {"title_capitalization": []}
-        self.errors = {}
+        self.warnings = []
 
     def __str__(self):
         return "Author(s): " + str(self.authors) + "\n" + \
@@ -39,10 +38,9 @@ class APACitation():
             "Issue Number: " + self.issue + "\n" + \
             "Page Numbers (start, end): " + str(self.pages) + "\n" + \
             "URL/DOI: " + self.url + "\n" + \
-            "Warnings: " + str(self.warnings) + "\n" + \
-            "Errors: " + str(self.errors)
+            "Warnings: " + str(self.warnings) + "\n"
     
-    def checkAPAcitation(self, citation): #NOTE: when implementing, wrap the method in a try catch and print out any error + the citation status
+    def check_citation(self, citation): #NOTE: when implementing, wrap the method in a try catch and print out any error + the citation status
         cursor = 0
         ellipses = [' ... ', ' . . . ', ' … ']
 
@@ -223,9 +221,19 @@ class APACitation():
         words = title.split(" ")
 
         # TODO: implement truecasing
+        title_caps = []
+        title_warning = ""
+
         for word in words[1:]:
             if word[0].isalpha() and word[0].isupper():
-                self.warnings["title_capitalization"].append(word)
+                self.title_caps.append(word)
+        
+        if title_caps != []:
+            title_warning += "the following words are capitalized in the title: "
+            for cap in title_caps:
+                title_warning += cap + ", "
+
+        self.warnings.append(title_warning[:-2])
 
         cursor += 1
 
@@ -293,7 +301,7 @@ class APACitation():
 
         if citation[cursor + 1: cursor + 3] != ", ":
             if citation[cursor + 1] == ".":
-                self.warnings["page number"] = "No page numbers found."
+                self.warnings.append("no page numbers found")
             else:
                 raise Exception("Bad formatting in the issue number: '" + issue + "'")
 
@@ -354,8 +362,7 @@ class MLACitation():
         self.url = ""
         self.otherInfo = []
         self.citation_status = MLACitationStatus.YEAR
-        self.warnings = {}
-        self.errors = {}
+        self.warnings = []
 
     def __str__(self):
         return "Author(s): " + str(self.authors) + "\n" + \
@@ -363,8 +370,7 @@ class MLACitation():
             "Title: " + self.title + "\n" + \
             "Other Info: " + str(self.otherInfo) + "\n" + \
             "URL/DOI: " + self.url + "\n" + \
-            "Warnings: " + str(self.warnings) + "\n" + \
-            "Errors: " + str(self.errors)
+            "Warnings: " + str(self.warnings) + "\n"
 
     def filter_latin(self, text):
         # get rid of any non-English alphabetic characters (vowels w/ accents, etc.)
@@ -380,7 +386,7 @@ class MLACitation():
 
         return filtered_authors
 
-    def checkMLAcitation(self, citation): 
+    def check_citation(self, citation): 
         #NOTE: when implementing, wrap the method in a try catch and print out any error + the citation status
 
         try:
@@ -505,7 +511,7 @@ class MLACitation():
         title_cased_title = result.content.decode()
 
         if title != title_cased_title:
-            self.warnings["title_capitalization"] = "The title might contain improper capitalization: '" + title + "'"
+            self.warnings.append("the title might contain improper capitalization: '" + title + "'")
 
         self.title = title
 
@@ -527,10 +533,10 @@ class MLACitation():
                     raise Exception("Invalid URL: '" + url + "'")
             
             if citation[cursor : cursor + 3] != "<i>" and citation[cursor + 1 : cursor + 4] != "<i>":
-                self.warnings["container"] = "The container may not exist or may not be italicized"
+                self.warnings.append("the container may not exist or may not be italicized")
 
         elif citation[cursor : cursor + 3] == "<i>" and citation[cursor + 1 : cursor + 4] == "<i>":
-            self.warnings["container"] = "The container might exist when not necessary (if the citation is about a book), or the block immediately following the title may be improperly italicized."
+            self.warnings.append("the container might exist when not necessary (if the citation is about a book), or the block immediately following the title may be improperly italicized.")
 
         if self.url != "":
             citation.replace(self.url + ".", "")
@@ -543,40 +549,3 @@ class MLACitation():
         remainingText = citation[cursor:]
         info = remainingText.split(", ")
         self.otherInfo = [i for i in info]
-
-text = "Hussain, S., Cao, X., Zhong, C., Zhu, L., Khaskheli, M. A., Fiaz, S., & Qianyu, J. (2018). Sodium chloride stress during early growth stages altered physiological and growth characteristics of rice. <i>Chilean Journal of Agricultural Research, 78</i>(2), 183–197. https://doi.org/10.4067/S0718-58392018000200183"
-citation = APACitation()
-try:
-    citation.checkAPAcitation(text)
-except Exception as e:
-    print(e)
-print(citation)
-
-
-# citations = []
-# count = 1
-# with open("test.txt", encoding="utf-8") as f:
-#     for i in f.readlines():
-#         if i == "References":
-#             continue
-#         else:
-#             count += 1
-#             citation = APACitation()
-#             try:
-#                 citation.checkAPAcitation(i)
-#             except Exception as e:
-#                 print('ERROR (' + str(count) + '): ' + str(e))
-#                 citation.errors[citation.citation_status.value] = str(e)
-#                 print("Location: " + citation.citation_status.value)
-#                 print(i)
-#                 print()
-#             finally:
-#                 citations.append(citation)
-#                 continue
-# count = 1
-# for i in citations:
-#     print()
-#     print(str(count) + ": ")
-#     print(i)
-#     print()
-#     count += 1
