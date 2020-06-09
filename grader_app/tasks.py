@@ -84,14 +84,14 @@ def check_citations(essay_id):
             body.append(
                 "<p><mark style=\"background-color:yellow;\">ERROR (in the " + citation.citation_status.value + " section): </p>" + 
                 str(e) +
-                "<p>" + i + "</mark></p>"
+                "<p><mark style=\"background-color:yellow;\">" + i + "</mark></p>"
                 )
         else:
             citation.warnings = list(filter(None, [i.strip() for i in citation.warnings]))
             if citation.warnings != []:
                 body.append(
                     "<p><mark style=\"background-color:orange;\">WARNING: " + str(citation.warnings)[1:-1] + "</p>" + 
-                    "<p>" + i + "</mark></p>"
+                    "<p><mark style=\"background-color:orange;\">" + i + "</mark></p>"
                     )
             else:
                 body.append(i)
