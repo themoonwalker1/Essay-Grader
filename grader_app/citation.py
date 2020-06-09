@@ -235,19 +235,25 @@ class APACitation():
         self.citation_status = APACitationStatus.JOURNAL
 
         journal = ""
-        while citation[cursor: cursor + 2] != ", ":
+        while citation[cursor: cursor + 2] != ", " and citation[cursor: cursor + 4] != ",<i>":
             journal += citation[cursor]
             cursor += 1
 
+        if journal[-4:] == "</i>":
+            journal = journal[:-4]
+            
         if "<i>" not in journal or "</i>" in journal:
-            raise Exception("The journal title should be italicized, and the italics should not stop until the end of the volume number.")
+            raise Exception("The journal title should be italicized.")
 
         journal = journal.replace("<i>", "")
 
         self.journal = journal
-
-        if citation[cursor: cursor + 2] != ", ":
-            raise Exception("There should be a comma and a space after the journal title, and both of these should be in italics.")
+        
+        if citation[cursor + 1 : cursor + 4] == "<i>":
+            citation = citation[:cursor + 1] + " " + citation[cursor + 1 : cursor + 4] + citation[cursor + 5:]
+            
+        if citation[cursor : cursor + 2] != ", ":
+            raise Exception("There should be a comma and a space after the journal title, and the comma should NOT be in italics.")
 
         cursor += 2
 
@@ -258,11 +264,13 @@ class APACitation():
         while citation[cursor] != "(":
             volume += citation[cursor]
             cursor += 1
+            
+        if "<i>" not in volume or "</i>" not in volume:
+            raise Exception("The volume number should be italicized, and the comma that precedes the volume number should not be italicized.")
 
-        if "</i>" not in volume:
-            raise Exception("The volume number should be italicized.")
-
+        volume = volume.replace("<i>", "")
         volume = volume.replace("</i>", "")
+
         if not volume.isdigit():
             raise Exception("Bad formatting in the volume number: '" + volume + "'")
 
@@ -536,10 +544,10 @@ class MLACitation():
         info = remainingText.split(", ")
         self.otherInfo = [i for i in info]
 
-text = "Klee, Paul.<i> Twittering Machine</i>. 1922. Museum of Modern Art, New York.<i> The Artchive</i>, www.artchive.com/artchive/K/klee/twittering_machine.jpg.html. Accessed May 2006."
-citation = MLACitation()
+text = "Hussain, S., Cao, X., Zhong, C., Zhu, L., Khaskheli, M. A., Fiaz, S., & Qianyu, J. (2018). Sodium chloride stress during early growth stages altered physiological and growth characteristics of rice. <i>Chilean Journal of Agricultural Research, 78</i>(2), 183–197. https://doi.org/10.4067/S0718-58392018000200183"
+citation = APACitation()
 try:
-    citation.checkMLAcitation(text)
+    citation.checkAPAcitation(text)
 except Exception as e:
     print(e)
 print(citation)

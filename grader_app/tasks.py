@@ -1,15 +1,14 @@
 from __future__ import absolute_import, unicode_literals
 from essay_grader.celery import app
-
 import os
 import sys
-
+from .citation import *
 from grammarbot import GrammarBotClient
-
 from .models import Essay
 
-sys.path.insert(0, os.path.abspath('..'))
-
+@app.task()
+def check_citations(essay_id):
+    pass
 
 @app.task(trail=True)
 def grade_all(essay_ids) -> list:

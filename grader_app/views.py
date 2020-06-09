@@ -12,13 +12,12 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from requests_oauthlib import OAuth2Session
-
 from .forms import EssayForm, LoginForm, InfoForm, ChangeForm, TeacherForm, AssignmentForm, \
     CommentForm, RegisterForm, SetupForm
 from .models import Essay, Assignment, Comment
 from .models import User
 from .tasks import grade_all
-
+from html import unescape
 
 # Create your views here.
 
@@ -230,18 +229,19 @@ def submit(request):
 
         if form.is_valid():
             new_assignment = form.cleaned_data["assignment"]
+            data = format_body(form.data["body"])
             essay = Essay(
                 title=form.cleaned_data["title"],
-                body=form.cleaned_data["body"],
+                body=data,
                 author=request.user,
                 assignment=form.cleaned_data["assignment"],
                 teacher=User.objects.get(email=form.cleaned_data["teachers"]),
                 citation_type=form.cleaned_data["citation_type"],
-                marked_body=form.cleaned_data['body'],
-                raw_body=form.data['body'],
+                marked_body=data,
+                raw_body=data,
             )
             essay.save()
-            message = "Your student %s has just submitted an Essay for the assignment %s. " \
+            message = "Your student %s has just submitted an essay for the assignment %s. " \
                       "\n\nYou also currently have %s submissions for that assignment." \
                       "\n\n-------------------------------------------------\n\n%s\n\n%s" % (
                           request.user, new_assignment.assignment_name,
@@ -249,13 +249,24 @@ def submit(request):
                           essay.title,
                           essay.body[:400] + "...")
 
-            send_email(message=message, subject="New Submission for assignment %s." % new_assignment.assignment_name,
+            send_email(message=message, subject="New submission for assignment %s." % new_assignment.assignment_name,
                        emails=[form.cleaned_data["teachers"]])
             return redirect("home")
     context = {
         'form': form,
     }
     return render(request, "submit.html", context)
+
+def format_body(body):
+    formatted_body = unescape(body)
+    print(formatted_body)
+    formatted_body = re.sub("<.{4,}>", "", formatted_body)
+    formatted_body = formatted_body.replace("<p>", "")
+    formatted_body = formatted_body.replace("</p>", "")
+    formatted_body = formatted_body.replace("    ", "")
+    formatted_body = formatted_body.replace("<em>", "<i>")
+    formatted_body = formatted_body.replace("</em>", "</i>")
+    return formatted_body
 
 def load_assignments(request):
     user_teacher = request.GET.get('teacher')
