@@ -340,6 +340,7 @@ def grade(request, pk):  # max 7973 characters/request, <100 requests/day
         # print("Original", result[1])
         essay = Essay.objects.get(id=result[0])
         essay.marked_body = reformat(result[1])
+        essay.marked = True
         essay.save()
 
     essays = Essay.objects.all().filter(assignment=Assignment.objects.get(pk=pk))

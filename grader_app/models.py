@@ -180,5 +180,6 @@ class Essay(models.Model):
     citation_type = models.CharField(max_length=150, choices=dropdown, default="None")
     marked_body = models.TextField(default="")
     graded = models.BooleanField(default=False)
+    marked = models.BooleanField(default=False)
     grade_numerator = models.IntegerField(default=0)
     grade_denominator = models.IntegerField(default=0)
