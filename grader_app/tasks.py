@@ -25,15 +25,14 @@ def grade_essay(essay_id) -> tuple:
         citation_heading = "Works Cited"
 
     if citation_heading not in essay.raw_body:
-        ret = "<p><mark style=\"background-color:yellow;line-height:1.5em\">" + "ERROR: No reference list/works cited header found (this may be due to a typo in the word \"References\" or the word \"Works Cited\"). Unable to mark essay." + "</mark></p>" + essay.raw_body
+        ret = "<p style=\"padding-top:1em\"><mark style=\"background-color:red;line-height:1.5em\">" + "ERROR: No reference list/works cited header found (this may be due to a typo in the word \"References\" or the word \"Works Cited\"). Unable to mark essay." + "</mark></p>" + essay.raw_body
         return essay_id, ret
 
     body = check_citations(essay_id)
 
     body = body.split(citation_heading)
-    raw_citations = citation_heading + body[-1]
+    raw_citations = "<p>" + citation_heading + "</p>" + body[-1]
     body = citation_heading.join(body[:-1])
-
     result = client.check(body)
 
     for match in result.matches:  # you also have access to match.category if you want
@@ -41,14 +40,16 @@ def grade_essay(essay_id) -> tuple:
         length = match.replacement_length
 
         edited_body += body[cursor:offset]
-        edited_body += "<mark style=\"background-color:yellow;\">" + body[offset:(offset + length)] + "</mark>"
+        edited_body += "<mark style=\"background-color:red;\">" + body[offset:(offset + length)] + "</mark>"
         cursor = offset + length
 
         # if cursor < text length, then add remaining text to new_text
         if cursor >= len(body):
             edited_body += body[cursor:]
+            
     if edited_body == "":
-        edited_body = essay.marked_body
+        edited_body = body
+
     edited_body += raw_citations
     return essay_id, edited_body
 
@@ -82,16 +83,16 @@ def check_citations(essay_id):
             citation.check_citation(i)
         except Exception as e:
             body.append(
-                "<p><mark style=\"background-color:yellow;line-height:1.5em\">ERROR (in the " + citation.citation_status.value + " section): </p>" + 
-                str(e) +
-                "<p><mark style=\"background-color:yellow;line-height:1.5em\">" + i + "</mark></p>"
+                "<p style=\"padding-top:1em\"><mark style=\"background-color:red;line-height:1.5em\">ERROR (in the " + citation.citation_status.value + " section): " + 
+                str(e) + "</mark></p>" +
+                "<p><mark style=\"background-color:red;line-height:1.5em\">" + i + "</mark></p>"
                 )
         else:
             citation.warnings = list(filter(None, [i.strip() for i in citation.warnings]))
             if citation.warnings != []:
                 body.append(
-                    "<p><mark style=\"background-color:orange;line-height:1.5em\">WARNING: " + str(citation.warnings)[1:-1] + "</p>" + 
-                    "<p><mark style=\"background-color:orange;line-height:1.5em\">" + i + "</mark></p>"
+                    "<p style=\"padding-top:1em\"><mark style=\"background-color:yellow;line-height:1.5em\">WARNING: " + str(citation.warnings)[1:-1] + "</p>" + 
+                    "<p><mark style=\"background-color:yellow;line-height:1.5em\">" + i + "</mark></p>"
                     )
             else:
                 body.append(i)

@@ -286,7 +286,6 @@ def load_essay(request):
     essay = Essay.objects.get(pk=essay_pk)
     comments = Comment.objects.filter(essay=essay)
     form = CommentForm(None)
-    print(essay.grade_numerator, essay.grade_denominator)
     data = {
         'essay': essay,
         'comments': comments,
@@ -329,7 +328,7 @@ def grade(request, pk):  # max 7973 characters/request, <100 requests/day
     ids = []
 
     for essay in essays:
-        if not essay.graded:
+        if not essay.marked:
             ids.append(essay.id)
 
     results = grade_all(ids)
@@ -404,7 +403,6 @@ def teacher_graded(request, pk):
         context['error'] = "That Assignment Request Does Not Exist"
     context['assignment'] = all_assignments
     context['graded'] = graded
-    print(graded)
     return render(request, "teacher_graded.html", context)
 
 
@@ -424,7 +422,6 @@ def teacher_not_graded(request, pk):
         context['error'] = "That Assignment Request Does Not Exist"
     context['assignment'] = all_assignments
     context['not_graded'] = not_graded
-    print(not_graded)
     return render(request, "teacher_not_graded.html", context)
 
 
@@ -556,7 +553,6 @@ def assignment(request):
     if request.user.teacher:
         context = {"form": AssignmentForm()}
         if request.method == "POST":
-            print(request.POST)
             user = request.user
             form = AssignmentForm(request.POST)
 
@@ -618,14 +614,11 @@ def validate_due_date(request):
     due_date_time = datetime.datetime(year, month, day, hour, minute, seconds).replace(
         tzinfo=pytz.timezone('US/Eastern'))
     today = datetime.datetime.now().replace(tzinfo=pytz.timezone('US/Eastern'))
-    print(due_date_time)
-    print(today)
     return JsonResponse({'expired': (today > due_date_time)})
 
 
 def grade_essay(request, pk):
     essay = Essay.objects.get(pk=pk)
-    print(pk, essay)
     if request.GET.get('denominator') != '' and request.GET.get('denominator') != 0 and request.GET.get(
             'numerator') != '':
         essay.grade_numerator = int(request.GET.get('numerator'))
@@ -639,17 +632,14 @@ def comment(request):
     essay = Essay.objects.get(pk=request.GET.get('pk'))
     comm = Comment(essay=essay, body=request.GET.get('body'), author=User.objects.get(email=request.GET.get("email")))
     comm.save()
-    print(comm.body)
     return JsonResponse({})
 
 
 def dark(request):
     u = User.objects.get(email=request.GET.get("email"))
-    print("Before: ", u.dark_mode, " After: ", request.GET.get("dark"))
     if request.GET.get("dark") == "true":
         u.dark_mode = True
     else:
         u.dark_mode = False
-    print("Actually After: ", u.dark_mode)
     u.save()
     return JsonResponse({})
