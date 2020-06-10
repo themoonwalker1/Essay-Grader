@@ -18,7 +18,7 @@
 <!-- Essay Details -->
 <h3 id="Author">{{ essay.author.get_full_name }}</h3>
 <h4 id="Created">{{ essay.created_on }}</h4><br>
-<h6 id="Body">{% if essay.marked_body != essay.body %}{{ essay.marked_body | safe}}{% else %}{{ essay.marked_body | safe}}{% endif %}</h6>
+{% if essay.marked %} <h6 id="Body">{{ essay.marked_body | safe}}</h6> {% else %} <h6 id="Body">{{ essay.body | safe}}</h6> {% endif %}
 <hr>
 <br>
 <!-- Comments -->

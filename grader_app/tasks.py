@@ -25,7 +25,7 @@ def grade_essay(essay_id) -> tuple:
         citation_heading = "Works Cited"
 
     if citation_heading not in essay.raw_body:
-        ret = "<p><mark style=\"background-color:yellow;\">" + "ERROR: No reference list/works cited header found (this may be due to a typo in the word \"References\" or the word \"Works Cited\"). Unable to mark essay." + "</mark></p>" + essay.raw_body
+        ret = "<p><mark style=\"background-color:yellow;line-height:1.5em\">" + "ERROR: No reference list/works cited header found (this may be due to a typo in the word \"References\" or the word \"Works Cited\"). Unable to mark essay." + "</mark></p>" + essay.raw_body
         return essay_id, ret
 
     body = check_citations(essay_id)
@@ -82,16 +82,16 @@ def check_citations(essay_id):
             citation.check_citation(i)
         except Exception as e:
             body.append(
-                "<p><mark style=\"background-color:yellow;\">ERROR (in the " + citation.citation_status.value + " section): </p>" + 
+                "<p><mark style=\"background-color:yellow;line-height:1.5em\">ERROR (in the " + citation.citation_status.value + " section): </p>" + 
                 str(e) +
-                "<p><mark style=\"background-color:yellow;\">" + i + "</mark></p>"
+                "<p><mark style=\"background-color:yellow;line-height:1.5em\">" + i + "</mark></p>"
                 )
         else:
             citation.warnings = list(filter(None, [i.strip() for i in citation.warnings]))
             if citation.warnings != []:
                 body.append(
-                    "<p><mark style=\"background-color:orange;\">WARNING: " + str(citation.warnings)[1:-1] + "</p>" + 
-                    "<p><mark style=\"background-color:orange;\">" + i + "</mark></p>"
+                    "<p><mark style=\"background-color:orange;line-height:1.5em\">WARNING: " + str(citation.warnings)[1:-1] + "</p>" + 
+                    "<p><mark style=\"background-color:orange;line-height:1.5em\">" + i + "</mark></p>"
                     )
             else:
                 body.append(i)
