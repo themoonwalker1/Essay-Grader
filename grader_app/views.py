@@ -328,7 +328,7 @@ def grade(request, pk):  # max 7973 characters/request, <100 requests/day
     ids = []
 
     for essay in essays:
-        if not essay.marked:
+        if not essay.marked and essay.citation_type != "None":
             ids.append(essay.id)
 
     results = grade_all(ids)
@@ -343,10 +343,6 @@ def grade(request, pk):  # max 7973 characters/request, <100 requests/day
         essay.save()
 
     essays = Essay.objects.all().filter(assignment=Assignment.objects.get(pk=pk))
-    print(essay.marked_body)
-    print()
-    print("sdf")
-    print(essay.body)
 
     context = {
         'essays': essays

@@ -13,3 +13,4 @@ django-ckeditor
 pytz
 requests
 urlextract
+unidecode
