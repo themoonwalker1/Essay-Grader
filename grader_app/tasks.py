@@ -100,7 +100,7 @@ def check_citations(essay_id):
             if citation.warnings != []:
                 body.append(
                     cross_reference(citation, citation_type, body[0]) +
-                    "<p style=\"padding-top:1em\"><mark style=\"background-color:yellow;line-height:1.5em\">WARNING: " + str(citation.warnings)[1:-1] + "</p>" + 
+                    "<p style=\"padding-top:1em\"><mark style=\"background-color:yellow;line-height:1.5em\">WARNING(S): " + citation.get_warnings().replace("\"", "").replace("'", "").replace("“", "").replace("”", "") + "</p>" + 
                     "<p><mark style=\"background-color:yellow;line-height:1.5em\">" + i + "</mark></p>"
                     )
             else:
@@ -114,15 +114,21 @@ def check_citations(essay_id):
 
     for i in range(len(citations) - 1):
         if citations[i].authors != [] and citations[i + 1].authors != []:
-            firstAuthor = unidecode.unidecode(citations[i].authors[0])
-            secondAuthor = unidecode.unidecode(citations[i + 1].authors[0])
+            firstAuthor = unidecode.unidecode(" ".join(citations[i].authors))
+            secondAuthor = unidecode.unidecode(" ".join(citations[i + 1].authors))
             if firstAuthor > secondAuthor:
-                body.insert(1, 
+                body.insert(2, 
                 "<p style=\"padding-top:1em\"><mark style=\"background-color:red;line-height:1.5em\">" + 
-                "ERROR: Citations are not arranged alphabetically." + 
+                "ERROR: The citations are not arranged alphabetically." + 
                 "</mark></p>"
                 )
                 break
+    else:
+        body.insert(2, 
+                "<p style=\"padding-top:1em\"><mark style=\"background-color:green;line-height:1.5em\">" + 
+                "The valid citations are arranged alphabetically, but invalid citations may be out of order." + 
+                "</mark></p>"
+                )
     
     return "\n".join(body)
 
@@ -136,9 +142,9 @@ def cross_reference(citation, citation_type, body):
                 total = min(author_count, year_count)
 
                 if total == 0:
-                    return "<p style=\"padding-top:1em\"><mark style=\"background-color:red;line-height:1.5em\">ERROR: No in-text citations found for this citation. </mark></p>"
+                    return "<hr><p style=\"padding-top:1em\"><mark style=\"background-color:red;line-height:1.5em\">ERROR: No in-text citations found for this citation. </mark></p>"
                 else:
-                    return "<p style=\"padding-top:1em\"><mark style=\"background-color:green;line-height:1.5em\">Number of in-text occurrences found in the essay: " + str(total) + ". </mark></p>"
+                    return "<hr><p style=\"padding-top:1em\"><mark style=\"background-color:green;line-height:1.5em\">Number of in-text occurrences found in the essay: " + str(total) + ". </mark></p>"
             
             elif len(citation.authors) == 2:
                 author_1 = " & ".join(citation.authors)
@@ -148,9 +154,9 @@ def cross_reference(citation, citation_type, body):
                 total = min(author_count, year_count)
 
                 if total == 0:
-                    return "<p style=\"padding-top:1em\"><mark style=\"background-color:red;line-height:1.5em\">ERROR: No in-text citations found for this citation. </mark></p>"
+                    return "<hr><p style=\"padding-top:1em\"><mark style=\"background-color:red;line-height:1.5em\">ERROR: No in-text citations found for this citation. </mark></p>"
                 else:
-                    return "<p style=\"padding-top:1em\"><mark style=\"background-color:green;line-height:1.5em\">Number of in-text occurrences found in the essay: " + str(total) + ". </mark></p>"
+                    return "<hr><p style=\"padding-top:1em\"><mark style=\"background-color:green;line-height:1.5em\">Number of in-text occurrences found in the essay: " + str(total) + ". </mark></p>"
             
             else:
                 author = citation.authors[0] + " et al."
@@ -159,11 +165,11 @@ def cross_reference(citation, citation_type, body):
                 total = min(author_count, year_count)
 
                 if total == 0:
-                    return "<p style=\"padding-top:1em\"><mark style=\"background-color:red;line-height:1.5em\">ERROR: No in-text citations found for this citation. </mark></p>"
+                    return "<hr><p style=\"padding-top:1em\"><mark style=\"background-color:red;line-height:1.5em\">ERROR: No in-text citations found for this citation. </mark></p>"
                 else:
-                    return "<p style=\"padding-top:1em\"><mark style=\"background-color:green;line-height:1.5em\">Number of in-text occurrences found in the essay: " + str(total) + ". </mark></p>"
+                    return "<hr><p style=\"padding-top:1em\"><mark style=\"background-color:green;line-height:1.5em\">Number of in-text occurrences found in the essay: " + str(total) + ". </mark></p>"
         else:
-            return "<p style=\"padding-top:1em\"><mark style=\"background-color:red;line-height:1.5em\">ERROR: Invalid citation; unable to cross-reference. </mark></p>"
+            return "<hr><p style=\"padding-top:1em\"><mark style=\"background-color:red;line-height:1.5em\">ERROR: Invalid citation; unable to cross-reference. </mark></p>"
 
     else:
         if citation.citation_status != MLACitationStatus.AUTHOR:
@@ -171,24 +177,24 @@ def cross_reference(citation, citation_type, body):
                 author_count = body.count(citation.authors[0])
 
                 if author_count == 0:
-                    return "<p style=\"padding-top:1em\"><mark style=\"background-color:red;line-height:1.5em\">ERROR: No in-text citations found for this citation. </mark></p>"
+                    return "<hr><p style=\"padding-top:1em\"><mark style=\"background-color:red;line-height:1.5em\">ERROR: No in-text citations found for this citation. </mark></p>"
                 else:
-                    return "<p style=\"padding-top:1em\"><mark style=\"background-color:green;line-height:1.5em\">Number of in-text occurrences found in the essay: " + str(author_count) + ". </mark></p>"
+                    return "<hr><p style=\"padding-top:1em\"><mark style=\"background-color:green;line-height:1.5em\">Number of in-text occurrences found in the essay: " + str(author_count) + ". </mark></p>"
             
             elif len(citation.authors) == 2:
                 author_count = body.count(" and ".join(citation.authors))
 
                 if author_count == 0:
-                    return "<p style=\"padding-top:1em\"><mark style=\"background-color:red;line-height:1.5em\">ERROR: No in-text citations found for this citation. </mark></p>"
+                    return "<hr><p style=\"padding-top:1em\"><mark style=\"background-color:red;line-height:1.5em\">ERROR: No in-text citations found for this citation. </mark></p>"
                 else:
-                    return "<p style=\"padding-top:1em\"><mark style=\"background-color:green;line-height:1.5em\">Number of in-text occurrences found in the essay: " + str(author_count) + ". </mark></p>"
+                    return "<hr><p style=\"padding-top:1em\"><mark style=\"background-color:green;line-height:1.5em\">Number of in-text occurrences found in the essay: " + str(author_count) + ". </mark></p>"
             
             else:
                 author_count = body.count(citation.authors[0] + " et al.")
 
                 if author_count == 0:
-                    return "<p style=\"padding-top:1em\"><mark style=\"background-color:red;line-height:1.5em\">ERROR: No in-text citations found for this citation. </mark></p>"
+                    return "<hr><p style=\"padding-top:1em\"><mark style=\"background-color:red;line-height:1.5em\">ERROR: No in-text citations found for this citation. </mark></p>"
                 else:
-                    return "<p style=\"padding-top:1em\"><mark style=\"background-color:green;line-height:1.5em\">Number of in-text occurrences found in the essay: " + str(author_count) + ". </mark></p>"
+                    return "<hr><p style=\"padding-top:1em\"><mark style=\"background-color:green;line-height:1.5em\">Number of in-text occurrences found in the essay: " + str(author_count) + ". </mark></p>"
         else:
-            return "<p style=\"padding-top:1em\"><mark style=\"background-color:red;line-height:1.5em\">ERROR: Invalid citation; unable to cross-reference. </mark></p>"
+            return "<hr><p style=\"padding-top:1em\"><mark style=\"background-color:red;line-height:1.5em\">ERROR: Invalid citation; unable to cross-reference. </mark></p>"

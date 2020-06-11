@@ -3,8 +3,6 @@ import requests
 from enum import Enum
 from urlextract import URLExtract
 
-#get value from enum: https://stackoverflow.com/questions/24487405/enum-getting-value-of-enum-on-string-conversion
-
 class APACitationStatus(str, Enum):
     AUTHOR = "author"
     YEAR = "year"
@@ -39,6 +37,9 @@ class APACitation():
             "Page Numbers (start, end): " + str(self.pages) + "\n" + \
             "URL/DOI: " + self.url + "\n" + \
             "Warnings: " + str(self.warnings) + "\n"
+
+    def get_warnings(self):
+        return "; ".join(self.warnings)
     
     def check_citation(self, citation): #NOTE: when implementing, wrap the method in a try catch and print out any error + the citation status
         cursor = 0
@@ -372,6 +373,9 @@ class MLACitation():
             "URL/DOI: " + self.url + "\n" + \
             "Warnings: " + str(self.warnings) + "\n"
 
+    def get_warnings(self):
+        return "; ".join(self.warnings)
+
     def filter_latin(self, text):
         # get rid of any non-English alphabetic characters (vowels w/ accents, etc.)
         filtered_authors = ""
@@ -404,17 +408,15 @@ class MLACitation():
             ascii_value = ord(citation[cursor])
 
             # check if the current character is not " &-'." or any alphanumeric in English or Latin-1
-            if ascii_value == 32 or ascii_value == 39 or 44 <= ascii_value <= 46 or 65 <= ascii_value <= 90 or 97 <= ascii_value <= 122 or 192 <= ascii_value <= 255:
+            if citation[cursor : cursor + 2] != ". " and (ascii_value == 32 or ascii_value == 39 or 44 <= ascii_value <= 46 or 65 <= ascii_value <= 90 or 97 <= ascii_value <= 122 or 192 <= ascii_value <= 255):
                 cursor += 1
             else:
                 break
 
         if cursor != 0:
             author_section = ""
-            if citation[cursor - 1] == " ":
-                author_section = citation[:cursor - 1]
-            elif citation[cursor : cursor + 4] == "<i> ":
-                author_section = citation[:cursor]
+            if citation[cursor : cursor + 2] == ". ":
+                author_section = citation[:cursor + 1]
             else:
                 raise Exception("Bad formatting in the author section (unknown error).")
             
@@ -454,6 +456,17 @@ class MLACitation():
                 if re.match("^[A-Z][A-Za-z-']+$", filteredSecondAuthor[0]) is not None \
                 and re.match("^[A-Za-z][A-Za-z-'. ]+[.]$", filteredSecondAuthor[1]) is not None:
                     self.authors.append(filteredSecondAuthor[1][:-1])
+
+                elif re.match("^[A-Za-z][.]$", filteredSecondAuthor[1]) is not None:
+                    author_cursor = cursor + 2
+                    actualSecondAuthor = ""
+
+                    while citation[author_cursor : author_cursor + 2] != ". ":
+                        actualSecondAuthor += citation[author_cursor]
+                        author_cursor += 1
+                    
+                    self.authors.append(actualSecondAuthor)
+
                 else:
                     raise Exception("Bad formatting in the author section: '" + author_section + "'")
             
@@ -475,7 +488,7 @@ class MLACitation():
                 raise Exception("Bad formatting in the author section: '" + author_section + "'")
 
         self.citation_status = MLACitationStatus.TITLE
-        
+        cursor += 1
         # check the title section
         if citation[cursor : cursor + 3] == "<i>":
             cursor += 3
