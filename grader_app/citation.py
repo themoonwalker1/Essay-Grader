@@ -497,9 +497,6 @@ class MLACitation():
 
         if title[0] == " ":
             title = title[1:]
-
-        if not title[0].isalpha() and not title[0].isupper():
-            raise Exception("The first word in the title must be capitalized.")
         
         if citation[cursor + 1] == "\"":
             cursor += 2

@@ -34,7 +34,12 @@ def grade_essay(essay_id) -> tuple:
     body = body.split(citation_heading)
     raw_citations = "<p>" + citation_heading + "</p>" + body[-1]
     body = citation_heading.join(body[:-1])
-    result = client.check(body)
+
+    result = None
+    if len(body) > 7000:
+        result = client.check(body[:7000])
+    else:
+        result = client.check(body)
 
     for match in result.matches:  # you also have access to match.category if you want
         offset = match.replacement_offset
