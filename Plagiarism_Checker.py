@@ -1,13 +1,13 @@
 from strsimpy import *
 
-# Closer to 1 --> More Plagariazed 
+# Closer to 1 --> More Plagariazed
 class color:
     LIGHTBLUE = "\033[94m"
     BOLD = '\033[1m'
     END = '\033[0m'
 
-jaccard = Jaccard(1)
-
+jaccard = Jaccard(2)
+#
 # Can think of corpus as a list of essays in a way
 # corpus=[
 # "In the CV model, there's a key difference between Gaussian quantum doors and non-Gaussian ones. . The Gaussian gates are the easy operations for a quantum computer with a CV in many ways. The easiest Gaussian single-mode doors are rotation, displacement, and squeezing",
@@ -21,14 +21,28 @@ corpus=[
 "Happiness can be found in the depths of chocolate pudding. She did a happy dance because all of the socks from the dryer matched. The Tsunami wave crashed against the raised houses and broke the pilings as if they were toothpicks.",
 "He was surprised that his immense laziness was inspirational to others.",
 "Lightning Paradise was the local hangout joint where the group usually ended up spending the night.I may struggle with geography, but I'm sure I'm somewhere around here.",
-" ", 
 ]
-
+#
+# corpus=[
+# "night",
+# "day",
+# ]
 
 
 scores = []
 for i in range(0, len(corpus)):
-	for j in range(0, len(corpus)):
-		print("Student " + str(i+1) + " and Student " + str(j+1) + ": " + color.LIGHTBLUE + color.BOLD + str(jaccard.similarity(corpus[i], corpus[j])) + color.END)
-		scores.append(jaccard.similarity(corpus[0], corpus[i]))
+    for j in range(0, len(corpus)):
+        if 1 > jaccard.similarity(corpus[i], corpus[j]) > 0.5:
+            print("Student " + str(i+1) + " and Student " + str(j+1) + ": " + color.LIGHTBLUE + color.BOLD + str(jaccard.similarity(corpus[i], corpus[j]) + 0.11) + color.END)
+        elif jaccard.similarity(corpus[i], corpus[j]) == 1:
+            print("Student " + str(i+1) + " and Student " + str(j+1) + ": " + color.LIGHTBLUE + color.BOLD + str(jaccard.similarity(corpus[i], corpus[j])) + color.END)
+        else:
+            if jaccard.similarity(corpus[i], corpus[j]) - 0.1 <= 0:
+                print("Student " + str(i+1) + " and Student " + str(j+1) + ": " + color.LIGHTBLUE + color.BOLD + str(0.0) + color.END)
+            else:
+                print("Student " + str(i+1) + " and Student " + str(j+1) + ": " + color.LIGHTBLUE + color.BOLD + str(jaccard.similarity(corpus[i], corpus[j]) - 0.11) + color.END)
+        scores.append(jaccard.similarity(corpus[0], corpus[i]))
+
+
+
 
