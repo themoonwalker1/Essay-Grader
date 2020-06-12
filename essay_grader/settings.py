@@ -29,6 +29,17 @@ SECRET_KEY = '1_^s)um8o*(giu7gaw0&#h0tv+up6-_+5c9=tb^x0#6q76rdki'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': [['Source'],["Styles","Format","ShowBlocks"],["Scayt"],
+                ['Bold','Italic','-', "Subscript","Superscript",'-','NumberedList', 'BulletedList','-',"Indent", "Outdent",'-','JustifyLeft', 'JustifyCenter',
+                 'JustifyRight', 'JustifyBlock'],
+                ["Link","Unlink"],['Undo', 'Redo'], 
+                ["Maximize"]], 
+        'tabSpaces': 4
+    },
+}
+
 ALLOWED_HOSTS = []
 
 AUTH_USER_MODEL = "grader_app.User"
@@ -62,7 +73,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'oauth2_provider',
     'grader_app',
-    'djcelery'
+    'djcelery',
+    'ckeditor'
 ]
 
 MIDDLEWARE = [
@@ -74,6 +86,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
 
 ROOT_URLCONF = 'essay_grader.urls'
 

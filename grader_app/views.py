@@ -3,7 +3,7 @@ import email.message
 import email.message
 import json
 import smtplib
-
+import re
 import pytz
 from django import forms
 from django.contrib import auth
@@ -12,13 +12,13 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from requests_oauthlib import OAuth2Session
-
 from .forms import EssayForm, LoginForm, InfoForm, ChangeForm, TeacherForm, AssignmentForm, \
     CommentForm, RegisterForm, SetupForm
 from .models import Essay, Assignment, Comment
 from .models import User
 from .tasks import grade_all
-
+from html import unescape
+from unicodedata import normalize
 
 # Create your views here.
 
@@ -230,32 +230,49 @@ def submit(request):
 
         if form.is_valid():
             new_assignment = form.cleaned_data["assignment"]
+            data = format_body(form.data["body"])
             essay = Essay(
                 title=form.cleaned_data["title"],
-                body=form.cleaned_data["body"],
+                body=form.data["body"],
                 author=request.user,
                 assignment=form.cleaned_data["assignment"],
                 teacher=User.objects.get(email=form.cleaned_data["teachers"]),
                 citation_type=form.cleaned_data["citation_type"],
-                marked_body=form.cleaned_data['body']
+                marked_body=data,
+                raw_body=data,
             )
+            print(data)
             essay.save()
-            message = "Your student %s has just submitted an Essay for the assignment %s. " \
-                      "\n\nYou also currently have %s submissions for that assignment." \
-                      "\n\n-------------------------------------------------\n\n%s\n\n%s" % (
-                          request.user, new_assignment.assignment_name,
-                          Essay.objects.filter(assignment=new_assignment).count(),
-                          essay.title,
-                          essay.body[:400] + "...")
+            # message = "Your student %s has just submitted an essay for the assignment %s. " \
+            #           "\n\nYou also currently have %s submissions for that assignment." \
+            #           "\n\n-------------------------------------------------\n\n%s\n\n%s" % (
+            #               request.user, new_assignment.assignment_name,
+            #               Essay.objects.filter(assignment=new_assignment).count(),
+            #               essay.title,
+            #               essay.body[:400] + "...")
 
-            send_email(message=message, subject="New Submission for assignment %s." % new_assignment.assignment_name,
-                       emails=[form.cleaned_data["teachers"]])
+            # send_email(message=message, subject="New submission for assignment %s." % new_assignment.assignment_name,
+            #            emails=[form.cleaned_data["teachers"]])
             return redirect("home")
     context = {
         'form': form,
     }
     return render(request, "submit.html", context)
 
+def format_body(body):
+    formatted_body = unescape(body)
+    formatted_body = normalize("NFKC", formatted_body)
+    tags = re.findall("<[^<]+?>", formatted_body)
+    for i in tags:
+        if "<p" in i:
+            formatted_body = formatted_body.replace(i, "\n")
+        elif i != "<em>" and i != "</em>":
+            formatted_body = formatted_body.replace(i, "")
+            
+    formatted_body = formatted_body.replace("    ", "")
+    formatted_body = formatted_body.replace("<em>", "<i>")
+    formatted_body = formatted_body.replace("</em>", "</i>")
+    return formatted_body
 
 def load_assignments(request):
     user_teacher = request.GET.get('teacher')
@@ -271,7 +288,6 @@ def load_essay(request):
     essay = Essay.objects.get(pk=essay_pk)
     comments = Comment.objects.filter(essay=essay)
     form = CommentForm(None)
-    print(essay.grade_numerator, essay.grade_denominator)
     data = {
         'essay': essay,
         'comments': comments,
@@ -305,76 +321,6 @@ def detail(request, pk):
 
     return render(request, "detail.html", context)
 
-
-# @login_required(login_url="login")
-# def teacher(request):
-#     user = request.user
-#     assignments = []
-#     query = ""
-#     if not user.teacher:
-#         return redirect("http://localhost:8000/home")
-#     context = {}
-#
-#     if request.method == "GET":
-#         query = request.GET.get('q', 'Search for an essay')
-#
-#     if query != "Search for an essay":
-#         queryset = []
-#         queries = query.split(" ")
-#
-#         for q in queries:
-#             assignments = user.assignments.all().filter(
-#                 Q(assignment_description__icontains=q) |
-#                 Q(assignment_name__icontains=q)
-#             ).order_by('assignment_name').distinct()
-#
-#             for assignment in assignments:
-#                 queryset.append(assignment)
-#
-#         assignments = list(set(queryset))
-#
-#     if request.user.teacher and not request.user.admin:
-#         return redirect("teacher")
-#
-#     if assignments == []:
-#         assignments = user.assignments.all().order_by('assignment_name')
-#
-#     context['assignments'] = assignments
-#
-#     return render(request, "teacher.html", context)
-
-
-# def get_celery_worker_status():
-#         ERROR_KEY = "ERROR"
-#         print("aaaaaa")
-#         try:
-#             from celery.app.control import Inspect
-#             insp = Inspect()
-#             print(insp is not None)
-#             d = None
-#             try:
-#                 d = insp.stats()
-#             except Exception as e:
-#                 print(e)
-#             print("qwqewqe")
-#             if not d:
-#                 print("sssssss")
-#                 d = { ERROR_KEY: 'No running Celery workers were found.' }
-#         except IOError as e:
-#             from errno import errorcode
-#             msg = "Error connecting to the backend: " + str(e)
-#             if len(e.args) > 0 and errorcode.get(e.args[0]) == 'ECONNREFUSED':
-#                 msg += ' Check that the RabbitMQ server is running.'
-#             d = { ERROR_KEY: msg }
-#             print("sdfs")
-#             return d
-#         except ImportError as e:
-#             d = { ERROR_KEY: str(e)}
-#             print("wqweqrwer")
-#             return d
-#         print("wqqwq")
-#         return d
-
 @login_required(login_url="login")
 def grade(request, pk):  # max 7973 characters/request, <100 requests/day
     if not request.user.teacher:
@@ -384,7 +330,7 @@ def grade(request, pk):  # max 7973 characters/request, <100 requests/day
     ids = []
 
     for essay in essays:
-        if not essay.graded:
+        if not essay.marked and essay.citation_type != "None":
             ids.append(essay.id)
 
     results = grade_all(ids)
@@ -394,7 +340,8 @@ def grade(request, pk):  # max 7973 characters/request, <100 requests/day
     for result in results:
         # print("Original", result[1])
         essay = Essay.objects.get(id=result[0])
-        essay.marked_body = reformat(result[1])
+        essay.marked_body = result[1]
+        essay.marked = True
         essay.save()
 
     essays = Essay.objects.all().filter(assignment=Assignment.objects.get(pk=pk))
@@ -454,7 +401,6 @@ def teacher_graded(request, pk):
         context['error'] = "That Assignment Request Does Not Exist"
     context['assignment'] = all_assignments
     context['graded'] = graded
-    print(graded)
     return render(request, "teacher_graded.html", context)
 
 
@@ -474,7 +420,6 @@ def teacher_not_graded(request, pk):
         context['error'] = "That Assignment Request Does Not Exist"
     context['assignment'] = all_assignments
     context['not_graded'] = not_graded
-    print(not_graded)
     return render(request, "teacher_not_graded.html", context)
 
 
@@ -606,7 +551,6 @@ def assignment(request):
     if request.user.teacher:
         context = {"form": AssignmentForm()}
         if request.method == "POST":
-            print(request.POST)
             user = request.user
             form = AssignmentForm(request.POST)
 
@@ -668,14 +612,11 @@ def validate_due_date(request):
     due_date_time = datetime.datetime(year, month, day, hour, minute, seconds).replace(
         tzinfo=pytz.timezone('US/Eastern'))
     today = datetime.datetime.now().replace(tzinfo=pytz.timezone('US/Eastern'))
-    print(due_date_time)
-    print(today)
     return JsonResponse({'expired': (today > due_date_time)})
 
 
 def grade_essay(request, pk):
     essay = Essay.objects.get(pk=pk)
-    print(pk, essay)
     if request.GET.get('denominator') != '' and request.GET.get('denominator') != 0 and request.GET.get(
             'numerator') != '':
         essay.grade_numerator = int(request.GET.get('numerator'))
@@ -689,5 +630,14 @@ def comment(request):
     essay = Essay.objects.get(pk=request.GET.get('pk'))
     comm = Comment(essay=essay, body=request.GET.get('body'), author=User.objects.get(email=request.GET.get("email")))
     comm.save()
-    print(comm.body)
+    return JsonResponse({})
+
+
+def dark(request):
+    u = User.objects.get(email=request.GET.get("email"))
+    if request.GET.get("dark") == "true":
+        u.dark_mode = True
+    else:
+        u.dark_mode = False
+    u.save()
     return JsonResponse({})

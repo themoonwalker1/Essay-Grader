@@ -1,7 +1,12 @@
 <!DOCTYPE html>
 {% load static %}
-<html class="theme-light" lang="en">
+{% if user.dark_mode %}
+<html class="theme-dark" lang="en" id="global">
+{% else %}
+<html class="theme-light" lang="en" id="global">
+{% endif %}
 <head>
+    <tag id="info" user="{{user.email}}" dark_mode="{{user.dark_mode}}"></tag>
     <title>TJHSST Essay Grader</title>
 
     <!------------ Online stylesheets and scripts ------------->
@@ -92,7 +97,7 @@
         </a>
 
         <a class=settings" href="{% url 'settings_info' %}">
-            <img class="gear" height="18vh" src="{% static 'img/gear.png' %}" width="18vw"/>
+            <img class="gear" id="gear" height="18vh" src="{% static 'img/gear.png' %}" width="18vw"/>
         </a>
         {% else %}
         <a class="navbar-brand create" href="{% url 'create' %}">Create Account</a>

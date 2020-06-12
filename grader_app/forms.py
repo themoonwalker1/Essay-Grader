@@ -1,5 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
+from ckeditor.fields import RichTextField
+from ckeditor.widgets import CKEditorWidget
 
 from .models import User, Assignment
 
@@ -31,8 +33,8 @@ class AssignmentForm(forms.Form):
 
 
 class EssayForm(forms.Form):
-    teachers = forms.ChoiceField(required=True)
-    assignment = forms.ModelChoiceField(queryset=Assignment.objects.all(), required=True)
+    teachers = forms.ChoiceField(required=True, widget=forms.Select(attrs={'class': "form-control"}))
+    assignment = forms.ModelChoiceField(queryset=Assignment.objects.all(), required=True, widget=forms.Select(attrs={'class': "form-control"}))
     title = forms.CharField(
         max_length=500,
         widget=forms.TextInput(attrs={
@@ -40,12 +42,7 @@ class EssayForm(forms.Form):
             "placeholder": "Title"
         })
     )
-    body = forms.CharField(widget=forms.Textarea(
-        attrs={
-            "class": "form-control",
-            "placeholder": "Write your essay here!"
-        })
-    )
+    body = forms.CharField(widget=CKEditorWidget)
     citation_type = forms.ChoiceField(choices=dropdown, required=True, widget=forms.RadioSelect)
 
     def __init__(self, *args, **kwargs):
@@ -69,7 +66,7 @@ class EssayForm(forms.Form):
                 for field in list(self.fields.keys()):
                     self.fields.get(field).disabled = True
             print("thingy:-", thingy)
-            self.fields['teachers'] = forms.ChoiceField(choices=thingy, required=True, disabled=empty)
+            self.fields['teachers'] = forms.ChoiceField(choices=thingy, required=True, disabled=empty, widget=forms.Select(attrs={'class': "form-control"}))
 
 
 class LoginForm(forms.Form):
@@ -96,6 +93,7 @@ class SetupForm(forms.Form):
     ]
     year_in_school = forms.ChoiceField(
         choices=YEAR_IN_SCHOOL_CHOICES,
+        widget=forms.Select(attrs={'class': "form-control"})
     )
 
 

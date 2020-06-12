@@ -62,7 +62,7 @@ function gradeAll() {
         url: url,
         success: function (data) {
           $("#graded").html(data);
-          $("#not_graded").html("<h3>None of your students submitted and essay for this assignment</h3><hr>");
+          $("#not_graded").html("<h3>None of your students submitted an essay for this assignment</h3><hr>");
        }
     });
     var g = document.getElementById('graded');

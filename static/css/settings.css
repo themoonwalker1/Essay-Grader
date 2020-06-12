@@ -1,30 +1,38 @@
 .menu{
     padding-top: 12.5%;
     padding-left: 5%;
-    background-color: white;
-    color: blue;
     float:left;
     width:25%;
     align: middle;
     display: inline-block;
     vertical-align: middle;
     text-decoration: none;
+    transition: all 1s;
 }
 .option{
-    width :70%;
-    height:50px;
-    border:1px solid #fae5e4;
+    width :90%;
+    height:70px;
+    border:1px solid var(--border);
     height:50px;
     text-align: center;
     display: flex;
     justify-content: center;
     align-items: center;
     text-decoration: none;
+    color: var(--color-title);
+    transition: all 1s;
 }
 .current{
-    background-color: #fafdff;
-    color: black;
-    border-left: 2px solid #ff5349;
+    background-color: var(--current);
+    color: var(--font-color);
+    border-left: 2px solid red;
+    transition: all 1s;
+}
+.option:hover{
+    background-color: var(--current);
+    color: var(--font-color);
+    transition: background-color 0.5s;
+    transition: all 1s;
 }
 .switch {
     position: relative;
@@ -88,9 +96,11 @@ input:checked + .slider:before {
     padding-top: 2em;
     width:70%;
     text-align: left;
+    color: var(--form);
+    transition: all 1s;
 }
 .error{
-    text-color: red;
+    color: red;
 }
 .mg5{
     margin-top:5px;

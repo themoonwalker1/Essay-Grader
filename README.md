@@ -85,7 +85,7 @@ A platform to speed up essay grading.
 	- [x] Grammar
 	- [x] Formatting
 	- [x] ***Citation Formatting***
-	- [ ] ***Citation Cross-Referencing***
+	- [x] ***Citation Cross-Referencing***
 	- [x] Header Formatting
 	- [ ] Plagarism Checker
 * Interface:
