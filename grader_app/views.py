@@ -241,17 +241,18 @@ def submit(request):
                 marked_body=data,
                 raw_body=data,
             )
+            print(data)
             essay.save()
-            message = "Your student %s has just submitted an essay for the assignment %s. " \
-                      "\n\nYou also currently have %s submissions for that assignment." \
-                      "\n\n-------------------------------------------------\n\n%s\n\n%s" % (
-                          request.user, new_assignment.assignment_name,
-                          Essay.objects.filter(assignment=new_assignment).count(),
-                          essay.title,
-                          essay.body[:400] + "...")
+            # message = "Your student %s has just submitted an essay for the assignment %s. " \
+            #           "\n\nYou also currently have %s submissions for that assignment." \
+            #           "\n\n-------------------------------------------------\n\n%s\n\n%s" % (
+            #               request.user, new_assignment.assignment_name,
+            #               Essay.objects.filter(assignment=new_assignment).count(),
+            #               essay.title,
+            #               essay.body[:400] + "...")
 
-            send_email(message=message, subject="New submission for assignment %s." % new_assignment.assignment_name,
-                       emails=[form.cleaned_data["teachers"]])
+            # send_email(message=message, subject="New submission for assignment %s." % new_assignment.assignment_name,
+            #            emails=[form.cleaned_data["teachers"]])
             return redirect("home")
     context = {
         'form': form,
@@ -263,10 +264,11 @@ def format_body(body):
     formatted_body = normalize("NFKC", formatted_body)
     tags = re.findall("<[^<]+?>", formatted_body)
     for i in tags:
-        if i != "<em>" and i != "</em>":
+        if "<p" in i:
+            formatted_body = formatted_body.replace(i, "\n")
+        elif i != "<em>" and i != "</em>":
             formatted_body = formatted_body.replace(i, "")
-    formatted_body = formatted_body.replace("<p>", "")
-    formatted_body = formatted_body.replace("</p>", "")
+            
     formatted_body = formatted_body.replace("    ", "")
     formatted_body = formatted_body.replace("<em>", "<i>")
     formatted_body = formatted_body.replace("</em>", "</i>")

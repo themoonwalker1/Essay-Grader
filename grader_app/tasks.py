@@ -34,10 +34,11 @@ def grade_essay(essay_id) -> tuple:
     body = body.split(citation_heading)
     raw_citations = "<p>" + citation_heading + "</p>" + body[-1]
     body = citation_heading.join(body[:-1])
+    body = body.replace("\n", "<br>&emsp;&emsp;")
 
     result = None
-    if len(body) > 7000:
-        result = client.check(body[:7000])
+    if len(body) > 6000:
+        result = client.check(body[:6000])
     else:
         result = client.check(body)
 
@@ -57,6 +58,7 @@ def grade_essay(essay_id) -> tuple:
         edited_body = body
 
     edited_body += raw_citations
+    print(edited_body)
     return essay_id, edited_body
 
 @app.task(trail=True)
@@ -100,7 +102,7 @@ def check_citations(essay_id):
             if citation.warnings != []:
                 body.append(
                     cross_reference(citation, citation_type, body[0]) +
-                    "<p style=\"padding-top:1em\"><mark style=\"background-color:yellow;line-height:1.5em\">WARNING(S): " + citation.get_warnings().replace("\"", "").replace("'", "").replace("“", "").replace("”", "") + "</p>" + 
+                    "<p style=\"padding-top:1em\"><mark style=\"background-color:yellow;line-height:1.5em\">Warning(s): " + citation.get_warnings().replace("\"", "").replace("'", "").replace("“", "").replace("”", "") + "</p>" + 
                     "<p><mark style=\"background-color:yellow;line-height:1.5em\">" + i + "</mark></p>"
                     )
             else:
