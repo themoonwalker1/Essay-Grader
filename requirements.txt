@@ -11,6 +11,8 @@ django-celery
 nltk
 django-ckeditor
 pytz
+scikit-learn
 requests
 urlextract
+strsimpy
 unidecode
