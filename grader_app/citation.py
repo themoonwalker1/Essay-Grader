@@ -1,7 +1,11 @@
 import re
-import requests
+from http.client import HTTPConnection, HTTPSConnection
+from urllib.request import urlopen as url
 from enum import Enum
 from urlextract import URLExtract
+
+# TODO: add url checking functionality
+# https://github.com/eventlet/eventlet/issues/526
 
 class APACitationStatus(str, Enum):
     AUTHOR = "author"
@@ -340,9 +344,10 @@ class APACitation():
         if "http://" in citation or "https://" in citation:
             cursor = citation.index("http://" if "http://" in citation else "https://")
             url = citation[cursor:]
-            response = requests.get(url)
-            if response.status_code >= 400:
-                raise Exception("Invalid URL: '" + url + "'")
+            # conn = HTTPConnection(url)
+            # conn.request("HEAD", '')
+            # if conn.getresponse().status >= 400:
+            #     raise Exception("Invalid URL: '" + url + "'")
 
             self.url = url
 
@@ -517,8 +522,8 @@ class MLACitation():
             cursor += 1
         #now cursor should be at the beginning of italics
 
-        result = requests.get("https://brettterpstra.com/titlecase/?title=" + title)
-        title_cased_title = result.content.decode()
+        result = url("https://brettterpstra.com/titlecase/?title=" + title)
+        title_cased_title = result.read().decode('utf-8')
 
         if title != title_cased_title:
             self.warnings.append("the title might contain improper capitalization: '" + title + "'")
@@ -534,13 +539,19 @@ class MLACitation():
             self.url = urls[0][:-1]
             if self.url + "." not in citation: 
                 raise Exception("Bad formatting in the URL section.")
-            try:
-                response = requests.get('http://' + self.url)
-            except:
-                try:
-                    response = requests.get('https://' + self.url)
-                except:
-                    raise Exception("Invalid URL: '" + url + "'")
+            # try:
+            #     conn = HTTPConnection('http://' + self.url)
+            #     conn.request("HEAD", '')
+            #     if conn.getresponse().status >= 400:
+            #         raise Exception("Invalid URL: '" + url + "'")
+            # except:
+            #     try:
+            #         conn = HTTPSConnection('https://' + self.url)
+            #         conn.request("HEAD", '')
+            #         if conn.getresponse().status >= 400:
+            #             raise Exception("Invalid URL: '" + url + "'")
+            #     except:
+            #         raise Exception("Invalid URL: '" + url + "'")
             
             if citation[cursor : cursor + 3] != "<i>" and citation[cursor + 1 : cursor + 4] != "<i>":
                 self.warnings.append("the container may not exist or may not be italicized")

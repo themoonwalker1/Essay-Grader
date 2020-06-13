@@ -19,6 +19,7 @@ from .models import User
 from .tasks import grade_all
 from html import unescape
 from unicodedata import normalize
+from celery.result import ResultBase
 
 # Create your views here.
 
@@ -241,7 +242,6 @@ def submit(request):
                 marked_body=data,
                 raw_body=data,
             )
-            print(data)
             essay.save()
             # message = "Your student %s has just submitted an essay for the assignment %s. " \
             #           "\n\nYou also currently have %s submissions for that assignment." \
@@ -327,15 +327,16 @@ def grade(request, pk):  # max 7973 characters/request, <100 requests/day
         return redirect("home")
 
     essays = Essay.objects.all().filter(assignment=Assignment.objects.get(pk=pk))
-    ids = []
+    essay_tuples = []
 
     for essay in essays:
         if not essay.marked and essay.citation_type != "None":
-            ids.append(essay.id)
+            x = essay.id, essay.raw_body, essay.citation_type
+            essay_tuples.append(x)
 
-    results = grade_all(ids)
+    ret = grade_all.delay(essay_tuples)
 
-    # results = [v for v in ret.collect() if not isinstance(v, (ResultBase, tuple))]
+    results = ret.get()
 
     for result in results:
         # print("Original", result[1])

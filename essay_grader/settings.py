@@ -18,7 +18,11 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 djcelery.setup_loader()
 
-BROKER_URL = 'amqp://'
+BROKER_URL = 'amqp://guest:guest@localhost:5672//'
+
+CELERY_RESULT_BACKEND = 'amqp://guest:guest@localhost:5672//'
+
+CELERY_TASK_ALWAYS_EAGER = True
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/

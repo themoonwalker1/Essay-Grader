@@ -6,30 +6,37 @@ from .citation import *
 from grammarbot import GrammarBotClient
 from .models import Essay
 import unidecode
+from celery.result import ResultBase
     
 @app.task(trail=True)
-def grade_all(essay_ids) -> list:
-    return [grade_essay(essay_id) for essay_id in essay_ids]
+def grade_all(essay_tuples) -> list:
+    results = []
 
+    for tup in essay_tuples:
+        res = grade_essay.delay(tup)
+        results.append(res.get())
+
+    return results
 
 @app.task(trail=True)
-def grade_essay(essay_id) -> tuple:
-    essay = Essay.objects.get(id=essay_id)
+def grade_essay(essay_tuple) -> tuple:
+    raw_body = essay_tuple[1]
+    citation_type = essay_tuple[2]
     client = GrammarBotClient()
     edited_body = ""
     cursor = 0
     citation_heading = ""
 
-    if essay.citation_type == "APA":
+    if citation_type == "APA":
         citation_heading = "References"
     else:
         citation_heading = "Works Cited"
 
-    if citation_heading not in essay.raw_body:
-        ret = "<p style=\"padding-top:1em\"><mark style=\"background-color:red;line-height:1.5em\">" + "ERROR: No reference list/works cited header found (this may be due to a typo in the word \"References\" or the word \"Works Cited\"). Unable to mark essay." + "</mark></p>" + essay.raw_body
-        return essay_id, ret
+    if citation_heading not in raw_body:
+        ret = "<p style=\"padding-top:1em\"><mark style=\"background-color:red;line-height:1.5em\">" + "ERROR: No reference list/works cited header found (this may be due to a typo in the word \"References\" or the word \"Works Cited\"). Unable to mark essay." + "</mark></p>" + raw_body
+        return essay_tuple[0], ret
 
-    body = check_citations(essay_id)
+    body = check_citations(essay_tuple)
 
     body = body.split(citation_heading)
     raw_citations = "<p>" + citation_heading + "</p>" + body[-1]
@@ -58,13 +65,10 @@ def grade_essay(essay_id) -> tuple:
         edited_body = body
 
     edited_body += raw_citations
-    print(edited_body)
-    return essay_id, edited_body
+    return essay_tuple[0], edited_body
 
-@app.task(trail=True)
-def check_citations(essay_id):
-    essay = Essay.objects.get(id=essay_id)
-    citation_type = essay.citation_type
+def check_citations(essay_tuple):
+    citation_type = essay_tuple[2]
     citation_heading = ""
 
     if citation_type == "APA":
@@ -72,7 +76,7 @@ def check_citations(essay_id):
     else:
         citation_heading = "Works Cited"
 
-    body = essay.raw_body.split(citation_heading)
+    body = essay_tuple[1].split(citation_heading)
     raw_citations = body[-1].splitlines()
     body = body[:-1]
     body = [citation_heading.join(body)]
@@ -134,7 +138,6 @@ def check_citations(essay_id):
     
     return "\n".join(body)
 
-@app.task(trail=True)
 def cross_reference(citation, citation_type, body):
     if citation_type == "APA":
         if citation.citation_status != APACitationStatus.AUTHOR and citation.citation_status != APACitationStatus.YEAR:

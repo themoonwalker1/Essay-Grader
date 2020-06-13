@@ -2,7 +2,7 @@
 
 A platform to speed up essay grading.
 
-## Setup
+## Local Setup
 
  * Install RabbitMQ and Erlang
 	* MacOS/Linux
@@ -25,7 +25,7 @@ A platform to speed up essay grading.
 
 * Go to a suitable directory and clone the repository with
 	* ```
-  	  git clone git@github.com:TheMoonWalker1/Essay-Grader.git
+  	  git clone git@gitlab.tjhsst.edu:understudyathon-2020/group-5/Essay-Grader.git
   	  ```
 * Move into the folder where the repository was cloned
 	* ```
@@ -62,6 +62,15 @@ A platform to speed up essay grading.
 * Next, install all necessary libraries with the following command:
 	* ```
 	  pip3 install -r requirements.txt
+	  ```
+* Next, open up a new terminal window (don't close any of the other ones) and run:
+	* ```
+	  celery -A essay_grader worker -l info -P eventlet
+	  ```
+	* If you get an error regarding kombu, try running
+	  ```
+	  pip uninstall celery
+	  pip install celery
 	  ```
 * Now run:
 	* ```

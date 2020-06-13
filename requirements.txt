@@ -5,14 +5,15 @@ django-oauth-toolkit
 ion_oauth
 django-guardian
 djangorestframework
-celery==3.1.25
+celery
 django-windows-tools
 django-celery
 nltk
 django-ckeditor
 pytz
 scikit-learn
-requests
+httplib
 urlextract
 strsimpy
 unidecode
+eventlet
