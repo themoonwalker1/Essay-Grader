@@ -327,14 +327,35 @@ def grade(request, pk):  # max 7973 characters/request, <100 requests/day
         return redirect("home")
 
     essays = Essay.objects.all().filter(assignment=Assignment.objects.get(pk=pk))
+    essay_list = []
+
+    for i in essays:
+        x = [i.author.first_name + " " + i.author.last_name, i.title, i.raw_body] # (author, title, essay)
+        citation_type = i.citation_type
+
+        citation_heading = ""
+
+        if citation_type == "APA":
+            citation_heading = "References"
+        else:
+            citation_heading = "Works Cited"
+
+        if citation_heading in x[-1]:
+            x[-1] = citation_heading.join(x[-1].split(citation_heading)[:-1]).replace("\r", "").replace("\n", "") #get rid of the citation section in the essay
+
+        x = tuple(x)
+            
+        essay_list.append(x)
+
     essay_tuples = []
 
     for essay in essays:
         if not essay.marked and essay.citation_type != "None":
-            x = essay.id, essay.raw_body, essay.citation_type
+            author = essay.author.first_name + " " + essay.author.last_name
+            x = essay.id, essay.raw_body, essay.citation_type, author, essay.title
             essay_tuples.append(x)
 
-    ret = grade_all.delay(essay_tuples)
+    ret = grade_all.delay(essay_tuples, essay_list)
 
     results = ret.get()
 

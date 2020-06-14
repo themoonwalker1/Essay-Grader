@@ -18,7 +18,7 @@ jaccard = Jaccard(2)
 corpus=[
 "The thick foliage and intertwined vines made the hike nearly impossible. It had been sixteen days since the zombies first attacked.",
 "It had been sixteen days since the zombies first attacked.",
-"Happiness can be found in the depths of chocolate pudding. She did a happy dance because all of the socks from the dryer matched. The Tsunami wave crashed against the raised houses and broke the pilings as if they were toothpicks.",
+"The climb was very difficult because of the dense forest on top of the mountain. More than 2 weeks passed since the Undead rose up.",
 "He was surprised that his immense laziness was inspirational to others.",
 "Lightning Paradise was the local hangout joint where the group usually ended up spending the night.I may struggle with geography, but I'm sure I'm somewhere around here.",
 ]
