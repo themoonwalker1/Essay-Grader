@@ -12,7 +12,7 @@ nltk
 django-ckeditor
 pytz
 scikit-learn
-httplib
+http.client
 urlextract
 strsimpy
 unidecode

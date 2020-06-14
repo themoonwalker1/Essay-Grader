@@ -72,7 +72,8 @@ A platform to speed up essay grading.
 	  pip uninstall celery
 	  pip install celery
 	  ```
-* Now run:
+* At this point, you should have 3 terminal windows open
+* In the empty terminal window, run:
 	* ```
       python manage.py collectstatic
       python manage.py makemigrations
@@ -83,45 +84,34 @@ A platform to speed up essay grading.
 * Login via Ion
 * Note: requires Python 3.6+
 
-## Goals
-* Bold == Working On
-* Website Features
-	- [x] ***Settings***
-		- [x] Add Teacher
-		- [x] Password Change
-		- [x] Add Login/Logout to the Sidebar
+## Features
+* Profile Management
+	- [x] Settings
+		- [x] Add teachers
+		- [x] Change password
 * Essay Checking 
-	- [x] Grammar
-	- [x] Formatting
-	- [x] ***Citation Formatting***
-	- [x] ***Citation Cross-Referencing***
-	- [x] Header Formatting
-	- [ ] Plagarism Checker
+	- [x] Spelling/Grammar
+	- [x] Reference list formatting
+	- [x] Citation formatting and style verification (conducted by an extensive home-made algorithm)
+	- [x] Citation cross-referencing
+	- [x] Plagarism Checker
 * Interface:
 	* Teacher 
-		- [x] Seeing Students Essay's and being able to grade it
-		- [x] Comment System(Interact with Students)
+		- [x] Seeing students essays and being able to grade them
+		- [x] Add assignments
+		- [x] Get notified via email when a student adds you as a teacher
+		- [x] Comment system (interact with students)
 	* Student
-		- [x] Submitting Essay
+		- [x] Submitting essays via a rich text editor
+		- [x] Get notified via email when your assignment is graded and when a new assignment is posted
 * Automation
-	- [x] Adding Celery Works for Automation
-	- [x] ***Finishing Optimization of Celery Algorithm***
+	- [x] Essay grading is automated by the use of Celery Workers
 * Frameworks:
 	* Django
 	* Bootstrap
-	* HTML/CSS/JavaScript
-* OAuth2:
-	- [x] Setting up Ion OAuth
-	- [x] OAuth2 Library to verify if user is a student or a teacher
-	- [x] Adding RBAC(Role Based Access Control)
+	* JQuery + AJAX
+* Authentication:
+	- [x] Login via OAuth
+	- [x] Access information via Ion's API
+	- [x] Role Based Access Control
 
-## Program Structure
-* Front-End and Back-End Structure
-* Teacher
-	* Create Superuser
-	* Front End
-	* Back End
-* Student
-	* Front End
-	* Back End
-	* Login using Ion OAuth
