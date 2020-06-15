@@ -5,7 +5,7 @@ A platform to speed up essay grading.
 https://essay-grader.sites.tjhsst.edu/
 
 ## Local Setup
-
+ * Note: this requires Python 3.8+
  * Install RabbitMQ and Erlang
 	* MacOS/Linux
 		* Follow the instructions at https://www.rabbitmq.com/download.html
@@ -84,7 +84,6 @@ https://essay-grader.sites.tjhsst.edu/
 	  ```
 	* And now go to http://127.0.0.1:8000/ to get access!
 * Login via Ion
-* Note: requires Python 3.6+
 
 ## Features
 * Profile Management
