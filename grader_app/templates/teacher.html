@@ -43,18 +43,16 @@
         <!-- Switch -->
         <div class="switch-div">
             <h5 class="label" id="name_thing">Show Graded</h5>
-            <label class="switch" class="label" id="switch">
+            <label class="switch label" id="switch">
                 <input id="slider" onclick="toggleType()" type="checkbox">
                 <span class="slider round"></span>
             </label>
         </div>
-        <!-- Button -->
-        <div class="button-div">
-            <button class="btn btn-primary" id="thingy" onclick="gradeAll()" stuff="{% url 'grade' 123 %}"
-                    type="button" style="position: absolute; left: 50%">Mark All
-            </button>
-        </div>
     </div>
+    <!-- Button -->
+    <button class="btn btn-primary" id="thingy" onclick="gradeAll()" stuff="{% url 'grade' 123 %}"
+            type="submit" style="float:right; margin-right:10px;">Mark All
+    </button>
 </footer>
 {% endblock %}
 {% block js %}
