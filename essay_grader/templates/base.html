@@ -100,7 +100,8 @@
             <img class="gear" id="gear" height="18vh" src="{% static 'img/gear.png' %}" width="18vw"/>
         </a>
         {% else %}
-        <a class="navbar-brand create" href="{% url 'login' %}">Login</a>
+        <a class="navbar-brand" href="{% url 'create' %}" style="position: absolute; right: 10%;">Create Account</a>
+        <a class="navbar-brand" href="{% url 'login' %}">Login</a>
         {% endif %}
     </nav>
     {% block head %}{% endblock head %}
