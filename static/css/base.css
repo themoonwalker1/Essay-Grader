@@ -1,7 +1,6 @@
 body{
   background-color: var(--background) !important;
   color: var(--font-color);
-  transition: all 1s;
 }
 *:before,
 *:after {
@@ -15,7 +14,6 @@ box-sizing: inherit;
     overflow: hidden;
     padding-top: 0.5em;
     background-color: var(--navbar) !important;
-    transition: all 1s;
 }
 .authors {
     display:inline-block;
@@ -27,7 +25,6 @@ box-sizing: inherit;
     padding-left: 1em;
     color: var(--color-title) !important;
     font-size: 2.7vw !important;
-    transition: all 1s;
 }
 .create{
     padding-left: 3em;
@@ -42,7 +39,6 @@ box-sizing: inherit;
     vertical-align:middle;
     font-size: 1.2vw;
     color: var(--font-color) !important;
-    transition: all 1s;
 }
 .settings{
     vertical-align:middle;
@@ -52,40 +48,41 @@ box-sizing: inherit;
 }
 .navbar-title:hover {
     text-decoration: none;
+    color: var(--color-title-hover) !important;
 }
 .navbar-link {
     vertical-align:middle;
     font-size: 1.2vw;
     color: var(--font-color) !important;
-    transition: all 1s;
 }
 .navbar-link:hover {
     color: var(--link-hover) !important;
-    transition: all 1s;
 }
 .theme-light {
-  --color-title: #0060df;
+  --color-title: #0071f3;
   --color-secondary: #fbfbfe;
   --color-accent: #fd6f53;
-  --font-color: #000000;
-  --link-hover: #343a40;
+  --font-color: #111111;
+  --link-hover: #575c61;
   --background: white;
   --navbar: #f8f9fa;
   --form: black;
   --current: white;
   --border: #d5d5d5;
+  --color-title-hover: #004792;
 }
 .theme-dark {
-  --color-title: #004792;
+  --color-title: #0071f3;
   --color-secondary: #2a2c2d;
   --color-accent: #12cdea;
   --font-color: #b9b9b9;
-  --link-hover: #c1c2c3;
+  --link-hover: #8d8c8c;
   --background: #121212;
   --navbar: rgba(255, 255, 255, 0.05);
   --form: #5d5c5c;
   --current: rgba(255, 255, 255, 0.11);
   --border: #2f2d2d;
+  --color-title-hover: #004792;
 }
 .search-bar{
     max-width: 500px;

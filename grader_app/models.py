@@ -89,12 +89,10 @@ class User(AbstractBaseUser):
     }))
 
     def set_teachers(self, teacher):
-        print(self.teachers)
         self.teachers = json.dumps(teacher)
         self.save()
 
     def get_teachers(self):
-        print(self.teachers)
         return json.loads(self.teachers)
 
     assignments = models.ManyToManyField(Assignment)
@@ -169,7 +167,7 @@ class User(AbstractBaseUser):
 
 
 class Essay(models.Model):
-    dropdown = (("None", "None"), ("APA", "APA"), ("MLA", "MLA"))
+    dropdown = (("APA", "APA"), ("MLA", "MLA"))
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="author")
     assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name="teacher", null=True)
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, null=True)

@@ -51,7 +51,7 @@
         <!-- Button -->
         <div class="button-div">
             <button class="btn btn-primary" id="thingy" onclick="gradeAll()" stuff="{% url 'grade' 123 %}"
-                    type="button">Mark All
+                    type="button" style="position: absolute; left: 50%">Mark All
             </button>
         </div>
     </div>
@@ -61,3 +61,5 @@
 <script src="{% static 'js/teacher.js' %}"></script>
 {% endblock %}
 
+{% block footer %}
+{% endblock footer %}

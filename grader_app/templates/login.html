@@ -7,7 +7,7 @@
 
 {% block content %}
 <!------------ Login Box ------------->
-<div class="col-md-8 offset-md-2 box navbar-light bg-light content">
+<div class="col-md-8 offset-md-2 box navbar-light bg-light content" style="min-height: 270px !important;">
 
     <h2>
         <center>
@@ -18,7 +18,7 @@
     <h6 class="error">
         {{ error }}
     </h6>
-    <!-- Login Form -->
+    <!-- Login Form 
     <form action="{% url 'login' %}" method="post">
 
         {% csrf_token %}
@@ -38,14 +38,14 @@
 
         </div>
 
-    </form>
+    </form>-->
 
     <br>
     <!-- Ion Login -->
     <center>
 
         <p class="ion-text">
-            Or Log in with
+            Log in with
             <b>
                 Ion
             </b>

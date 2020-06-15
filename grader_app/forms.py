@@ -15,7 +15,7 @@ class CommentForm(forms.Form):
     )
 
 
-dropdown = (("None", "None"), ("APA", "APA"), ("MLA", "MLA"))
+dropdown = (("APA", "APA"), ("MLA", "MLA"))
 
 
 class AssignmentForm(forms.Form):

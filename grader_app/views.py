@@ -185,44 +185,46 @@ def setup(request):
     return render(request, "setup.html", context)
 
 
-@login_required(login_url="login")
 def index(request):
-    essays = []
-    query = ""
+    if request.user.is_authenticated:
+        essays = []
+        query = ""
 
-    if request.GET:
-        query = request.GET.get('q', 'Search for an essay')
+        if request.GET:
+            query = request.GET.get('q', 'Search for an essay')
 
-    if query != "":
-        profile = request.user
-        queryset = []
-        queries = query.split(" ")
+        if query != "":
+            profile = request.user
+            queryset = []
+            queries = query.split(" ")
 
-        for q in queries:
-            essays = Essay.objects.filter(author=profile).filter(
-                Q(title__icontains=q) |
-                Q(body__icontains=q)
-            ).order_by('-created_on').distinct()
+            for q in queries:
+                essays = Essay.objects.filter(author=profile).filter(
+                    Q(title__icontains=q) |
+                    Q(body__icontains=q)
+                ).order_by('-created_on').distinct()
 
-            for essay in essays:
-                queryset.append(essay)
+                for essay in essays:
+                    queryset.append(essay)
 
-        essays = list(set(queryset))
+            essays = list(set(queryset))
 
-    if request.user.teacher and not request.user.admin:
-        return redirect("teacher")
+        if request.user.teacher and not request.user.admin:
+            return redirect("teacher")
 
-    if not essays:
-        essays = Essay.objects.all().filter(author=request.user).order_by('-created_on')
+        if not essays:
+            essays = Essay.objects.all().filter(author=request.user).order_by('-created_on')
 
-    context = {
-        "essays": essays,
-        "query": str(query),
-        "search": query != ""
-    }
+        context = {
+            "essays": essays,
+            "query": str(query),
+            "search": query != ""
+        }
 
-    return render(request, "index.html", context)
+        return render(request, "index.html", context)
 
+    else:
+        return render(request, "index.html")
 
 @login_required(login_url="login")
 def submit(request):
