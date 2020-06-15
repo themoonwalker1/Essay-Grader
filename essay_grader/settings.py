@@ -30,8 +30,10 @@ CELERY_TASK_ALWAYS_EAGER = True
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '1_^s)um8o*(giu7gaw0&#h0tv+up6-_+5c9=tb^x0#6q76rdki'
 
+ALLOWED_HOSTS = ["essay-grader.sites.tjhsst.edu", "localhost", "127.0.0.1"]
+
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 CKEDITOR_CONFIGS = {
     'default': {
@@ -89,8 +91,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 ROOT_URLCONF = 'essay_grader.urls'
 
