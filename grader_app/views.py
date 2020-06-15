@@ -21,6 +21,7 @@ from html import unescape
 from unicodedata import normalize
 from celery.result import ResultBase
 
+
 # Create your views here.
 
 # noinspection PyUnresolvedReferences
@@ -134,7 +135,6 @@ def create(request):
                 if qs.exists():
                     raise forms.ValidationError("email is taken")
             except forms.ValidationError:
-                context['Error1'] = "Email is already taken"
                 error = True
 
             try:
@@ -142,13 +142,28 @@ def create(request):
                 if len(password) < 8:
                     raise ValueError
             except forms.ValidationError:
-                context['Error2'] = "Passwords do no match"
                 error = True
             except ValueError:
-                context['Error2'] = "Passwords need to be at least 8 characters"
                 error = True
 
-            if not error:
+            specs = '!"#$%&\'()*+,-./:;<=>?@[\]^_`{|}~'
+            numbers = "0123456789"
+            special = False
+            for char in specs:
+                special = special or password.__contains__(char)
+            number = False
+            for char in numbers:
+                number = number or password.__contains__(char)
+            upper = False
+            lower = False
+            for char in password:
+                if char.lower() == char:
+                    lower = True
+                else:
+                    upper = True
+            upandlow = lower and upper
+
+            if not error and upandlow and number and special:
                 new_user = User.objects.create_studentuser(email=mail, password=password)
                 new_user.save()
                 user = auth.authenticate(email=mail, password=password)
@@ -232,7 +247,6 @@ def submit(request):
     if request.method == 'POST':
 
         if form.is_valid():
-            new_assignment = form.cleaned_data["assignment"]
             data = format_body(form.data["body"])
             essay = Essay(
                 title=form.cleaned_data["title"],
@@ -261,6 +275,7 @@ def submit(request):
     }
     return render(request, "submit.html", context)
 
+
 def format_body(body):
     formatted_body = unescape(body)
     formatted_body = normalize("NFKC", formatted_body)
@@ -270,11 +285,12 @@ def format_body(body):
             formatted_body = formatted_body.replace(i, "\n")
         elif i != "<em>" and i != "</em>":
             formatted_body = formatted_body.replace(i, "")
-            
+
     formatted_body = formatted_body.replace("    ", "")
     formatted_body = formatted_body.replace("<em>", "<i>")
     formatted_body = formatted_body.replace("</em>", "</i>")
     return formatted_body
+
 
 def load_assignments(request):
     user_teacher = request.GET.get('teacher')
@@ -323,6 +339,7 @@ def detail(request, pk):
 
     return render(request, "detail.html", context)
 
+
 @login_required(login_url="login")
 def grade(request, pk):  # max 7973 characters/request, <100 requests/day
     if not request.user.teacher:
@@ -332,10 +349,8 @@ def grade(request, pk):  # max 7973 characters/request, <100 requests/day
     essay_list = []
 
     for i in essays:
-        x = [i.author.first_name + " " + i.author.last_name, i.title, i.raw_body] # (author, title, essay)
+        x = [i.author.first_name + " " + i.author.last_name, i.title, i.raw_body]  # (author, title, essay)
         citation_type = i.citation_type
-
-        citation_heading = ""
 
         if citation_type == "APA":
             citation_heading = "References"
@@ -343,10 +358,11 @@ def grade(request, pk):  # max 7973 characters/request, <100 requests/day
             citation_heading = "Works Cited"
 
         if citation_heading in x[-1]:
-            x[-1] = citation_heading.join(x[-1].split(citation_heading)[:-1]).replace("\r", "").replace("\n", "") #get rid of the citation section in the essay
+            x[-1] = citation_heading.join(x[-1].split(citation_heading)[:-1]).replace("\r", "").replace("\n", "")
+            # get rid of the citation section in the essay
 
         x = tuple(x)
-            
+
         essay_list.append(x)
 
     essay_tuples = []
@@ -665,3 +681,47 @@ def dark(request):
         u.dark_mode = False
     u.save()
     return JsonResponse({})
+
+
+def validate_user_email(request):
+    valid = not User.objects.all().filter(email=request.GET.get("email")).exists()
+    if valid:
+        valid = not request.GET.get("email") == ""
+        if valid:
+            valid = request.GET.get("email").__contains__("@")
+            if valid:
+                valid = request.GET.get("email").__contains__(".")
+
+
+    return JsonResponse({"valid": valid})
+
+
+def validate_user_password(request):
+    password1 = request.GET.get('password1')
+    password2 = request.GET.get('password2')
+    specs = '!"#$%&\'()*+,-./:;<=>?@[\]^_`{|}~'
+    numbers = "0123456789"
+    match = password1 == password2
+    length = len(password1) >= 8
+    special = False
+    for char in specs:
+        special = special or password1.__contains__(char)
+    number = False
+    for char in numbers:
+        number = number or password1.__contains__(char)
+    upper = False
+    lower = False
+    for char in password1:
+        if char.lower() == char:
+            lower = True
+        else:
+            upper = True
+    upandlow = lower and upper
+    data = {
+        "match" : match,
+        "length" : length,
+        "special" : special,
+        "number" : number,
+        "upandlow" : upandlow
+    }
+    return JsonResponse(data)

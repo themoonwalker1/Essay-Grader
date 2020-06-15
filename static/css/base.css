@@ -66,6 +66,7 @@ box-sizing: inherit;
   --link-hover: #575c61;
   --background: white;
   --navbar: #f8f9fa;
+  --formfield: #ffff;
   --form: black;
   --current: white;
   --border: #d5d5d5;
@@ -79,6 +80,7 @@ box-sizing: inherit;
   --link-hover: #8d8c8c;
   --background: #121212;
   --navbar: rgba(255, 255, 255, 0.05);
+  --formfield:rgba(255, 255, 255, 0.05);
   --form: #5d5c5c;
   --current: rgba(255, 255, 255, 0.11);
   --border: #2f2d2d;
@@ -171,23 +173,15 @@ div.scrollable{
 }
 .form-control{
     @extends form-control;
-    background-color: var(--navbar);
-    border: var(--border);
+    background-color: var(--formfield);
     color: var(--font-color);
 }
 .form-control:focus{
     @extends form-control:focus;
-    background-color: var(--navbar) !important;
-    border: var(--border)  !important;
-    color: var(--font-color)  !important;
-}
-.form-control:disabled{
-    background-color: var(--navbar) !important;
-    border: var(--border)  !important;
+    background-color: var(--formfield) !important;
     color: var(--font-color)  !important;
 }
 .form-control:hover{
-    background-color: var(--navbar) !important;
-    border: var(--border)  !important;
+    background-color: var(--formfield) !important;
     color: var(--font-color)  !important;
 }

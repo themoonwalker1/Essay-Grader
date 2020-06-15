@@ -34,11 +34,16 @@
     border: 2px solid #162335;
     position: absolute;
     top: 50%;
-    left: 50%;
+    left: 30%;
+    width:60%;
     margin-top: -200px;
     margin-left: -137.5px;
+<<<<<<< HEAD
     width: 275px;
     min-height: 270px;
+=======
+    min-height: 400px;
+>>>>>>> d3b1b8e583744dd67988afb1fa620f3b3618db19
 }
 .error{
     color:red;
@@ -59,4 +64,6 @@
 }
 form{
     padding-left:6px;
+    width: 50%;
+    display:inline-block;
 }
