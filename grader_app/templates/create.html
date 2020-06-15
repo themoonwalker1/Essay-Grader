@@ -6,7 +6,7 @@
 
 {% block content %}
 <!------------ Create User Account ------------->
-<div class="col-md-8 offset-md-2 box bg-light content">
+<div class="col-md-8 offset-md-2 box bg-light content" style="width: 60% !important; left: 20% !important;">
     <h2>
 		<center>
 			Create
@@ -18,7 +18,7 @@
 	<h6 class="error" id="error">{% if method == "POST" %}Your account is invalid.{% endif %}</h6>
 
 	<!-- User Creation Form -->
-	<form action="{% url 'create' %}" method="post">
+	<form action="{% url 'create' %}" method="post" style="width: 45% !important;">
 		{% csrf_token %}
 		{{ form.as_p }}
 		<div class="button-holder" >

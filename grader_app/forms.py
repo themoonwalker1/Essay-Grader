@@ -77,7 +77,6 @@ class LoginForm(forms.Form):
 
 class SetupForm(forms.Form):
     first_name = forms.CharField(max_length=150, required=True, widget=forms.TextInput(attrs={"class": "form-control"}))
-    middle_name = forms.CharField(max_length=150, widget=forms.TextInput(attrs={"class": "form-control"}))
     last_name = forms.CharField(max_length=150, required=True, widget=forms.TextInput(attrs={"class": "form-control"}))
     FRESHMAN = 'FR'
     SOPHOMORE = 'SO'

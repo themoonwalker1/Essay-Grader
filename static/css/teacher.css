@@ -85,7 +85,7 @@ input:checked + .slider:before {
 }
 .option_container{
     float: left;
-    width: 35%;
+    width: 20%;
 }
 .switch-div{
     display: inline-block;
@@ -93,7 +93,6 @@ input:checked + .slider:before {
     margin-left: 10px;
     padding-left:10px;
     margin-top: 2px;
-    padding-top:4px;
 }
 .label{
     display: inline-block;
