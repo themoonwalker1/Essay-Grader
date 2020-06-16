@@ -33,7 +33,7 @@ SECRET_KEY = '1_^s)um8o*(giu7gaw0&#h0tv+up6-_+5c9=tb^x0#6q76rdki'
 ALLOWED_HOSTS = ["essay-grader.sites.tjhsst.edu", "localhost", "127.0.0.1"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 CKEDITOR_CONFIGS = {
     'default': {
@@ -45,8 +45,6 @@ CKEDITOR_CONFIGS = {
         'tabSpaces': 4
     },
 }
-
-ALLOWED_HOSTS = []
 
 AUTH_USER_MODEL = "grader_app.User"
 
