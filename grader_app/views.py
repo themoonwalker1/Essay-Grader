@@ -46,7 +46,7 @@ def login(request):
                 user = auth.authenticate(email=mail_id, password=form.cleaned_data["password"])
                 if user is not None:
                     auth.login(request, user)
-                    return redirect("http://localhost:8000/home")
+                    return redirect("home")
             else:
                 form = LoginForm()
                 context['form'] = form
@@ -60,7 +60,7 @@ def login(request):
         form = LoginForm()
         context['form'] = form
         oauth = OAuth2Session(client_id,
-                              redirect_uri="http://localhost:8000/login",
+                              redirect_uri="http://essay-grader.sites.tjhsst.edu/login",
                               scope=["read"])
         authorization_url, state = oauth.authorization_url("https://ion.tjhsst.edu/oauth/authorize/")
         context['url'] = authorization_url
@@ -83,7 +83,7 @@ def login(request):
                         user = request.user
                         user.logged_with_ion = True
                         user.save()
-                        return redirect("http://localhost:8000/home")
+                        return redirect("home")
 
                 else:
                     if profile.get("ion_username") in admins or profile.get("is_eighth_admin"):
@@ -107,7 +107,7 @@ def login(request):
                     user = auth.authenticate(email=mail_id,
                                              password=profile.get("ion_username") + profile.get("user_type"))
                     auth.login(request, user)
-                    return redirect("http://localhost:8000/home")
+                    return redirect("home")
 
             except Exception:
                 args = {"client_id": client_id, "client_secret": client_secret}
@@ -168,7 +168,7 @@ def create(request):
                 new_user.save()
                 user = auth.authenticate(email=mail, password=password)
                 auth.login(request, user)
-                return redirect("http://localhost:8000/setup")
+                return redirect("setup")
             else:
                 form = RegisterForm()
                 context['form'] = form
