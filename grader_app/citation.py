@@ -195,7 +195,7 @@ class APACitation():
             while citation[cursor] != ")":
                 cursor += 1
 
-        if ". <i>" not in citation[cursor + 4:] and ".<i>" not in citation[cursor + 4:]:
+        if ". <i>" not in citation[cursor + 4:] and ".<i>" not in citation[cursor + 4:] and "<i>" not in citation[cursor + 4:] and ", <i>" not in citation[cursor + 4:] and ",<i>" not in citation[cursor + 4:]:
             raise Exception("The journal title should be italicized.")
 
         # check title

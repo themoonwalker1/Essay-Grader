@@ -241,6 +241,7 @@ def index(request):
     else:
         return render(request, "index.html")
 
+
 @login_required(login_url="login")
 def submit(request):
     form = EssayForm(request.POST or None, **{'user': request.user})
@@ -345,7 +346,7 @@ def grade(request, pk):  # max 7973 characters/request, <100 requests/day
     if not request.user.teacher:
         return redirect("home")
 
-    essays = Essay.objects.all().filter(assignment=Assignment.objects.get(pk=pk))
+    essays = Essay.objects.all().filter(assignment=Assignment.objects.get(pk=pk), marked=False, graded=False)
     essay_list = []
 
     for i in essays:
@@ -371,6 +372,7 @@ def grade(request, pk):  # max 7973 characters/request, <100 requests/day
         if not essay.marked and essay.citation_type != "None":
             author = essay.author.first_name + " " + essay.author.last_name
             x = essay.id, essay.raw_body, essay.citation_type, author, essay.title
+            print(x)
             essay_tuples.append(x)
 
     ret = grade_all.delay(essay_tuples, essay_list)
@@ -391,26 +393,6 @@ def grade(request, pk):  # max 7973 characters/request, <100 requests/day
     }
 
     return render(request, "grade.html", context)
-
-
-def reformat(body):
-    temp = body.split("\r\n")
-    tempText = "<p>"
-
-    for paragraph in temp:
-        tempText += paragraph + "</p><p>"
-
-    # print("Added para statements", tempText)
-
-    temp = tempText.split("\t")
-    tempText = "&emsp;"
-
-    for tab in temp:
-        tempText += tab + "&emsp;"
-
-    # print("Added tab statements", tempText)
-
-    return tempText + "</p>"
 
 
 @login_required(login_url="login")
@@ -692,7 +674,6 @@ def validate_user_email(request):
             if valid:
                 valid = request.GET.get("email").__contains__(".")
 
-
     return JsonResponse({"valid": valid})
 
 
@@ -718,10 +699,10 @@ def validate_user_password(request):
             upper = True
     upandlow = lower and upper
     data = {
-        "match" : match,
-        "length" : length,
-        "special" : special,
-        "number" : number,
-        "upandlow" : upandlow
+        "match": match,
+        "length": length,
+        "special": special,
+        "number": number,
+        "upandlow": upandlow
     }
     return JsonResponse(data)
