@@ -645,6 +645,11 @@ def grade_essay(request, pk):
         essay.grade_denominator = int(request.GET.get('denominator'))
         essay.graded = True
         essay.save()
+        
+        message = """Your essay, %s, has just been graded. Score: %s/%s.""" % (
+                    essay.title, essay.grade_numerator, essay.grade_denominator)
+        send_email(message, "Your essay has been graded", [essay.author.email])
+
     return JsonResponse({})
 
 
