@@ -44,6 +44,7 @@ def login(request):
             mail_id = form.cleaned_data["email"]
             if User.objects.filter(email=mail_id).exists():
                 user = auth.authenticate(email=mail_id, password=form.cleaned_data["password"])
+                print(user)
                 if user is not None:
                     auth.login(request, user)
                     return redirect("home")
@@ -479,16 +480,42 @@ def settings_changePassword(request):
     context = {}
 
     if request.method == 'POST':
-        form = InfoForm(request.POST)
-
+        form = ChangeForm(request.POST)
         if form.is_valid():
             password1 = form.cleaned_data.get('password_1')
             password2 = form.cleaned_data.get('password_2')
-            if password1 != password2:
-                context['error'] = "Passwords do not match"
-            else:
-                profile.set_password()
-
+            specs = '!"#$%&\'()*+,-./:;<=>?@[\]^_`{|}~'
+            numbers = "0123456789"
+            match = password1 == password2
+            length = len(password1) >= 8
+            special = False
+            for char in specs:
+                special = special or password1.__contains__(char)
+            number = False
+            for char in numbers:
+                number = number or password1.__contains__(char)
+            upper = False
+            lower = False
+            for char in password1:
+                if char.lower() == char:
+                    lower = True
+                else:
+                    upper = True
+            upandlow = lower and upper
+            if not match:
+                context['error'] = 'Passwords do not match'
+            elif not upandlow:
+                context['error'] = 'Password does not contain lower and upper case characters'
+            elif not number:
+                context['error'] = 'Password does not contain number'
+            elif not special:
+                context['error'] = 'Password does not contain a special character'
+            elif not length:
+                context['error'] = 'Password has to be longer than 8 characters'
+            elif match and upandlow and upper and lower and number and special and length:
+                profile.set_password(password1)
+                profile.save()
+                print(profile.password)
     form = ChangeForm()
 
     if profile.logged_with_ion:
